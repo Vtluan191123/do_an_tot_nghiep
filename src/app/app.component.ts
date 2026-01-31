@@ -1,13 +1,28 @@
-import { Component } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import {WebsocketService} from './service/websocket.service';
+import {VideoCallComponent} from './page/video-call/video-call.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet,VideoCallComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit ,OnDestroy{
   title = 'dotn-fe';
+
+  constructor(private websocketService:WebsocketService) {
+  }
+
+
+  ngOnInit() {
+    this.websocketService.connect()
+  }
+
+
+  ngOnDestroy(): void {
+    this.websocketService.disconnect()
+  }
 }

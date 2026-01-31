@@ -1,0 +1,50 @@
+<div id="container">
+  <div class="d-flex">
+    <div>
+      <p>Camera: {{userSendId}}</p>
+      <video  #localVideo id="localVideo" playsinline autoplay></video>
+    </div>
+
+    <div>
+      <p>Camera: {{userReceiveId}}</p>
+      <video #remoteVideo id="remoteVideo" playsinline autoplay></video>
+    </div>
+  </div>
+  <div class="box">
+    <button (click)="handleStart()" id="startButton">Call</button>
+    <button [disabled]="isDisableReply" *ngIf="hasCall" (click)="handleAnswerPhone()" id="startButton">Answer</button>
+    <button (click)="handleHangup()" id="hangupButton">Hang Up</button>
+  </div>
+</div>
+
+
+<video #video autoplay playsinline></video>
+
+<div class="controls">
+  <label>
+    Microphone:
+    <select [(ngModel)]="audioInput" (change)="start()">
+      <option *ngFor="let d of audioInputs" [value]="d.deviceId">
+        {{ d.label }}
+      </option>
+    </select>
+  </label>
+
+  <label>
+    Speaker:
+    <select [(ngModel)]="audioOutput" (change)="changeAudioDestination()">
+      <option *ngFor="let d of audioOutputs" [value]="d.deviceId">
+        {{ d.label }}
+      </option>
+    </select>
+  </label>
+
+  <label>
+    Camera:
+    <select [(ngModel)]="videoInput" (change)="start()">
+      <option *ngFor="let d of videoInputs" [value]="d.deviceId">
+        {{ d.label }}
+      </option>
+    </select>
+  </label>
+</div>
