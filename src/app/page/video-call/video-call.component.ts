@@ -242,13 +242,7 @@ export class VideoCallComponent implements OnInit{
       }
       return;
     }
-    // ICE tới sớm → buffer lại
-    // if (!this.pc.remoteDescription) {
-    //   console.log('⏳ buffer ICE');
-    //   this.pendingCandidates.push(candidate);
-    //   return;
-    // }
-    //SDP đã có → add ICE ngay
+
     try {
       await this.pc.addIceCandidate(candidate);
     } catch (e) {
@@ -256,16 +250,6 @@ export class VideoCallComponent implements OnInit{
     }
   }
 
-  // private async flushPendingCandidates() {
-  //   for (const candidate of this.pendingCandidates) {
-  //     try {
-  //       await this.pc.addIceCandidate(candidate);
-  //     } catch (e) {
-  //       console.error('flush ICE error', e);
-  //     }
-  //   }
-  //   this.pendingCandidates = [];
-  // }
   handleAnswerPhone(){
     console.log('handle reply')
     this.isDisableReply = true
