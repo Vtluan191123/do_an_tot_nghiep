@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: "Web integration Ai"
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=do_an_to_nghiep;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: Vtluan123@
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  jwt:
+    secret: 51a5c78e0db0c819b085323288d53d39e3617b9c0181e14d2cc845557f034f36
+    expiration_access: 3600000
+    expiration_refresh: 3600000
+
+server:
+  port: 8080
+
+

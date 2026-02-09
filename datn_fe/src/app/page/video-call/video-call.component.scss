@@ -1,0 +1,53 @@
+$video-width: 500px;
+$button-width: 83px;
+
+#container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+button {
+  margin: 0 20px 0 0;
+  width: $button-width;
+
+  &#hangupButton {
+    margin: 0;
+  }
+}
+
+video {
+  width: $video-width;
+  height: calc(#{$video-width} * 0.75);
+  margin: 0 0 20px 0;
+  vertical-align: top;
+
+  &#localVideo {
+    margin: 0 20px 20px 0;
+  }
+}
+
+div {
+  &.box {
+    margin: 1em;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  button {
+    width: $button-width;
+    margin: 0 11px 10px 0;
+  }
+
+  video {
+    width: calc(50% - 7px);
+    height: 90px;
+    margin: 0 0 10px 0;
+
+    &#localVideo {
+      margin: 0 10px 20px 0;
+    }
+  }
+}
