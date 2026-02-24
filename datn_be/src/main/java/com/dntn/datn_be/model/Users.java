@@ -28,8 +28,23 @@ public class Users  extends  BaseEntity
     @Column(name = "age")
     private String age;
 
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "exp")
+    private String exp;
+
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(name = "images_url")
+    private String imagesUrl;
+
+    @Column(name = "is_coach")
+    private Boolean isCoach;
+
+    @Column(name = "vote_star")
+    private Integer voteStar;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -38,5 +53,6 @@ public class Users  extends  BaseEntity
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Roles> roles = new HashSet<>();
+
 
 }

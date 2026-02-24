@@ -3,6 +3,7 @@ package com.dntn.datn_be.exception;
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,7 @@ import java.util.*;
 public class HandleGlobalException {
 
 
+    //handle exception global
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseGlobalDto<String>> handleException(Exception e) {
         ResponseGlobalDto<String> responseGlobalDto = ResponseGlobalDto.<String>builder()
@@ -44,21 +46,16 @@ public class HandleGlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseGlobalDto);
     }
 
-    //handle exception credentials
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseGlobalDto<String>> handleCredentialsException(MethodArgumentNotValidException e) {
-
-        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
-        Map<String,String> errorMessages = new HashMap<>();
-        for (FieldError fieldError : fieldErrors) {
-            errorMessages.put(fieldError.getField(),fieldError.getDefaultMessage());
-        }
+    // handle exception credentials
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ResponseGlobalDto<String>> handleCredentialsException(BadCredentialsException e) {
 
         ResponseGlobalDto<String> responseGlobalDto = ResponseGlobalDto.<String>builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(errorMessages)
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message("Username hoặc password không đúng")
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
                 .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseGlobalDto);
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseGlobalDto);
     }
 }

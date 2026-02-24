@@ -35,7 +35,16 @@
               "src/styles.scss",
               "node_modules/bootstrap/dist/css/bootstrap.min.css"
             ],
-            "scripts": [],
+            "scripts": [
+              "public/assets/js/jquery-3.3.1.min.js",
+              "public/assets/js/bootstrap.min.js",
+              "public/assets/js/jquery.magnific-popup.min.js",
+              "public/assets/js/masonry.pkgd.min.js",
+              "public/assets/js/jquery.barfiller.js",
+              "public/assets/js/jquery.slicknav.js",
+              "public/assets/js/owl.carousel.min.js",
+              "public/assets/js/main.js"
+            ],
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {
@@ -102,9 +111,17 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/swiper/swiper-bundle.min.css",
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/owl.carousel/dist/assets/owl.carousel.min.css",
+              "node_modules/owl.carousel/dist/assets/owl.theme.default.min.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/owl.carousel/dist/owl.carousel.min.js"
+            ]
           }
         }
       }
