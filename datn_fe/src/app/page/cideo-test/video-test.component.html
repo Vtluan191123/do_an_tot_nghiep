@@ -1,0 +1,14 @@
+<input  [(ngModel)]="token">
+<p>{{token}}</p>
+<select [(ngModel)]="selectedCamera" (change)="switchCamera()">
+  <option *ngFor="let cam of cameras" [value]="cam.deviceId">
+    {{ cam.label || 'Camera' }}
+  </option>
+</select>
+<select [(ngModel)]="selectedMicro" (change)="switchMicro()">
+  <option *ngFor="let mic of micros" [value]="mic.deviceId">
+    {{ mic.label || 'Micro' }}
+  </option>
+</select>
+<button (click)="joinRoom()">Join</button>
+<video id="localVideo" autoplay playsinline ></video>
