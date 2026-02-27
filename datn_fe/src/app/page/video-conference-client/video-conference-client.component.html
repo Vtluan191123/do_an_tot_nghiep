@@ -1,0 +1,89 @@
+<div class="wrapper">
+  <div class="wrapper-room">
+    <div class="wrapper-room-detail">
+      <div class="list-view-item">
+
+      </div>
+      <div class="view-item">
+        <div class="avatar-default">
+          <span [innerHTML]="AVATAR_DEFAULT | safeHtml"></span>
+        </div>
+        <div class="view-name">
+          @if (!statusMicro) {
+            <span class="me-2" [innerHTML]=" MICRO_CLOSE | safeHtml"></span>
+          }
+          <span>Vũ Thành Luân</span>
+        </div>
+        <div class="view-quality">
+          <span class="d-flex" [innerHTML]="VIEW_QUALITY | safeHtml"></span>
+        </div>
+        <div class="view-change">
+          <span class="d-flex" [innerHTML]="VIEW_CHANGE | safeHtml"></span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-room">
+      <div class="nav-room-item">
+        <div class="nav-room-item-button" (click)="handleStatusMicro()">
+          @if (statusMicro) {
+            <span class="me-2" [innerHTML]=" MICRO | safeHtml"></span>
+          } @else {
+            <span class="me-2" [innerHTML]=" MICRO_CLOSE | safeHtml"></span>
+          }
+          <span>MicroPhone</span>
+        </div>
+        <div class="nav-room-item-select">
+        </div>
+      </div>
+      <div class="nav-room-item">
+        <div class="nav-room-item-button">
+          <span class="me-2" [innerHTML]="CAMERA_OPEN | safeHtml"></span>
+          <span>Camera</span>
+        </div>
+        <div class="nav-room-item-select">
+        </div>
+      </div>
+      <div class="nav-room-item">
+        <div class="nav-room-item-button" style="border-radius: 10px">
+          <span class="me-2" [innerHTML]="SHARE_SCREEN | safeHtml"></span>
+          <span>Share screen</span>
+        </div>
+      </div>
+      <div class="nav-room-item" (click)="handleStatusChat()">
+        <div class="nav-room-item-button" style="border-radius: 10px">
+          <span class="me-2" [innerHTML]="MESSAGE_CHAT | safeHtml"></span>
+          <span>Chat</span>
+        </div>
+      </div>
+      <div class="nav-room-item">
+        <div class="nav-room-item-button" style="border-radius: 10px">
+          <span class="me-2" [innerHTML]="SETTING | safeHtml"></span>
+          <span>Setting</span>
+        </div>
+      </div>
+      <div class="nav-room-item">
+        <div class="nav-room-item-button" style="border-radius: 10px;border: 1px solid #f91f31;color: #f91f31">
+          <span class="me-2" [innerHTML]="LEAVE | safeHtml"></span>
+          <span style="line-height: normal">Leave</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  @if(statusChat){
+    <div class="wrapper-message">
+      <div class="main-message">
+        <div class="title-message">
+          <span >Message</span>
+        </div>
+        <span class="close-message" [innerHTML]="CLOSE_MESSAGE | safeHtml"></span>
+      </div>
+      <div class="nav-message">
+        <input placeholder="Enter a message..." >
+        <span >Send</span>
+      </div>
+    </div>
+  }
+
+
+</div>
+
