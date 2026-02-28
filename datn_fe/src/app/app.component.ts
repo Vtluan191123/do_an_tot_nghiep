@@ -4,11 +4,12 @@ import {WebsocketService} from './service/websocket.service';
 import {VideoCallComponent} from './page/video-call/video-call.component';
 import {DashBoardComponent} from './page/dash-board/dash-board.component';
 import {VideoTestComponent} from './page/cideo-test/video-test.component';
+import {WidgetComponent} from './page/widget/widget.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

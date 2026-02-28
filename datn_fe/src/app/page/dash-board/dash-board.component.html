@@ -79,8 +79,16 @@
       </div>
       <div class="col-lg-3">
         <div class="top-option">
-          <div class="to-search search-switch">
-            <i class="fa fa-search"></i>
+          <div class="to-search search-switch message" (click)="showListMessage()">
+            <span style="display: inline-block;
+    color: #ffffff;
+    font-size: 16px;
+    margin-left: 15px;" [innerHTML]="ICON_MESSAGE | safeHtml"></span>
+            @if(isShowListMessage){
+              <div class="child-list-message" (click)="$event.stopPropagation()">
+                <app-list-message></app-list-message>
+              </div>
+            }
           </div>
           <div class="to-social">
             <a href="#"><i class="fa fa-facebook"></i></a>
@@ -589,15 +597,5 @@
 </section>
 <!-- Footer Section End -->
 
-<!-- Search model Begin -->
-<div class="search-model">
-  <div class="h-100 d-flex align-items-center justify-content-center">
-    <div class="search-close-switch">+</div>
-    <form class="search-model-form">
-      <input type="text" id="search-input" placeholder="Search here.....">
-    </form>
-  </div>
-</div>
-<!-- Search model end -->
 
 

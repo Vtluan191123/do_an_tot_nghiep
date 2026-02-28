@@ -1,6 +1,9 @@
 import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {NgStyle} from '@angular/common';
+import {AVATAR_DEFAULT, ICON_MESSAGE} from '../share/other/icons/icons';
+import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
+import {ListMessageComponent} from '../message/list-message/list-message.component';
 
 
 declare var $: any;
@@ -10,18 +13,22 @@ declare var $: any;
   standalone: true,
   templateUrl: './dash-board.component.html',
   imports: [
-    NgStyle
+    NgStyle,
+    SafeHtmlPipe,
+    ListMessageComponent
   ],
   styleUrls: ['./dash-board.component.scss']
 })
 export class DashBoardComponent implements AfterViewInit {
+
+  isShowListMessage: boolean = false
+
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
   ngAfterViewInit(): void {
     this.initPreloader();
     this.initBackground();
     this.initMenu();
-    this.initSearch();
     this.initCarousel();
   }
 
@@ -53,20 +60,6 @@ export class DashBoardComponent implements AfterViewInit {
       $('.offcanvas-menu-overlay').removeClass('active');
     });
   }
-
-  /* Search modal */
-  initSearch() {
-    $('.search-switch').on('click', () => {
-      $('.search-model').fadeIn(400);
-    });
-
-    $('.search-close-switch').on('click', () => {
-      $('.search-model').fadeOut(400, () => {
-        $('#search-input').val('');
-      });
-    });
-  }
-
   /* Owl Carousel */
   initCarousel() {
 
@@ -103,5 +96,13 @@ export class DashBoardComponent implements AfterViewInit {
     });
 
   }
+
+  showListMessage() {
+    this.isShowListMessage = !this.isShowListMessage
+  }
+
+  protected readonly ICON_MESSAGE = ICON_MESSAGE;
+  protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;
+
 
 }

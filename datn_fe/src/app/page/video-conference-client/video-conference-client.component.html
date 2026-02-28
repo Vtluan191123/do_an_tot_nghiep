@@ -1,26 +1,48 @@
 <div class="wrapper">
   <div class="wrapper-room">
     <div class="wrapper-room-detail">
-      <div class="list-view-item">
+      <div *ngIf="isShowListUser" [ngStyle]="{ 'overflow-y': listViewUser.length > 5 ? 'auto' : 'hidden' }" class="list-view-item">
+        <div *ngFor="let user of listViewUser" class="view-item">
+          <div class="avatar-default">
+            <span [innerHTML]="AVATAR_DEFAULT | safeHtml"></span>
+          </div>
+          <div class="view-name">
+            @if (!statusMicro) {
+              <span class="me-2" [innerHTML]=" MICRO_CLOSE | safeHtml"></span>
+            }
+            <span>Vũ Thành Luân {{user}}</span>
+          </div>
+          <div class="view-quality">
+            <span class="d-flex" [innerHTML]="VIEW_QUALITY | safeHtml"></span>
+          </div>
+          <div class="view-change" (click)="handleSwitchViewDetail(user)">
+            <span class="d-flex" [innerHTML]="VIEW_CHANGE | safeHtml"></span>
+          </div>
+        </div>
+      </div>
+      <div class="wrapper-view-item" [ngClass]="[
+       'cols-' + getCols(),
+       'rows-' + getRows()
+     ]">
+        <div *ngFor="let user of isShowListUser ? userViewDetail : listViewUserMain" class="view-item">
+          <div class="avatar-default">
+            <span [innerHTML]="AVATAR_DEFAULT | safeHtml"></span>
+          </div>
+          <div class="view-name">
+            @if (!statusMicro) {
+              <span class="me-2" [innerHTML]=" MICRO_CLOSE | safeHtml"></span>
+            }
+            <span>Vũ Thành Luân {{user}}</span>
+          </div>
+          <div class="view-quality">
+            <span class="d-flex" [innerHTML]="VIEW_QUALITY | safeHtml"></span>
+          </div>
+          <div class="view-change" (click)="handleChangeViewDetail(user)">
+            <span class="d-flex" [innerHTML]="VIEW_CHANGE | safeHtml"></span>
+          </div>
+        </div>
+      </div>
 
-      </div>
-      <div class="view-item">
-        <div class="avatar-default">
-          <span [innerHTML]="AVATAR_DEFAULT | safeHtml"></span>
-        </div>
-        <div class="view-name">
-          @if (!statusMicro) {
-            <span class="me-2" [innerHTML]=" MICRO_CLOSE | safeHtml"></span>
-          }
-          <span>Vũ Thành Luân</span>
-        </div>
-        <div class="view-quality">
-          <span class="d-flex" [innerHTML]="VIEW_QUALITY | safeHtml"></span>
-        </div>
-        <div class="view-change">
-          <span class="d-flex" [innerHTML]="VIEW_CHANGE | safeHtml"></span>
-        </div>
-      </div>
     </div>
     <div class="nav-room">
       <div class="nav-room-item">
@@ -32,15 +54,33 @@
           }
           <span>MicroPhone</span>
         </div>
-        <div class="nav-room-item-select">
+        <div class="nav-room-item-select" (click)="showChangeMic()">
+          <div *ngIf="isShowMicDevices" class="list-device-mic">
+            <ul>
+              <li *ngFor="let device of listMicroDevices"
+                  [class.device-active]="selectedMicro===device.value"
+                  (click)="handleChangeMic(device.value)"
+              >{{device.name}}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="nav-room-item">
-        <div class="nav-room-item-button">
+        <div class="nav-room-item-button" (click)="handleStatusCamera()">
           <span class="me-2" [innerHTML]="CAMERA_OPEN | safeHtml"></span>
           <span>Camera</span>
         </div>
-        <div class="nav-room-item-select">
+        <div class="nav-room-item-select" (click)="showChangeCamera()">
+          <div *ngIf="isShowCameraDevices" class="list-device-camera">
+            <ul>
+              <li *ngFor="let device of listCameraDevices"
+                  [class.device-active]="selectedCamera===device.value"
+                  (click)="handleChangeCamera(device.value)"
+              >{{device.name}}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="nav-room-item">
@@ -56,9 +96,20 @@
         </div>
       </div>
       <div class="nav-room-item">
-        <div class="nav-room-item-button" style="border-radius: 10px">
+        <div class="nav-room-item-button" >
           <span class="me-2" [innerHTML]="SETTING | safeHtml"></span>
-          <span>Setting</span>
+          <span>Background</span>
+        </div>
+        <div class="nav-room-item-select" (click)="showChangeBackground()">
+          <div *ngIf="isShowBackground" class="list-device-back">
+            <ul>
+              <li *ngFor="let back of listBackground"
+                  [class.device-active]="selectedBackground===back.value"
+                  (click)="handleChangeBackground(back.value)"
+              >{{back.name}}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="nav-room-item">
@@ -75,7 +126,38 @@
         <div class="title-message">
           <span >Message</span>
         </div>
-        <span class="close-message" [innerHTML]="CLOSE_MESSAGE | safeHtml"></span>
+        <div class="wrapper-content-message" >
+          <div class="content-message-item" >
+             <div class="wrapper-content-message-info" style="">
+               <span class="content-message-identity">
+              vtluan
+            </span>
+               <span class="content-message-time">
+              10:30
+            </span>
+             </div>
+             <span class="content-message">
+              Hôm naybanjnj muốn ăn gì
+            </span>
+          </div>
+
+          <div class="content-message-item" style="text-align: end">
+            <div class="wrapper-content-message-info" style="flex-direction: row-reverse">
+               <span class="content-message-identity">
+              user khác
+              </span>
+                <span class="content-message-time">
+                10:30
+              </span>
+            </div>
+            <span class="content-message">
+              Hôm naybanjnj muốn ăn gì
+            </span>
+          </div>
+
+        </div>
+
+        <span (click)="closeMessage()" class="close-message" [innerHTML]="CLOSE_MESSAGE | safeHtml"></span>
       </div>
       <div class="nav-message">
         <input placeholder="Enter a message..." >

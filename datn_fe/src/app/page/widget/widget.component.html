@@ -1,0 +1,33 @@
+<div
+  class="ai-container"
+  [style.left.px]="position.x"
+  [style.top.px]="position.y"
+  (mousedown)="startDrag($event)"
+>
+
+  <!-- Button -->
+  <div class="ai-button" (click)="toggle($event)">
+    🤖
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-panel" *ngIf="isOpen">
+
+    <div class="header">
+      AI Support
+      <span class="close" (click)="toggle($event)">✖</span>
+    </div>
+
+    <div class="messages">
+      <div *ngFor="let msg of messages">{{ msg }}</div>
+    </div>
+
+    <input
+      [(ngModel)]="input"
+      (keyup.enter)="send()"
+      placeholder="Ask AI..."
+    />
+
+  </div>
+
+</div>
