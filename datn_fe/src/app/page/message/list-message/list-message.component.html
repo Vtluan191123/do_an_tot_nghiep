@@ -1,14 +1,25 @@
-<div class="wrapper-list-message">
-  <p>Đoạn chat</p>
-  <input placeholder="search">
-  <div>
-    <ul>
-      <li></li>
-      <li></li>
-      <li></li>
-      <li></li>
-      <li></li>
-      <li></li>
-    </ul>
-  </div>
+<div *ngIf="!isShowMessageDetail" class="wrapper-list-message">
+    <div class="message-herder">
+      <p>Đoạn chat</p>
+      <div class="wrapper-search">
+        <span [innerHTML]="ICON_SEARCH | safeHtml"></span>
+        <input class="search" placeholder="search">
+      </div>
+    </div>
+    <div class="message-body">
+      <div (click)="handleShowMessageDetail()" class="message-item">
+        <div class="avatar-user">
+          <div class="dot-status-online"></div>
+        </div>
+        <div class="message-user">
+          <p class="name-user">Vũ Thành Luân</p>
+          <p class="late-message-user">Hôm nay tôi làm gì....</p>
+        </div>
+      </div>
+
+    </div>
+    <div class="message-bottom">
+      <span>Xem tất cả tin nhắn</span>
+    </div>
+
 </div>

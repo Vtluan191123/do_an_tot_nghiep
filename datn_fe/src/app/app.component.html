@@ -1,4 +1,8 @@
-<div>
+<div class="main">
   <router-outlet></router-outlet>
   <app-widget></app-widget>
+  <div *ngIf="isshowMessageDetail" class="message-detail">
+    <app-message-detail></app-message-detail>
+  </div>
+
 </div>
