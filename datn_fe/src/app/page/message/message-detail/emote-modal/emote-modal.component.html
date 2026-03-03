@@ -1,0 +1,25 @@
+<div class="wrapper-modal">
+  <div class="header-modal text-center d-flex align-items-center justify-content-between">
+    <h5 class="mb-0">Cảm xúc về tin nhắn</h5>
+    <span (click)="close()"  style="color: #ffffff;cursor: pointer"> X </span>
+  </div>
+  <div class="body-modal">
+    <div (click)="dismiss(messageInfo.id)" class="body-item">
+      <div class="avatar-modal">
+
+      </div>
+      <div class="info-modal">
+        <div class="user_name">
+          <span>Vũ Thành Luân</span>
+        </div>
+        <div class="time_status_online">
+          <span>Nhấn để gỡ</span>
+        </div>
+      </div>
+      <div class="emote-modal">
+        <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="messageInfo.emote" >
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -23,6 +23,7 @@
     "@angular/ssr": "^18.2.21",
     "@livekit/krisp-noise-filter": "0.3.4",
     "@livekit/track-processors": "^0.6.0",
+    "@ng-bootstrap/ng-bootstrap": "^17.0.1",
     "@ng-select/ng-select": "^13.9.1",
     "@ngx-translate/core": "^17.0.0",
     "@stomp/stompjs": "^7.2.1",

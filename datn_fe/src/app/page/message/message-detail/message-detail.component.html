@@ -1,18 +1,92 @@
 <div class="message-detail">
-  <div class="action">
-    <div class="avatar">
-      <div class="dot-status-online"></div>
+  <div class="nav-message">
+    <div class="d-flex justify-content-center align-items-center">
+      <div class="avatar">
+        <div class="dot-status-online"></div>
+      </div>
     </div>
     <div class="info">
-
+      <div class="user_name">
+        <span>Vũ Thành Luân</span>
+      </div>
+      <div class="time_status_online">
+        <span>3 giờ trước</span>
+      </div>
     </div>
     <div class="call">
-      <span [innerHTML]="ICON_PHONE | safeHtml"></span>
-      <span [innerHTML]="ICON_MINUS | safeHtml"></span>
-      <span [innerHTML]="ICON_CLOSE | safeHtml"></span>
+      <div class="hover_circle">
+        <span [innerHTML]="ICON_PHONE | safeHtml"></span>
+      </div>
+      <div class="ms-2 hover_circle">
+        <span (click)="handleCloseMessage()" [innerHTML]="ICON_MINUS | safeHtml"></span>
+      </div>
     </div>
   </div>
-  <div>
+  <div #scrollContainer class="body_message">
+    <div *ngFor="let mess of infoMess" class="message_item" [ngStyle]="{
+    'flex-direction': mess.senderId === userCurrentId ? 'row-reverse' : 'row',
+    'justify-content': mess.like  ? 'flex-start' : 'space-around'
+  }">
 
+      <div *ngIf="mess.senderId !== userCurrentId" class="avatar-item">
+
+      </div>
+      @if (!mess.like) {
+        <div  class="message-content" [ngStyle]="{
+    'background-color': mess.content !== '' ? '#1f8cf9' : '#444444'
+  }">
+          <span> {{ mess.content !== '' ? mess.content : 'Tin nhắn đã bị gỡ'}}</span>
+          <div (click)="handleShowModal(mess)" class="emote-of-message">
+            <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="mess.emote">
+          </div>
+        </div>
+
+        <div *ngIf="mess.content !== ''" (click)="handleShowListEmote(mess.id)" class="emote hover_circle mx-2">
+          <span [innerHTML]="ICON_EMOTE | safeHtml"></span>
+          <div *ngIf="messageActive === mess.id && isShowListEmote" class="list_emote" [ngStyle]="{
+    'left': mess.senderId === userCurrentId ? '0' : null,
+    'right': mess.senderId !== userCurrentId ? '0' : null
+  }">
+            <img
+              *ngFor="let emote of emotes"
+              (click)="handleChangeEmote(mess.id,emote.url)"
+              class="hover_emote"
+              [src]="emote.url"
+              [alt]="emote.alt"
+              height="32"
+              width="32"
+            />
+          </div>
+        </div>
+      } @else {
+        <span class="like ms-2 fs-3" [innerHTML]="ICON_LIKE | safeHtml"></span>
+      }
+      <div (click)="handleShowRecallMess(mess.id)" class="dot_three hover_circle">
+        <span [innerHTML]="ICON_DOT_THREE | safeHtml"></span>
+        <div *ngIf="messageActive === mess.id && isShowAction" class="action" [ngStyle]="{
+    'left': mess.senderId === userCurrentId ? '0' : null,
+    'right': mess.senderId !== userCurrentId ? '0' : null
+  }">
+          <span (click)="handleReCallMess(mess.id)">Gỡ tin nhắn</span>
+          <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>
+          <span (click)="handleUpdateMess(mess.id)">Sửa tin nhắn</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom_message">
+    <div class="d-flex justify-content-center align-items-center">
+      <div class="hover_circle">
+        <span [innerHTML]="ICON_MIC_MESSAGE | safeHtml"></span>
+      </div>
+      <div class="hover_circle">
+        <span [innerHTML]="ICON_UPLOAD | safeHtml"></span>
+      </div>
+    </div>
+    <input class="send_message" (keyup.enter)="handleSendMessage()" [(ngModel)]=valueNewMessage placeholder="Aa">
+    <div class="hover_circle" (click)="handleSendMessage(true)">
+      <span class="like" [innerHTML]="ICON_LIKE | safeHtml"></span>
+    </div>
   </div>
 </div>
