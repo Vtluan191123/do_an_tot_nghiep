@@ -8,6 +8,6 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public interface UploadFileService {
-    ResponseGlobalDto<List<String>> uploads(List<MultipartFile> files) throws IOException;
+    List<String> uploads(List<MultipartFile> files) throws IOException;
     ResponseGlobalDto<Boolean> delete(List<String> fileNames) throws IOException;
 }

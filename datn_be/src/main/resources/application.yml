@@ -6,7 +6,9 @@ spring:
     username: sa
     password: Vtluan123@
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/do_an_tot_nghiep
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     show-sql: true
@@ -18,14 +20,15 @@ spring:
 
   jwt:
     secret: 51a5c78e0db0c819b085323288d53d39e3617b9c0181e14d2cc845557f034f36
-    expiration_access: 3600000
+    expiration_access: 99999999
     expiration_refresh: 3600000
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 25MB
+      max-request-size: 50MB
 
 server:
   port: 8080
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 50MB
 
 

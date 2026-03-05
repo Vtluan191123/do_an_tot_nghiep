@@ -54,5 +54,4 @@ public class Users  extends  BaseEntity
     )
     private Set<Roles> roles = new HashSet<>();
 
-
 }

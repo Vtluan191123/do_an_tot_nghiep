@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.*;
 
@@ -57,5 +58,16 @@ public class HandleGlobalException {
                 .build();
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseGlobalDto);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ResponseGlobalDto<String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+
+        ResponseGlobalDto<String> responseGlobalDto = ResponseGlobalDto.<String>builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(e.getMessage())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseGlobalDto);
     }
 }

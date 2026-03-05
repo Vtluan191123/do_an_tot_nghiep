@@ -1,5 +1,6 @@
 package com.dntn.datn_be.service.custom;
 
+import com.dntn.datn_be.dto.common.UserDetailCustom;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -29,7 +30,8 @@ public class UserDetailServiceCustom implements UserDetailsService {
         }
         Users user = userOpt.get();
 
-        return new org.springframework.security.core.userdetails.User(
+        return new UserDetailCustom(
+                user.getId(),
                 user.getUsername(),
                 user.getPassword(),
                 true,

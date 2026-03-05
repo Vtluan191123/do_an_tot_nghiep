@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {WebsocketService} from './service/websocket.service';
+import {WebsocketService} from './service/socket/websocket.service';
 import {VideoCallComponent} from './page/video-call/video-call.component';
 import {DashBoardComponent} from './page/dash-board/dash-board.component';
 import {VideoTestComponent} from './page/cideo-test/video-test.component';

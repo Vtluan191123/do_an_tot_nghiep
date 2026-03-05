@@ -19,18 +19,20 @@ public class UploadFileServiceImpl implements UploadFileService {
     private final String uploadDir = "D:/uploads/";
 
     @Override
-    public ResponseGlobalDto<List<String>> uploads(List<MultipartFile> files) throws IOException {
-            List<String> paths = new ArrayList<>();
+    public List<String> uploads(List<MultipartFile> files) throws IOException {
 
-            for (MultipartFile file : files) {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get(uploadDir + filename);
-                Files.write(path, file.getBytes());
-                paths.add(filename);
-            }
-            return ResponseGlobalDto.<List<String>>builder()
-                    .data(paths)
-                    .build();
+        List<String> paths = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path path = Paths.get(uploadDir + filename);
+
+            Files.write(path, file.getBytes());
+
+            paths.add(filename);
+        }
+
+        return paths;
     }
 
     @Override

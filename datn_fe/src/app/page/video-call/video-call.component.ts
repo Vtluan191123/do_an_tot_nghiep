@@ -1,5 +1,5 @@
 import {Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild} from '@angular/core';
-import {WebsocketService} from '../../service/websocket.service';
+import {WebsocketService} from '../../service/socket/websocket.service';
 import {isPlatformBrowser, NgForOf, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 

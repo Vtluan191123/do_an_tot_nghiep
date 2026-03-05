@@ -73,12 +73,11 @@ $border-color: rgba(255,255,255,0.1);
       }
 
       .message-content{
-        width: 100%;
+        //width: 100%;
         max-width: 190px;
         border-radius: 16px;
         color: #ffffff;
-        padding: 8px 10px;
-        background-color: #1f8cf9;
+        //padding: 8px 10px;
         word-break: break-word;
         overflow-wrap: break-word;
         position: relative;
@@ -90,6 +89,19 @@ $border-color: rgba(255,255,255,0.1);
           border-radius: 50%;
           bottom: -6px;
           right: -6px;
+        }
+
+        .message-image{
+          max-height: 150px;
+          border-radius: 16px;
+        }
+
+        .message-text{
+          display: inline-block;
+          padding: 8px 10px;
+          width: 100%;
+          background-color: #1f8cf9;
+          border-radius: 16px;
         }
       }
       .emote{

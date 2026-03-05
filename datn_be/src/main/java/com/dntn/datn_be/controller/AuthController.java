@@ -16,17 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
         return authService.login(loginRequest);
     }
 
-    @PostMapping("/auth/register")
+    @PostMapping("/register")
     ResponseEntity<Users> register(@RequestBody @Valid RegisterRequest registerRequest) {
         return authService.register(registerRequest);
     }
