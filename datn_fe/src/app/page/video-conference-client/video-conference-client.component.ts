@@ -30,6 +30,7 @@ import {FormsModule} from '@angular/forms';
 })
 export class VideoConferenceClientComponent {
 
+
   //status
   statusMicro:boolean = true
   statusCamera:boolean = true
@@ -150,6 +151,8 @@ export class VideoConferenceClientComponent {
   showChangeBackground() {
     this.isShowBackground = !this.isShowBackground
   }
+
+
 
 
   getCols() {

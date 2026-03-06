@@ -91,10 +91,54 @@ $border-color: rgba(255,255,255,0.1);
           right: -6px;
         }
 
-        .message-image{
-          max-height: 150px;
+        .message-image-item{
           border-radius: 16px;
+          object-fit: cover;
+          max-width: 190px;
         }
+        .message-image-item:hover{
+          opacity: 0.8;
+        }
+
+
+
+        .wrapper-images{
+          border: 1px solid #444444;
+          border-radius: 16px;
+          display: flex;
+          flex-wrap: wrap;
+          height: 100%;
+          width: 100%;
+          gap: 10px;
+        }
+
+        // xử lý flex box
+        .wrapper-images.cols-2 .message-image-item {
+          flex: 1 1 calc(50% - 10px);
+
+        }
+
+        .wrapper-images.cols-3 .message-image-item {
+          flex: 1 1 calc(33.33% - 10px);
+
+
+        }
+
+        .wrapper-images.rows-1 .message-image-item {
+          width: calc(100% - 10px);
+        }
+
+        .wrapper-images.rows-2 .message-image-item {
+          //height: calc(50% - 10px);
+          width: calc(50% - 10px);
+        }
+
+        .wrapper-images.rows-3 .message-image-item {
+          //height: calc(33.33% - 10px);
+          width: calc(33.33% - 10px);
+        }
+
+
 
         .message-text{
           display: inline-block;
@@ -103,6 +147,7 @@ $border-color: rgba(255,255,255,0.1);
           background-color: #1f8cf9;
           border-radius: 16px;
         }
+
       }
       .emote{
         color: #fff3cd;

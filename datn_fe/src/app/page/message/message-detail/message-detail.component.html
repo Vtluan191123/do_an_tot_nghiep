@@ -1,4 +1,4 @@
-<div class="message-detail">
+<div *ngIf="isLoaded" class="message-detail">
   <div class="nav-message">
     <div class="d-flex justify-content-center align-items-center">
       <div class="avatar">
@@ -23,57 +23,74 @@
     </div>
   </div>
   <div #scrollContainer class="body_message">
-    <div *ngFor="let mess of infoMess" class="message_item" [ngStyle]="{
+    <div *ngFor="let mess of infoMessageDetail" class="message_item" [ngStyle]="{
     'flex-direction': mess.senderId === userCurrentId ? 'row-reverse' : 'row',
-    'justify-content': mess.like  ? 'flex-start' : 'space-around'
+    'justify-content': mess.like  ? 'flex-start' : 'flex-start'
   }">
-
       <div *ngIf="mess.senderId !== userCurrentId" class="avatar-item">
 
       </div>
       @if (!mess.like) {
         <div  class="message-content">
-<!--          <span class="message-text"> {{ mess.content !== '' ? mess.content : 'Tin nhắn đã bị gỡ'}}</span>-->
-<!--          <img class="message-image" src="https://scontent.fhan17-1.fna.fbcdn.net/v/t39.30808-1/471801527_1270845474167783_1317215348911033972_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=104&ccb=1-7&_nc_sid=1d2534&_nc_ohc=xlDB5qXaoWAQ7kNvwH_6NYP&_nc_oc=Adn2SqJ0RY-y4UGmqtEFQJzvgmQawyGIcPUHXxT8bIpqfShtwYf4h6HgTrS_6z8jgPE&_nc_zt=24&_nc_ht=scontent.fhan17-1.fna&_nc_gid=9cRb92wcDkI99dpa6Q8ikQ&_nc_ss=8&oh=00_AfxDH4gGC_23TgctnSVkYWTQp_W2kWsMd32rKilnlIfl2w&oe=69AAB7F8">-->
-          <video class="message-image"  width="150" controls>
-            <source src="assets/videos/bigbuckbunnytrailer-480p.mp4" type="video/mp4">
-          </video>
+        @if(mess.messageDetail.type === 'text'){
+          <span class="message-text"> {{ mess.messageDetail.content !== '' ? mess.messageDetail.content : 'Tin nhắn đã bị gỡ'}}</span>
+        }
+        @if(mess.type === 'icon'){
+
+        }
+        @if(mess.messageDetail.type === 'image'){
+          <div class="wrapper-images" [ngClass]="['cols-' + mess.cols, 'rows-' + mess.rows]">
+            <img  *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img">
+          </div>
+        }
+        @if(mess.messageDetail.type === 'video'){
+          <div class="wrapper-images" >
+            <video *ngFor="let video of mess.messageDetail.urlFiles" class="message-image-item"  controls>
+              <source [src]="baseUrl + video" type="video/mp4">
+            </video>
+          </div>
+        }
+
           <div (click)="handleShowModal(mess)" class="emote-of-message">
             <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="mess.emote">
           </div>
         </div>
 
-        <div *ngIf="mess.content !== ''" (click)="handleShowListEmote(mess.id)" class="emote hover_circle mx-2">
-          <span [innerHTML]="ICON_EMOTE | safeHtml"></span>
-          <div *ngIf="messageActive === mess.id && isShowListEmote" class="list_emote" [ngStyle]="{
+        <div class="d-flex justify-content-between align-items-center">
+          <div *ngIf="mess.content !== ''" (click)="handleShowListEmote(mess.id)" class="emote hover_circle mx-2">
+            <span [innerHTML]="ICON_EMOTE | safeHtml"></span>
+            <div *ngIf="messageActive === mess.id && isShowListEmote" class="list_emote" [ngStyle]="{
     'left': mess.senderId === userCurrentId ? '0' : null,
     'right': mess.senderId !== userCurrentId ? '0' : null
   }">
-            <img
-              *ngFor="let emote of emotes"
-              (click)="handleChangeEmote(mess.id,emote.url)"
-              class="hover_emote"
-              [src]="emote.url"
-              [alt]="emote.alt"
-              height="32"
-              width="32"
-            />
+              <img
+                *ngFor="let emote of emotes"
+                (click)="handleChangeEmote(mess.id,emote.url)"
+                class="hover_emote"
+                [src]="emote.url"
+                [alt]="emote.alt"
+                height="32"
+                width="32"
+              />
+            </div>
+          </div>
+          <div (click)="handleShowRecallMess(mess.id)" class="dot_three hover_circle">
+            <span [innerHTML]="ICON_DOT_THREE | safeHtml"></span>
+            <div *ngIf="messageActive === mess.id && isShowAction" class="action" [ngStyle]="{
+    'left': mess.senderId === userCurrentId ? '0' : null,
+    'right': mess.senderId !== userCurrentId ? '0' : null
+  }">
+              <span (click)="handleReCallMess(mess.id)">Gỡ tin nhắn</span>
+              <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>
+              <span (click)="handleUpdateMess(mess.id)">Sửa tin nhắn</span>
+            </div>
           </div>
         </div>
+
       } @else {
         <span class="like ms-2 fs-3" [innerHTML]="ICON_LIKE | safeHtml"></span>
       }
-      <div (click)="handleShowRecallMess(mess.id)" class="dot_three hover_circle">
-        <span [innerHTML]="ICON_DOT_THREE | safeHtml"></span>
-        <div *ngIf="messageActive === mess.id && isShowAction" class="action" [ngStyle]="{
-    'left': mess.senderId === userCurrentId ? '0' : null,
-    'right': mess.senderId !== userCurrentId ? '0' : null
-  }">
-          <span (click)="handleReCallMess(mess.id)">Gỡ tin nhắn</span>
-          <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>
-          <span (click)="handleUpdateMess(mess.id)">Sửa tin nhắn</span>
-        </div>
-      </div>
+
     </div>
   </div>
 

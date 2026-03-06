@@ -8,12 +8,13 @@ import {
   ICON_PHONE,
   ICON_UPLOAD
 } from '../../share/other/icons/icons';
-import {NgForOf, NgIf, NgStyle} from '@angular/common';
+import {CommonModule, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {TransferDataService} from '../../../service/tranfer-data/transfer-data.service';
 import {LIST_EMOTE} from '../../../constants/constants';
 import {FormsModule} from '@angular/forms';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {EmoteModalComponent} from './emote-modal/emote-modal.component';
+import {MessageService} from '../../../service/message/message.service';
 
 @Component({
   selector: 'app-message-detail',
@@ -23,102 +24,51 @@ import {EmoteModalComponent} from './emote-modal/emote-modal.component';
     NgIf,
     NgForOf,
     NgStyle,
-    FormsModule
+    FormsModule,
+    CommonModule
   ],
   templateUrl: './message-detail.component.html',
   styleUrl: './message-detail.component.scss'
 })
 export class MessageDetailComponent implements OnInit{
 
-  userCurrentId:any = "u01";
+  isLoaded = false;
+  cols = 2;
+  rows = 2;
+  baseUrl:string = 'http://localhost:8080/uploads/'
+  userCurrentId:any = 2;
   messageActive:any = null
   isShowListEmote:boolean = false
   isShowAction:boolean = false
   isUpdateMess:boolean = false
   emotes = LIST_EMOTE
   valueNewMessage:string = ''
-  infoMess: any = [
-    {
-      id: "m001",
-      conversationId: "c01",
-      senderId: "u01",
-      content: "Xin chào 👋",
-      emote: "",
-      createdAt: "2026-03-03T10:00:00"
-    },
-    {
-      id: "m002",
-      conversationId: "c01",
-      senderId: "u02",
-      content: "Chào bạn nha 😄",
-      like: false,
-      emote: "https://static.xx.fbcdn.net/images/emoji.php/v9/tb6/1/32/1f44d.png",
-      createdAt: "2026-03-03T10:01:00"
-    },
-    {
-      id: "m003",
-      conversationId: "c01",
-      senderId: "u01",
-      content: "Hôm nay bạn thế nào?",
-      like: false,
-      emote: "",
-      createdAt: "2026-03-03T10:02:00"
-    },
-    {
-      id: "m004",
-      conversationId: "c01",
-      senderId: "u02",
-      content: "Mình ổn, đang làm việc đây 💻",
-      like: false,
-      emote: "",
-      createdAt: "2026-03-03T10:03:00"
-    },
-    {
-      id: "m005",
-      conversationId: "c01",
-      senderId: "u01",
-      content: "Cuối tuần đi cafe không?",
-      like: false,
-      emote: "https://static.xx.fbcdn.net/images/emoji.php/v9/t72/1/32/2764.png",
-      createdAt: "2026-03-03T10:04:00"
-    },
-    {
-      id: "m006",
-      conversationId: "c01",
-      senderId: "u02",
-      content: "Nghe hợp lý đó ☕",
-      like: true,
-      emote: "",
-      createdAt: "2026-03-03T10:05:00"
-    },
-    {
-      id: "m007",
-      conversationId: "c01",
-      senderId: "u01",
-      content: "",
-      like: false,
-      emote: "",
-      createdAt: "2026-03-03T10:06:00"
-    },
-    {
-      id: "m008",
-      conversationId: "c01",
-      senderId: "u02",
-      content: "👍 Đồng ý luôn",
-      like: false,
-      emote: "https://static.xx.fbcdn.net/images/emoji.php/v9/tb6/1/32/1f44d.png",
-      createdAt: "2026-03-03T10:07:00"
-    }
-  ];
+  infoMessageDetail: any = [];
   @ViewChild('scrollContainer')
   private scrollContainer!: ElementRef;
 
 
-  constructor(private transferData:TransferDataService,private modalService:NgbModal) {
+  constructor(private transferData:TransferDataService,private modalService:NgbModal,private messageService:MessageService) {
   }
 
   ngOnInit(): void {
-    }
+    this.getListMessage();
+
+  }
+
+
+  getListMessage(){
+    this.messageService.gets("69a92296db900f6bea29cf7f").subscribe(async (res:any)=>{
+      if (res.status === 200) {
+        this.infoMessageDetail = res.data;
+        this.isLoaded = true;
+        this.infoMessageDetail.forEach((mess:any)=>{
+          this.setLayout(mess);
+        })
+      }
+    })
+
+  }
 
   handleShowListEmote(idMess:any){
     this.isShowAction =false
@@ -137,7 +87,7 @@ export class MessageDetailComponent implements OnInit{
   }
 
   handleChangeEmote(idMess:any,urlEmote:string){
-    this.infoMess.forEach((value:any, index:any) => {
+    this.infoMessageDetail.forEach((value:any, index:any) => {
       if(value.id === idMess){
         value.emote = urlEmote
       }
@@ -156,17 +106,21 @@ export class MessageDetailComponent implements OnInit{
         emote: "",
         createdAt: "2026-03-03T10:05:00"
       }
-      this.infoMess.push(newMessage)
+      this.infoMessageDetail.push(newMessage)
       this.valueNewMessage = ''
       this.scrollToBottom()
     }else {
-      this.infoMess.forEach((value:any, index:any) => {
+      this.infoMessageDetail.forEach((value:any, index:any) => {
         if(value.id === this.messageActive){
           value.content = this.valueNewMessage
           this.valueNewMessage = ''
         }
       });
     }
+
+    // if((this.valueNewMessage && !this.isUpdateMess)
+
+
   }
   handleShowModal(mess:any){
     const modalRef = this.modalService.open(EmoteModalComponent,
@@ -190,7 +144,7 @@ export class MessageDetailComponent implements OnInit{
   }
 
   handleCancelEmote(messId:any){
-    this.infoMess.forEach((value:any, index:any) => {
+    this.infoMessageDetail.forEach((value:any, index:any) => {
       if(value.id === messId){
         value.emote = ''
       }
@@ -209,7 +163,7 @@ export class MessageDetailComponent implements OnInit{
   }
 
   handleReCallMess(idMess:any) {
-    this.infoMess.forEach((value:any, index:any) => {
+    this.infoMessageDetail.forEach((value:any, index:any) => {
       if(value.id === idMess){
         value.content = ''
         value.emote = ''
@@ -218,22 +172,40 @@ export class MessageDetailComponent implements OnInit{
   }
 
   handleRemoveMess(idMess:any) {
-    this.infoMess.forEach((value:any, index:any) => {
+    this.infoMessageDetail.forEach((value:any, index:any) => {
       if(value.id === idMess){
-        this.infoMess.splice(index,1)
+        this.infoMessageDetail.splice(index,1)
       }
     });
   }
 
   handleUpdateMess(idMess:any) {
-    this.infoMess.forEach((value:any, index:any) => {
+    this.infoMessageDetail.forEach((value:any, index:any) => {
       if(value.id === idMess){
         this.valueNewMessage = value.content
         this.isUpdateMess = true
       }
     });
-
   }
+
+
+  setLayout(mess: any) {
+    const files = mess?.messageDetail?.urlFiles || [];
+    const count = files.length;
+
+    let cols = 2;
+    let rows = 2;
+
+    if (count > 4) cols = 3;
+    else if (count > 1) cols = 2;
+
+    if (count > 6) rows = 3;
+    else if (count > 3) rows = 2;
+
+    mess.cols = cols;
+    mess.rows = rows;
+  }
+
 
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;
   protected readonly ICON_CLOSE = ICON_CLOSE;
