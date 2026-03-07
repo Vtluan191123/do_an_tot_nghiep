@@ -30,17 +30,15 @@
       <div *ngIf="mess.senderId !== userCurrentId" class="avatar-item">
 
       </div>
-      @if (!mess.like) {
+
         <div  class="message-content">
         @if(mess.messageDetail.type === 'text'){
           <span class="message-text"> {{ mess.messageDetail.content !== '' ? mess.messageDetail.content : 'Tin nhắn đã bị gỡ'}}</span>
         }
-        @if(mess.type === 'icon'){
 
-        }
         @if(mess.messageDetail.type === 'image'){
           <div class="wrapper-images" [ngClass]="['cols-' + mess.cols, 'rows-' + mess.rows]">
-            <img  *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img">
+            <img (click)="openImage(img,false)"  *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img">
           </div>
         }
         @if(mess.messageDetail.type === 'video'){
@@ -50,9 +48,12 @@
             </video>
           </div>
         }
+          @if (mess.messageDetail.type==='icon') {
+            <span class="like ms-2 fs-3" [innerHTML]="mess.messageDetail.content | safeHtml"></span>
+          }
 
           <div (click)="handleShowModal(mess)" class="emote-of-message">
-            <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="mess.emote">
+            <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="mess.messageDetail.emote">
           </div>
         </div>
 
@@ -65,7 +66,7 @@
   }">
               <img
                 *ngFor="let emote of emotes"
-                (click)="handleChangeEmote(mess.id,emote.url)"
+                (click)="handleUpdateMess(mess.id,emote.url)"
                 class="hover_emote"
                 [src]="emote.url"
                 [alt]="emote.alt"
@@ -80,16 +81,13 @@
     'left': mess.senderId === userCurrentId ? '0' : null,
     'right': mess.senderId !== userCurrentId ? '0' : null
   }">
-              <span (click)="handleReCallMess(mess.id)">Gỡ tin nhắn</span>
+              <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleReCallMess(mess.id)">Gỡ tin nhắn</span>
               <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>
-              <span (click)="handleUpdateMess(mess.id)">Sửa tin nhắn</span>
+              <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleChangeInput(mess.id)">Sửa tin nhắn</span>
             </div>
           </div>
         </div>
 
-      } @else {
-        <span class="like ms-2 fs-3" [innerHTML]="ICON_LIKE | safeHtml"></span>
-      }
 
     </div>
   </div>
@@ -99,13 +97,55 @@
       <div class="hover_circle">
         <span [innerHTML]="ICON_MIC_MESSAGE | safeHtml"></span>
       </div>
-      <div class="hover_circle">
+      <div (click)="fileInput.click()" class="hover_circle upload">
         <span [innerHTML]="ICON_UPLOAD | safeHtml"></span>
-        <input type="file" style="display: none">
+        <input
+          type="file"
+          style="display: none"
+          multiple
+          (keyup.enter)="handleSendMessage()"
+          (change)="onFileSelected($event)"
+          #fileInput
+        >
+        <div class="preview-container" (click)=" $event.stopPropagation()"  *ngIf="selectedFiles.length" [style.top]="selectedFiles.length>4 ? '-130px' : '-114px'">
+
+          @if(isImage){
+            <div  class="preview-item"
+                  *ngFor="let item of previewImages; let i = index">
+
+              <!-- IMAGE -->
+              <img
+                [src]="item"
+                (click)="openImage(item,true)" />
+
+              <span class="remove"
+                    (click)="removeFile(i); $event.stopPropagation()">✕</span>
+
+            </div>
+          }
+
+          @if(isVideo){
+            <div  class="preview-item"
+                 *ngFor="let item of previewVideos; let i = index">
+              <!-- VIDEO -->
+              <video
+                [src]="item"
+                (click)="openImage(item,true)"
+                controls>
+              </video>
+
+              <span class="remove"
+                    (click)="removeFile(i); $event.stopPropagation()">✕</span>
+
+            </div>
+          }
+
+
+        </div>
       </div>
     </div>
-    <input class="send_message" (keyup.enter)="handleSendMessage()" [(ngModel)]=valueNewMessage placeholder="Aa">
-    <div class="hover_circle" (click)="handleSendMessage(true)">
+    <input class="send_message" (keyup.enter)="isUpdateMess ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
+    <div class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)">
       <span class="like" [innerHTML]="ICON_LIKE | safeHtml"></span>
     </div>
   </div>

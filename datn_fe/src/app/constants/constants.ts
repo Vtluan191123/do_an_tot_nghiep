@@ -31,3 +31,10 @@ export const LIST_EMOTE = [
     url: 'https://static.xx.fbcdn.net/images/emoji.php/v9/t7b/1/32/1f62e.png'
   }
 ];
+
+export const MESSAGE_TYPE = {
+  TEXT: "text",
+  IMAGE: "image",
+  VIDEO: "video",
+  ICON: "icon"
+};

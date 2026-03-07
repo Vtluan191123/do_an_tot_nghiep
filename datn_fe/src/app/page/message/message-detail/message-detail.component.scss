@@ -205,6 +205,61 @@ $border-color: rgba(255,255,255,0.1);
     justify-content: space-between;
     align-items: center;
     color: $primary_icon;
+
+
+    .upload{
+      position: relative;
+
+      .preview-container{
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        position: absolute;
+        width: 384px;
+        right: -300px;
+        padding: 10px;
+        background: #444444;
+        overflow-x: auto;
+        min-width: 100px;
+      }
+
+      .preview-item{
+        position: relative;
+        cursor: pointer;
+        flex: 0 0 auto;
+      }
+
+      .preview-item img{
+        width:80px;
+        height:80px;
+        object-fit:cover;
+        border-radius:8px;
+      }
+
+      .preview-item video{
+        width:80px;
+        height:80px;
+        object-fit:cover;
+        border-radius:8px;
+      }
+
+      .remove{
+        position:absolute;
+        top:-5px;
+        right:-5px;
+        background:red;
+        color:white;
+        border-radius:50%;
+        width:18px;
+        height:18px;
+        font-size:12px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+    }
+
+
     .send_message{
       padding: 5px 5px 5px 10px;
       border-radius: 10px;

@@ -12,6 +12,7 @@ import com.dntn.datn_be.repository.mongo.BaseMongoMessageRepository;
 import com.dntn.datn_be.service.MessageService;
 import com.dntn.datn_be.service.UploadFileService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
 import org.aspectj.bridge.Message;
@@ -64,18 +65,19 @@ public class MessageServiceImpl implements MessageService {
     MessageDetailDto handleMessage(MessageDetailRequest messageDetailRequest) throws IOException {
 
         String typeMessage = messageDetailRequest.getType().toLowerCase(Locale.ROOT);
+
         List<MultipartFile> files = messageDetailRequest.getFiles();
         MessageDetailDto messageDetailDto = new MessageDetailDto();
 
         switch (typeMessage) {
             case MessageConstants.MessageType.IMAGE:
-            case MessageConstants.MessageType.ICON:
             case MessageConstants.MessageType.VIDEO: {
                 List<String> listPaths = this.uploadFileService.uploads(files);
                 messageDetailDto.setUrlFiles(listPaths);
                 messageDetailDto.setType(typeMessage);
                 break;
             }
+            case MessageConstants.MessageType.ICON:
             case MessageConstants.MessageType.TEXT:{
                 messageDetailDto.setType(typeMessage);
                 messageDetailDto.setContent(messageDetailRequest.getContent());
@@ -120,8 +122,10 @@ public class MessageServiceImpl implements MessageService {
                         .error("Chỉ update đc tin nhắn với type là text")
                         .build();
             }
+            if(StringUtils.isNotBlank(messageDetailRequest.getContent())){
+                messageDetailDto.setContent(messageDetailRequest.getContent());
+            }
             messageDetailDto.setEmote(messageDetailRequest.getEmote());
-            messageDetailDto.setContent(messageDetailRequest.getContent());
             message.get().setMessageDetail(messageDetailDto);
             this.baseMongoMessageRepository.save(message.get());
         }catch (Exception e){

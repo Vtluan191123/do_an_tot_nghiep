@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 public class MessageDetailRequest {
     private String type; // text|image|icon|video
-    private Object content; //if text = text else url
+    private String content; //if text = text else url
     private String emote;
     private List<MultipartFile> files; //image //video
 }

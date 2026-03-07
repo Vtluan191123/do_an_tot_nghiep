@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
 import {SafeHtmlPipe} from '../../share/pipe/pipe-html.pipe';
 import {
   AVATAR_DEFAULT,
@@ -10,11 +10,14 @@ import {
 } from '../../share/other/icons/icons';
 import {CommonModule, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {TransferDataService} from '../../../service/tranfer-data/transfer-data.service';
-import {LIST_EMOTE} from '../../../constants/constants';
+import {LIST_EMOTE, MESSAGE_TYPE} from '../../../constants/constants';
 import {FormsModule} from '@angular/forms';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {EmoteModalComponent} from './emote-modal/emote-modal.component';
 import {MessageService} from '../../../service/message/message.service';
+import {MessageRequest} from '../../../model/message';
+import {WebsocketService} from '../../../service/socket/websocket.service';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-message-detail',
@@ -36,7 +39,7 @@ export class MessageDetailComponent implements OnInit{
   cols = 2;
   rows = 2;
   baseUrl:string = 'http://localhost:8080/uploads/'
-  userCurrentId:any = 2;
+  userCurrentId:any = 1;
   messageActive:any = null
   isShowListEmote:boolean = false
   isShowAction:boolean = false
@@ -44,17 +47,37 @@ export class MessageDetailComponent implements OnInit{
   emotes = LIST_EMOTE
   valueNewMessage:string = ''
   infoMessageDetail: any = [];
+  selectedFiles:any[] = [];
+  messageCurrent:any
   @ViewChild('scrollContainer')
   private scrollContainer!: ElementRef;
+  previewImages: string[] = [];
+  previewVideos: string[] = [];
+  isImage:boolean = false
+  isVideo:boolean = false
 
-
-  constructor(private transferData:TransferDataService,private modalService:NgbModal,private messageService:MessageService) {
+  constructor(private transferData:TransferDataService,
+              private modalService:NgbModal,
+              private messageService:MessageService,
+              private webSocketService:WebsocketService,
+              private toartService:ToastrService) {
   }
 
   ngOnInit(): void {
     this.getListMessage();
 
   }
+
+  @HostListener('window:keyup', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      if(this.selectedFiles.length > 0){
+        debugger
+        this.handleSendMessage();
+      }
+    }
+  }
+
 
 
   getListMessage(){
@@ -94,34 +117,113 @@ export class MessageDetailComponent implements OnInit{
     });
   }
 
-  handleSendMessage(like?:boolean){
+  handleSendMessage(type?: any, icon?: string) {
 
-    if((this.valueNewMessage && !this.isUpdateMess) || like ){
-      const newMessage = {
-        id: Math.random(),
-        conversationId: "c01",
-        senderId: this.userCurrentId,
-        content: like ? '' : this.valueNewMessage,
-        like: like,
-        emote: "",
-        createdAt: "2026-03-03T10:05:00"
+    const message: MessageRequest = {
+      groudId: "69a92296db900f6bea29cf7f",
+      senderId: 1,
+      messageDetailRequest: {
+        type: type ? type : this.isImage ? 'image' : 'video',
+        content: type === MESSAGE_TYPE.TEXT ? this.valueNewMessage : icon, //icon là svg
+        emote: null
       }
-      this.infoMessageDetail.push(newMessage)
-      this.valueNewMessage = ''
-      this.scrollToBottom()
-    }else {
-      this.infoMessageDetail.forEach((value:any, index:any) => {
-        if(value.id === this.messageActive){
-          value.content = this.valueNewMessage
-          this.valueNewMessage = ''
-        }
-      });
-    }
+    };
 
-    // if((this.valueNewMessage && !this.isUpdateMess)
-
-
+    this.messageService.send(message, this.selectedFiles).subscribe((res:any)=>{
+      console.log("res",res)
+      this.resetDataMessage()
+    });
   }
+
+  handleRemoveMess(idMess:any) {
+    this.messageService.delete(idMess).subscribe((res:any)=>{
+      if(res.status === 200){
+        this.toartService.success(res.message,'Thành công');
+      }else {
+        this.toartService.error(res.message,'Có lỗi');
+      }
+    })
+  }
+
+  handleChangeInput(idMess:string){
+    this.isUpdateMess = true
+    this.messageCurrent = this.infoMessageDetail.find((mess:any) => mess.id === idMess);
+    console.log(this.messageCurrent)
+    this.valueNewMessage = this.messageCurrent.messageDetail.content
+  }
+
+  handleUpdateMess(idMess:any,emote?:string) {
+
+    const message: MessageRequest = {
+      messageId:idMess,
+      groudId: "69a92296db900f6bea29cf7f",
+      senderId: 1,
+      messageDetailRequest: {
+        type: MESSAGE_TYPE.TEXT,
+        content: this.valueNewMessage, //icon là svg
+        emote: emote
+      }
+    };
+
+    this.messageService.update(message).subscribe((res:any)=>{
+      console.log("res",res)
+      this.resetDataMessage()
+    });
+  }
+
+  resetDataMessage(){
+    this.valueNewMessage = ''
+    this.selectedFiles = []
+    this.isUpdateMess = false
+  }
+
+  @ViewChild('fileInput') fileInput!: ElementRef;
+  onFileSelected($event: any) {
+    const files: FileList = $event.target.files;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('image') && !file.type.startsWith('video')) {
+        console.log("File không hợp lệ:", file.type);
+        continue;
+      }
+
+      if(file.type.startsWith('image')){
+        this.isImage = true
+        this.isVideo = false
+        this.previewImages.push(URL.createObjectURL(file));
+      }else{
+        this.isImage =false
+        this.isVideo =true
+        this.previewVideos.push(URL.createObjectURL(file));
+      }
+      this.selectedFiles.push(file);
+
+
+      // const reader = new FileReader();
+      // reader.onload = (e: any) => {
+      //   this.previewImages.push(e.target.result);
+      //   console.log(e.target.result)
+      // };
+      // reader.readAsDataURL(file);
+    }
+    this.fileInput.nativeElement.value = [];
+    console.log(this.selectedFiles)
+  }
+
+  openImage(img: string,blog:boolean) {
+    if(blog)
+    window.open(img, '_blank');
+    else window.open("http://localhost:8080/uploads/" + img, '_blank');
+  }
+
+  removeFile(index: number) {
+    this.selectedFiles.splice(index, 1);
+    this.previewImages.splice(index, 1);
+    this.previewVideos.splice(index, 1);
+  }
+
+
   handleShowModal(mess:any){
     const modalRef = this.modalService.open(EmoteModalComponent,
       {
@@ -137,7 +239,7 @@ export class MessageDetailComponent implements OnInit{
       },
       (reason) => {
         if(reason){
-          this.handleCancelEmote(reason)
+          this.handleUpdateMess(mess.id,'')
         }
       }
     );
@@ -171,22 +273,7 @@ export class MessageDetailComponent implements OnInit{
     });
   }
 
-  handleRemoveMess(idMess:any) {
-    this.infoMessageDetail.forEach((value:any, index:any) => {
-      if(value.id === idMess){
-        this.infoMessageDetail.splice(index,1)
-      }
-    });
-  }
 
-  handleUpdateMess(idMess:any) {
-    this.infoMessageDetail.forEach((value:any, index:any) => {
-      if(value.id === idMess){
-        this.valueNewMessage = value.content
-        this.isUpdateMess = true
-      }
-    });
-  }
 
 
   setLayout(mess: any) {
@@ -206,6 +293,16 @@ export class MessageDetailComponent implements OnInit{
     mess.rows = rows;
   }
 
+  handleWebsocket(){
+    this.webSocketService.subscribeToTopic("").subscribe((res:any)=>{
+
+    })
+  }
+
+  test(){
+    console.log(this.isUpdateMess)
+  }
+
 
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;
   protected readonly ICON_CLOSE = ICON_CLOSE;
@@ -215,10 +312,6 @@ export class MessageDetailComponent implements OnInit{
   protected readonly ICON_UPLOAD = ICON_UPLOAD;
   protected readonly ICON_LIKE = ICON_LIKE;
   protected readonly ICON_EMOTE = ICON_EMOTE;
-
-
   protected readonly ICON_DOT_THREE = ICON_DOT_THREE;
-
-
-
+  protected readonly MESSAGE_TYPE = MESSAGE_TYPE;
 }

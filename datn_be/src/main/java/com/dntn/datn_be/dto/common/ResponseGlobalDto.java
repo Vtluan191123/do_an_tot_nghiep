@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ResponseGlobalDto<T> {
+public class ResponseGlobalDto<T>  {
     Object message;
     T data;
     String error;
