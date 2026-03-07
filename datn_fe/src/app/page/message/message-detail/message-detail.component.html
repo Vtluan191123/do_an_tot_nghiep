@@ -24,8 +24,7 @@
   </div>
   <div #scrollContainer class="body_message">
     <div *ngFor="let mess of infoMessageDetail" class="message_item" [ngStyle]="{
-    'flex-direction': mess.senderId === userCurrentId ? 'row-reverse' : 'row',
-    'justify-content': mess.like  ? 'flex-start' : 'flex-start'
+    'flex-direction': mess.senderId === userCurrentId ? 'row-reverse' : 'row'
   }">
       <div *ngIf="mess.senderId !== userCurrentId" class="avatar-item">
 
@@ -81,7 +80,7 @@
     'left': mess.senderId === userCurrentId ? '0' : null,
     'right': mess.senderId !== userCurrentId ? '0' : null
   }">
-              <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleReCallMess(mess.id)">Gỡ tin nhắn</span>
+              <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleUpdateMess(mess.id,'',true)">Gỡ tin nhắn</span>
               <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>
               <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleChangeInput(mess.id)">Sửa tin nhắn</span>
             </div>
@@ -144,7 +143,7 @@
         </div>
       </div>
     </div>
-    <input class="send_message" (keyup.enter)="isUpdateMess ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
+    <input class="send_message" (keyup.enter)="isUpdateMess  ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
     <div class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)">
       <span class="like" [innerHTML]="ICON_LIKE | safeHtml"></span>
     </div>

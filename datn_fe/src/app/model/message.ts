@@ -10,4 +10,5 @@ export interface MessageRequest {
   groudId: string;
   senderId: number;
   messageDetailRequest: MessageDetailRequest;
+  isHide:boolean
 }

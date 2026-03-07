@@ -20,7 +20,11 @@ public class BaseSpringSecurityAuditorAware implements AuditorAware<Integer> {
             return Optional.empty();
         }
         logger.info("Current User: {}", authentication.getPrincipal());
-        UserDetailCustom user = (UserDetailCustom) authentication.getPrincipal();
-        return Optional.of(Integer.parseInt(user.getId().toString()));
+        UserDetailCustom user = null;
+        if(authentication.getPrincipal() instanceof UserDetailCustom){
+            user = (UserDetailCustom) authentication.getPrincipal();
+        }
+
+        return Optional.of(user!=null ? Integer.parseInt(user.getId().toString()): 0);
     }
 }

@@ -20,4 +20,5 @@ public class MessageRequest {
     private Integer senderId;
     @NotNull(message = "Message detail không được null")
     private MessageDetailRequest messageDetailRequest;
+    private boolean isHide;
 }

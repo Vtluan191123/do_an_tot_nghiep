@@ -39,7 +39,7 @@ public class MessageController {
     }
 
     @DeleteMapping("delete")
-    ResponseGlobalDto<Boolean> delete(@RequestParam("messageId") String request) throws IOException {
+    ResponseGlobalDto<Boolean> delete(@RequestParam("messageId") String request) throws Exception {
         return messageService.delete(request);
     }
 }

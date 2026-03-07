@@ -2,7 +2,7 @@ spring:
   application:
     name: "Web integration Ai"
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=do_an_to_nghiep;encrypt=true;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;databaseName=do_an_tot_nghiep;encrypt=true;trustServerCertificate=true
     username: sa
     password: Vtluan123@
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
@@ -27,6 +27,16 @@ spring:
       enabled: true
       max-file-size: 25MB
       max-request-size: 50MB
+logging:
+  level:
+    root: INFO
+    com.dntn.datn_be.service.WebSocketService: DEBUG
+
+integration:
+  websocket:
+    domain: https://socket.easypos.vn
+    prefix_topic_fanout: '/topics/'
+    prefix_topic_direct: '/user/topics/'
 
 server:
   port: 8080

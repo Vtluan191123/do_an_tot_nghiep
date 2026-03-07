@@ -13,6 +13,6 @@ public interface BaseGlobalService<T,CR,GR,UR,DR> {
     ResponseGlobalDto<List<T>> gets(GR request);
     ResponseGlobalDto<T> get(List<GR> request);
     ResponseGlobalDto<T> update(UR request);
-    ResponseGlobalDto<Boolean> delete(DR request) throws IOException;
+    ResponseGlobalDto<Boolean> delete(DR request) throws Exception;
     ResponseGlobalDto<Boolean> deletes(List<DR> request);
 }

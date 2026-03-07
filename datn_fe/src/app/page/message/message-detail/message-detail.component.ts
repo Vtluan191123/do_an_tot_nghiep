@@ -65,14 +65,13 @@ export class MessageDetailComponent implements OnInit{
 
   ngOnInit(): void {
     this.getListMessage();
-
+    this.handleWebsocketListen();
   }
 
   @HostListener('window:keyup', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      if(this.selectedFiles.length > 0){
-        debugger
+      if(this.selectedFiles.length > 0 || this.valueNewMessage){
         this.handleSendMessage();
       }
     }
@@ -118,6 +117,7 @@ export class MessageDetailComponent implements OnInit{
   }
 
   handleSendMessage(type?: any, icon?: string) {
+    if(!this.valueNewMessage && !icon && !this.selectedFiles.length) return
 
     const message: MessageRequest = {
       groudId: "69a92296db900f6bea29cf7f",
@@ -126,16 +126,28 @@ export class MessageDetailComponent implements OnInit{
         type: type ? type : this.isImage ? 'image' : 'video',
         content: type === MESSAGE_TYPE.TEXT ? this.valueNewMessage : icon, //icon là svg
         emote: null
-      }
+      },
+      isHide: false
     };
-
+    debugger
     this.messageService.send(message, this.selectedFiles).subscribe((res:any)=>{
-      console.log("res",res)
+      if(res.status === 200){
+        const result = res.data
+        this.webSocketService.sendMessage(`/api/websocket/chat` ,result)
+      }
       this.resetDataMessage()
     });
   }
 
   handleRemoveMess(idMess:any) {
+    this.webSocketService.subscribeToTopic(`/topics/messageDelete:${idMess}`).subscribe((res:any)=>{
+      const index = this.infoMessageDetail.findIndex(
+        (m:any) => m.id === res.body
+      );
+      if(index !== -1){
+        this.infoMessageDetail.splice(index,1);
+      }
+    });
     this.messageService.delete(idMess).subscribe((res:any)=>{
       if(res.status === 200){
         this.toartService.success(res.message,'Thành công');
@@ -152,7 +164,7 @@ export class MessageDetailComponent implements OnInit{
     this.valueNewMessage = this.messageCurrent.messageDetail.content
   }
 
-  handleUpdateMess(idMess:any,emote?:string) {
+  handleUpdateMess(idMess:any,emote?:string,isHide:boolean = false) {
 
     const message: MessageRequest = {
       messageId:idMess,
@@ -162,7 +174,8 @@ export class MessageDetailComponent implements OnInit{
         type: MESSAGE_TYPE.TEXT,
         content: this.valueNewMessage, //icon là svg
         emote: emote
-      }
+      },
+      isHide:isHide
     };
 
     this.messageService.update(message).subscribe((res:any)=>{
@@ -174,6 +187,8 @@ export class MessageDetailComponent implements OnInit{
   resetDataMessage(){
     this.valueNewMessage = ''
     this.selectedFiles = []
+    this.previewImages = []
+    this.previewVideos = []
     this.isUpdateMess = false
   }
 
@@ -184,9 +199,16 @@ export class MessageDetailComponent implements OnInit{
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file.type.startsWith('image') && !file.type.startsWith('video')) {
-        console.log("File không hợp lệ:", file.type);
-        continue;
+        this.toartService.error("File không hợp lệ: " + file.type, 'Thông báo' );
+        return;
       }
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > 50) {
+        this.toartService.error("File không vượt quá: 50M", 'Thông báo' );
+        return;
+      }
+
+
 
       if(file.type.startsWith('image')){
         this.isImage = true
@@ -239,39 +261,18 @@ export class MessageDetailComponent implements OnInit{
       },
       (reason) => {
         if(reason){
-          this.handleUpdateMess(mess.id,'')
+          this.handleUpdateMess(mess.id,'',)
         }
       }
     );
   }
 
-  handleCancelEmote(messId:any){
-    this.infoMessageDetail.forEach((value:any, index:any) => {
-      if(value.id === messId){
-        value.emote = ''
-      }
-    });
-  }
 
   handleCloseMessage() {
     this.transferData.sendMessage(false)
   }
 
-  scrollToBottom(): void {
-    try {
-      this.scrollContainer.nativeElement.scrollTop =
-        this.scrollContainer.nativeElement.scrollHeight;
-    } catch (err) {}
-  }
 
-  handleReCallMess(idMess:any) {
-    this.infoMessageDetail.forEach((value:any, index:any) => {
-      if(value.id === idMess){
-        value.content = ''
-        value.emote = ''
-      }
-    });
-  }
 
 
 
@@ -293,15 +294,25 @@ export class MessageDetailComponent implements OnInit{
     mess.rows = rows;
   }
 
-  handleWebsocket(){
-    this.webSocketService.subscribeToTopic("").subscribe((res:any)=>{
+  handleWebsocketListen(){
+    this.webSocketService.subscribeToTopic('/topics/groudId:69a92296db900f6bea29cf7f').subscribe((res:any)=>{
+      const result = JSON.parse(res.body);
 
+      console.log('result',result);
+
+      const index = this.infoMessageDetail.findIndex(
+        (m:any) => m.id === result.id
+      );
+
+      if(index !== -1){
+        this.infoMessageDetail[index] = result;
+      }else{
+        this.infoMessageDetail.push(result);
+      }
     })
   }
 
-  test(){
-    console.log(this.isUpdateMess)
-  }
+
 
 
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;

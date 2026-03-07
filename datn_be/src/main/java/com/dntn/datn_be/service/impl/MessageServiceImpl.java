@@ -11,7 +11,9 @@ import com.dntn.datn_be.model.mongo.BaseMongoMessage;
 import com.dntn.datn_be.repository.mongo.BaseMongoMessageRepository;
 import com.dntn.datn_be.service.MessageService;
 import com.dntn.datn_be.service.UploadFileService;
+import com.dntn.datn_be.service.WebSocketService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.lang.Strings;
 import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
@@ -35,6 +37,7 @@ public class MessageServiceImpl implements MessageService {
     private final BaseMongoMessageRepository baseMongoMessageRepository;
     private final UploadFileService uploadFileService;
     private final ObjectMapper objectMapper;
+    private final WebSocketService webSocketService;
 
     @Override
     @Transactional
@@ -48,7 +51,15 @@ public class MessageServiceImpl implements MessageService {
                     .senderId(request.getSenderId())
                     .build();
             this.baseMongoMessageRepository.save(message);
-        }catch (RuntimeException e){
+
+
+            //send socket
+            String topic = String.format(
+                    "groudId:%s",
+                    request.getGroudId()
+            );
+            this.webSocketService.sendMessage(topic,message,null);
+        }catch (Exception e){
             return ResponseGlobalDto.<BaseMongoMessage>builder()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .error(e.getMessage())
@@ -113,21 +124,34 @@ public class MessageServiceImpl implements MessageService {
             throw  new ObjectNotFoundException(ENTITY,MessageServiceImpl.class);
         }
         MessageDetailRequest messageDetailRequest = request.getMessageDetailRequest();
-
+        BaseMongoMessage messageObj = message.get();
         try{
-            MessageDetailDto messageDetailDto = objectMapper.convertValue(message.get().getMessageDetail(), MessageDetailDto.class);
+            MessageDetailDto messageDetailDto = objectMapper.convertValue(messageObj.getMessageDetail(), MessageDetailDto.class);
             if(!messageDetailDto.getType().equals(MessageConstants.MessageType.TEXT)){
                 ResponseGlobalDto.<BaseMongoMessage>builder()
                         .status(HttpStatus.BAD_REQUEST.value())
                         .error("Chỉ update đc tin nhắn với type là text")
                         .build();
             }
-            if(StringUtils.isNotBlank(messageDetailRequest.getContent())){
+            if(messageDetailRequest.getEmote()!=null){
+                messageDetailDto.setEmote(messageDetailRequest.getEmote());
+            }
+
+            if(Strings.hasText(messageDetailRequest.getContent())){
                 messageDetailDto.setContent(messageDetailRequest.getContent());
             }
-            messageDetailDto.setEmote(messageDetailRequest.getEmote());
-            message.get().setMessageDetail(messageDetailDto);
-            this.baseMongoMessageRepository.save(message.get());
+            if(request.isHide()){
+                messageDetailDto.setContent("");
+            }
+
+            messageObj.setMessageDetail(messageDetailDto);
+            this.baseMongoMessageRepository.save(messageObj);
+            //send socket
+            String topic = String.format(
+                    "groudId:%s",
+                    request.getGroudId()
+            );
+            this.webSocketService.sendMessage(topic,messageObj,null);
         }catch (Exception e){
             ResponseGlobalDto.<BaseMongoMessage>builder()
                     .status(HttpStatus.BAD_REQUEST.value())
@@ -144,7 +168,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public ResponseGlobalDto<Boolean> delete(String request) throws IOException {
+    @Transactional
+    public ResponseGlobalDto<Boolean> delete(String request) throws Exception {
         Optional<BaseMongoMessage> message = this.baseMongoMessageRepository.findById(request);
 
         if(message.isPresent()){
@@ -157,6 +182,11 @@ public class MessageServiceImpl implements MessageService {
                 uploadFileService.delete(urlFiles);
             }
             this.baseMongoMessageRepository.delete(baseMongoMessage);
+            String topic = String.format(
+                    "messageDelete:%s",
+                    request
+            );
+            this.webSocketService.sendMessage(topic,request,null);
         }
 
         //hanlde
