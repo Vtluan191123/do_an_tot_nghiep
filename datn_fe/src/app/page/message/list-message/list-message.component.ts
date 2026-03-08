@@ -18,19 +18,17 @@ import {TransferDataService} from '../../../service/tranfer-data/transfer-data.s
   styleUrl: './list-message.component.scss'
 })
 export class ListMessageComponent {
-
-
-
   isShowMessageDetail:boolean = false
 
   constructor(private transferDataService:TransferDataService) {
   }
 
-  protected readonly ICON_SEARCH = ICON_SEARCH;
+
 
   handleShowMessageDetail() {
     this.isShowMessageDetail = true
     this.transferDataService.sendMessage(true)
   }
 
+  protected readonly ICON_SEARCH = ICON_SEARCH;
 }

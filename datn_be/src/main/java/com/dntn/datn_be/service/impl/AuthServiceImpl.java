@@ -1,5 +1,6 @@
 package com.dntn.datn_be.service.impl;
 
+import com.dntn.datn_be.dto.common.UserDetailCustom;
 import com.dntn.datn_be.dto.request.LoginRequest;
 import com.dntn.datn_be.dto.request.RegisterRequest;
 import com.dntn.datn_be.dto.response.LoginResponse;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -70,6 +73,17 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(newUser);
 
         return ResponseEntity.ok(newUser);
+    }
+
+    @Override
+    public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long id = null;
+        if(authentication.isAuthenticated()){
+            UserDetailCustom userDetailCustom = (UserDetailCustom) authentication.getPrincipal();
+            id = userDetailCustom.getId();
+        }
+        return id;
     }
 
 

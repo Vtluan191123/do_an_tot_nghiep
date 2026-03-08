@@ -129,7 +129,6 @@ export class MessageDetailComponent implements OnInit{
       },
       isHide: false
     };
-    debugger
     this.messageService.send(message, this.selectedFiles).subscribe((res:any)=>{
       if(res.status === 200){
         const result = res.data

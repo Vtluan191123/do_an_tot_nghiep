@@ -27,7 +27,6 @@ export class MessageService {
     files.forEach(file => {
       formData.append('files', file);
     });
-debugger
     return this.http.post(`${this.api}/send`, formData);
   }
 

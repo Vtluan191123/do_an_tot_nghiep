@@ -11,4 +11,5 @@ import org.springframework.http.ResponseEntity;
 public interface AuthService {
     ResponseEntity<LoginResponse> login(LoginRequest request);
     ResponseEntity<Users> register(RegisterRequest request);
+    Long getCurrentUserId();
 }

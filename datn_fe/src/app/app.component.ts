@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, PLATFORM_ID} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {WebsocketService} from './service/socket/websocket.service';
 import {VideoCallComponent} from './page/video-call/video-call.component';
@@ -7,7 +7,8 @@ import {VideoTestComponent} from './page/cideo-test/video-test.component';
 import {WidgetComponent} from './page/widget/widget.component';
 import {MessageDetailComponent} from './page/message/message-detail/message-detail.component';
 import {TransferDataService} from './service/tranfer-data/transfer-data.service';
-import {NgIf} from '@angular/common';
+import {isPlatformBrowser, NgIf} from '@angular/common';
+import {AuthServiceService} from './service/auth/auth-service.service';
 
 @Component({
   selector: 'app-root',
@@ -21,12 +22,16 @@ export class AppComponent implements OnInit ,OnDestroy{
 
   isshowMessageDetail:any
 
-  constructor(private websocketService:WebsocketService,private transferDataService:TransferDataService) {
+  constructor(private websocketService:WebsocketService,
+              private transferDataService:TransferDataService,
+              private authServiceService:AuthServiceService,
+              @Inject(PLATFORM_ID) private platformId: Object
+              ) {
   }
 
 
   ngOnInit() {
-    this.websocketService.connect()
+    this.init()
     this.handleShowMessageDetail();
   }
 
@@ -34,6 +39,15 @@ export class AppComponent implements OnInit ,OnDestroy{
   handleShowMessageDetail(){
     this.transferDataService.showMessageDetail$.subscribe((res:any)=>{
       this.isshowMessageDetail = res
+    })
+  }
+
+  init(){
+    if (isPlatformBrowser(this.platformId)) {
+      this.websocketService.connect()
+    }
+    this.authServiceService.getInfoUser().subscribe((res:any)=>{
+      this.transferDataService.sendInfoUser(res)
     })
   }
 
