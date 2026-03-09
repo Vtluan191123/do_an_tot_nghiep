@@ -10,6 +10,7 @@ import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.mongo.BaseMongoAddFriend;
 import com.dntn.datn_be.model.mongo.BaseMongoGroud;
 import com.dntn.datn_be.repository.GroudMessageUserRepository;
+import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoAddFriendRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoGroudRepository;
 import com.dntn.datn_be.service.UserService;
@@ -33,27 +34,33 @@ public class UserServiceImpl implements UserService{
     private final BaseMongoAddFriendRepository baseMongoAddFriendRepository;
     private final BaseMongoGroudRepository baseMongoGroudRepository;
     private final GroudMessageUserRepository groudMessageUserRepository;
-    private EntityManager entityManager;
+    private final UserRepository userRepository;
     private final String ENTITY = "UserServiceImpl";
 
 
     @Override
-    public ResponseGlobalDto<User> create(UserCreateRequest request) {
+    public ResponseGlobalDto<Users> create(UserCreateRequest request) {
         return null;
     }
 
     @Override
-    public ResponseGlobalDto<List<User>> gets(Long request) {
+    public ResponseGlobalDto<List<Users>> gets(Long request) {
+        Optional<Users> usersOptional = this.userRepository.findById(request);
+        return ResponseGlobalDto.<List<Users>>builder()
+                .status(HttpStatus.OK.value())
+                .data(List.of(usersOptional.orElse(null)))
+                .message("Get user ById Successfully").build();
+    }
+
+
+    @Override
+    public ResponseGlobalDto<Users> get(List<Long> request) {
         return null;
     }
 
-    @Override
-    public ResponseGlobalDto<User> get(List<Long> request) {
-        return null;
-    }
 
     @Override
-    public ResponseGlobalDto<User> update(UserUpdateRequest request) {
+    public ResponseGlobalDto<Users> update(UserUpdateRequest request) {
         return null;
     }
 
@@ -149,55 +156,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public ResponseGlobalDto<GetListGroudsDto> getListGrouds(Long userId) {
 
-        String queryString = """
-            SELECT 
-                u.id,
-                u.username,
-                u.email,
-                u.age,
-                u.address,
-                u.exp,
-                u.phone_number,
-                u.images_url,
-                u.vote_star,
-                u.created_at,
-                gmu.groud_id
-            FROM users u
-            JOIN groud_message_user gmu
-                ON u.id = gmu.user_id
-            WHERE gmu.groud_id IN (
-                SELECT groud_id
-                FROM groud_message_user
-                WHERE user_id = :userId
-            )
-            AND u.id <> :userId
-        """;
-
-        Query query = entityManager.createNativeQuery(queryString);
-        query.setParameter("userId", userId);
-
-        List<Object[]> results = query.getResultList();
-
-        List<GetListGroudsDto.UserDetailGroudDto> userDetailGroudDtos = new ArrayList<>();
-
-        for (Object[] row : results) {
-
-            GetListGroudsDto.UserDetailGroudDto dto =
-                    GetListGroudsDto.UserDetailGroudDto.builder()
-                            .id(((Number) row[0]).longValue())
-                            .username((String) row[1])
-                            .email((String) row[2])
-                            .age(row[3] != null ? row[3].toString() : null)
-                            .address((String) row[4])
-                            .exp((String) row[5])
-                            .phoneNumber((String) row[6])
-                            .imagesUrl((String) row[7])
-                            .voteStar(row[8] != null ? ((Number) row[8]).intValue() : null)
-                            .createdAt(row[9] != null ? ((java.sql.Timestamp) row[9]).toLocalDateTime() : null)
-                            .groudId((String) row[10])
-                            .build();
-            userDetailGroudDtos.add(dto);
-        }
+        List<GetListGroudsDto.UserDetailGroudDto> userDetailGroudDtos = this.userRepository.userDetailGroudDtos(userId);
 
         GetListGroudsDto getListGroudsDto = GetListGroudsDto.builder()
                 .userId(userId)

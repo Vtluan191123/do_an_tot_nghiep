@@ -18,7 +18,4 @@ public class BaseMongoMessage extends BaseAbstractAuditingDocument{
     private Integer senderId;
     @Field("message_detail")
     private Object messageDetail;
-    @Field("is_hide")
-    private boolean isHide;
-
 }

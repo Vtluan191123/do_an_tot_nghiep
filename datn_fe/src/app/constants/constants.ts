@@ -38,3 +38,5 @@ export const MESSAGE_TYPE = {
   VIDEO: "video",
   ICON: "icon"
 };
+
+export const BASE_URL_UPLOAD = 'http://localhost:8080/uploads/'

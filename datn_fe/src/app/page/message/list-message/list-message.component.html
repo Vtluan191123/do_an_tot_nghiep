@@ -7,12 +7,14 @@
       </div>
     </div>
     <div class="message-body">
-      <div (click)="handleShowMessageDetail()" class="message-item">
-        <div class="avatar-user">
+      <div *ngFor="let groud of listGroud" (click)="handleShowMessageDetail(groud)" class="message-item">
+        <div class="avatar-user" [ngStyle]="{
+    'background': 'url(' + (groud.imagesUrl ? groud.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+  }">
           <div class="dot-status-online"></div>
         </div>
-        <div class="message-user">
-          <p class="name-user">Vũ Thành Luân</p>
+        <div class="message-user" [class.hide-before]="groud.read">
+          <p class="name-user">{{groud.username}}</p>
           <p class="late-message-user">Hôm nay tôi làm gì....</p>
         </div>
       </div>

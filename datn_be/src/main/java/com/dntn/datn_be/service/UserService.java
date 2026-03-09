@@ -9,7 +9,7 @@ import org.apache.catalina.User;
 import java.util.List;
 import java.util.Objects;
 
-public interface UserService extends BaseGlobalService<User, UserCreateRequest, Long, UserUpdateRequest,Long>{
+public interface UserService extends BaseGlobalService<Users, UserCreateRequest, Long, UserUpdateRequest,Long>{
     ResponseGlobalDto<Boolean> addFiend( Integer userAddId,Integer userReceiverId);
     ResponseGlobalDto<Boolean> acceptAddFiend(Integer userAddId,Integer userReceiverId);
     ResponseGlobalDto<Boolean> cancelFiend(Integer userAddId,Integer userReceiverId,String groudId);

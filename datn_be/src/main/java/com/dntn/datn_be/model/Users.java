@@ -1,5 +1,6 @@
 package com.dntn.datn_be.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -19,6 +20,7 @@ public class Users  extends  BaseEntity
     @Column(name = "username")
     private String username;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -28,7 +30,7 @@ public class Users  extends  BaseEntity
     @Column(name = "age")
     private String age;
 
-    @Column(name = "address")
+    @Column(name = "address",length = 1000)
     private String address;
 
     @Column(name = "exp")
@@ -37,11 +39,11 @@ public class Users  extends  BaseEntity
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "images_url")
+    @Column(name = "images_url",length = 1000)
     private String imagesUrl;
 
     @Column(name = "is_coach")
-    private Boolean isCoach;
+    private boolean isCoach;
 
     @Column(name = "vote_star")
     private Integer voteStar;
@@ -53,5 +55,6 @@ public class Users  extends  BaseEntity
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Roles> roles = new HashSet<>();
+
 
 }

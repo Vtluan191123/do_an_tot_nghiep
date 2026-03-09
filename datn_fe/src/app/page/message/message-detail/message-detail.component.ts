@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {SafeHtmlPipe} from '../../share/pipe/pipe-html.pipe';
 import {
   AVATAR_DEFAULT,
@@ -10,7 +10,7 @@ import {
 } from '../../share/other/icons/icons';
 import {CommonModule, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {TransferDataService} from '../../../service/tranfer-data/transfer-data.service';
-import {LIST_EMOTE, MESSAGE_TYPE} from '../../../constants/constants';
+import {BASE_URL_UPLOAD, LIST_EMOTE, MESSAGE_TYPE} from '../../../constants/constants';
 import {FormsModule} from '@angular/forms';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {EmoteModalComponent} from './emote-modal/emote-modal.component';
@@ -18,6 +18,8 @@ import {MessageService} from '../../../service/message/message.service';
 import {MessageRequest} from '../../../model/message';
 import {WebsocketService} from '../../../service/socket/websocket.service';
 import {ToastrService} from 'ngx-toastr';
+import {Subject, takeUntil} from 'rxjs';
+import {Title} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-message-detail',
@@ -33,13 +35,12 @@ import {ToastrService} from 'ngx-toastr';
   templateUrl: './message-detail.component.html',
   styleUrl: './message-detail.component.scss'
 })
-export class MessageDetailComponent implements OnInit{
-
+export class MessageDetailComponent implements OnInit,OnDestroy{
+  private destroy$ = new Subject<void>();
   isLoaded = false;
   cols = 2;
   rows = 2;
-  baseUrl:string = 'http://localhost:8080/uploads/'
-  userCurrentId:any = 1;
+  baseUrl:string = BASE_URL_UPLOAD
   messageActive:any = null
   isShowListEmote:boolean = false
   isShowAction:boolean = false
@@ -49,38 +50,63 @@ export class MessageDetailComponent implements OnInit{
   infoMessageDetail: any = [];
   selectedFiles:any[] = [];
   messageCurrent:any
+  userDetailMessage:any
   @ViewChild('scrollContainer')
   private scrollContainer!: ElementRef;
   previewImages: string[] = [];
   previewVideos: string[] = [];
   isImage:boolean = false
   isVideo:boolean = false
+  infoCurrentUser: any;
 
   constructor(private transferData:TransferDataService,
               private modalService:NgbModal,
               private messageService:MessageService,
               private webSocketService:WebsocketService,
-              private toartService:ToastrService) {
+              private toartService:ToastrService,
+              private transferDataService:TransferDataService,
+              private titleService: Title) {
   }
 
+
+
   ngOnInit(): void {
-    this.getListMessage();
+    this.getInfoUser()
+    this.getGroudDetail()
     this.handleWebsocketListen();
+  }
+
+  getInfoUser(){
+    this.transferDataService.infoUser$.subscribe((res:any)=>{
+      console.log('this.infoCurrentUser',res)
+      this.infoCurrentUser = res
+    })
   }
 
   @HostListener('window:keyup', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      if(this.selectedFiles.length > 0 || this.valueNewMessage){
+      if(this.selectedFiles.length > 0){
         this.handleSendMessage();
       }
     }
   }
 
+  getGroudDetail(){
+    this.transferData.userDetailGroud$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res:any)=>{
+      console.log('res',res)
+      this.userDetailMessage = res
+      this.getListMessage(this.userDetailMessage?.groudId);
+    })
+  }
 
 
-  getListMessage(){
-    this.messageService.gets("69a92296db900f6bea29cf7f").subscribe(async (res:any)=>{
+
+  getListMessage(groudId:string){
+    if(!groudId) return
+    this.messageService.gets(groudId).subscribe(async (res:any)=>{
       if (res.status === 200) {
         this.infoMessageDetail = res.data;
         this.isLoaded = true;
@@ -94,7 +120,6 @@ export class MessageDetailComponent implements OnInit{
 
   handleShowListEmote(idMess:any){
     this.isShowAction =false
-    console.log(idMess)
     this.messageActive =
       this.messageActive = idMess;
     this.isShowListEmote = !this.isShowListEmote
@@ -102,26 +127,18 @@ export class MessageDetailComponent implements OnInit{
 
   handleShowRecallMess(idMess:any){
     this.isShowListEmote = false
-    console.log(idMess)
     this.messageActive =
       this.messageActive = idMess;
     this.isShowAction = !this.isShowAction
   }
 
-  handleChangeEmote(idMess:any,urlEmote:string){
-    this.infoMessageDetail.forEach((value:any, index:any) => {
-      if(value.id === idMess){
-        value.emote = urlEmote
-      }
-    });
-  }
 
   handleSendMessage(type?: any, icon?: string) {
     if(!this.valueNewMessage && !icon && !this.selectedFiles.length) return
 
     const message: MessageRequest = {
-      groudId: "69a92296db900f6bea29cf7f",
-      senderId: 1,
+      groudId: this.userDetailMessage?.groudId,
+      senderId: this.infoCurrentUser.id,
       messageDetailRequest: {
         type: type ? type : this.isImage ? 'image' : 'video',
         content: type === MESSAGE_TYPE.TEXT ? this.valueNewMessage : icon, //icon là svg
@@ -131,22 +148,12 @@ export class MessageDetailComponent implements OnInit{
     };
     this.messageService.send(message, this.selectedFiles).subscribe((res:any)=>{
       if(res.status === 200){
-        const result = res.data
-        this.webSocketService.sendMessage(`/api/websocket/chat` ,result)
+        this.resetDataMessage()
       }
-      this.resetDataMessage()
     });
   }
 
   handleRemoveMess(idMess:any) {
-    this.webSocketService.subscribeToTopic(`/topics/messageDelete:${idMess}`).subscribe((res:any)=>{
-      const index = this.infoMessageDetail.findIndex(
-        (m:any) => m.id === res.body
-      );
-      if(index !== -1){
-        this.infoMessageDetail.splice(index,1);
-      }
-    });
     this.messageService.delete(idMess).subscribe((res:any)=>{
       if(res.status === 200){
         this.toartService.success(res.message,'Thành công');
@@ -159,7 +166,6 @@ export class MessageDetailComponent implements OnInit{
   handleChangeInput(idMess:string){
     this.isUpdateMess = true
     this.messageCurrent = this.infoMessageDetail.find((mess:any) => mess.id === idMess);
-    console.log(this.messageCurrent)
     this.valueNewMessage = this.messageCurrent.messageDetail.content
   }
 
@@ -167,7 +173,7 @@ export class MessageDetailComponent implements OnInit{
 
     const message: MessageRequest = {
       messageId:idMess,
-      groudId: "69a92296db900f6bea29cf7f",
+      groudId: this.userDetailMessage?.groudId,
       senderId: 1,
       messageDetailRequest: {
         type: MESSAGE_TYPE.TEXT,
@@ -178,7 +184,6 @@ export class MessageDetailComponent implements OnInit{
     };
 
     this.messageService.update(message).subscribe((res:any)=>{
-      console.log("res",res)
       this.resetDataMessage()
     });
   }
@@ -229,7 +234,6 @@ export class MessageDetailComponent implements OnInit{
       // reader.readAsDataURL(file);
     }
     this.fileInput.nativeElement.value = [];
-    console.log(this.selectedFiles)
   }
 
   openImage(img: string,blog:boolean) {
@@ -256,7 +260,6 @@ export class MessageDetailComponent implements OnInit{
     modalRef.componentInstance.messageInfo = mess;
     modalRef.result.then(
       (result) => {
-        console.log('Closed with:', result);
       },
       (reason) => {
         if(reason){
@@ -268,7 +271,7 @@ export class MessageDetailComponent implements OnInit{
 
 
   handleCloseMessage() {
-    this.transferData.sendMessage(false)
+    this.transferData.sendMessage(undefined)
   }
 
 
@@ -294,25 +297,50 @@ export class MessageDetailComponent implements OnInit{
   }
 
   handleWebsocketListen(){
-    this.webSocketService.subscribeToTopic('/topics/groudId:69a92296db900f6bea29cf7f').subscribe((res:any)=>{
-      const result = JSON.parse(res.body);
+    this.webSocketService.subscribeToTopic(`/topics/groudId:${this.userDetailMessage?.groudId}`).subscribe((res:any)=>{
+      console.log('result websocket',res)
+      this.titleService.setTitle("Vtluan abc")
+      let result: any = res.body;
+      // kiểm tra nếu là string thì parse
+      if (typeof result === 'string') {
+        try {
+          result = JSON.parse(result);
+          const index = this.infoMessageDetail.findIndex(
+            (m:any) => m.id === result.id
+          );
+          if(index !== -1){
+            this.infoMessageDetail[index] = result;
+          }else{
+            this.infoMessageDetail.push(result);
+            if(this.infoCurrentUser.id !== result.senderId){
+              this.transferDataService.sendToastMessage(this.userDetailMessage.username)
+              this.playMessageSound()
+            }
+          }
 
-      console.log('result',result);
-
-      const index = this.infoMessageDetail.findIndex(
-        (m:any) => m.id === result.id
-      );
-
-      if(index !== -1){
-        this.infoMessageDetail[index] = result;
-      }else{
-        this.infoMessageDetail.push(result);
+        } catch (e) {
+          const index = this.infoMessageDetail.findIndex(
+            (m:any) => m.id === result
+          );
+          this.infoMessageDetail.splice(index,1)
+        }
       }
     })
   }
 
+  playMessageSound() {
+    const audio = new Audio();
+    audio.src = 'assets/sounds/mp3_info_mess.mp3';
+    audio.load();
+    audio.play();
+  }
 
 
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;
   protected readonly ICON_CLOSE = ICON_CLOSE;
@@ -324,4 +352,5 @@ export class MessageDetailComponent implements OnInit{
   protected readonly ICON_EMOTE = ICON_EMOTE;
   protected readonly ICON_DOT_THREE = ICON_DOT_THREE;
   protected readonly MESSAGE_TYPE = MESSAGE_TYPE;
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
 }

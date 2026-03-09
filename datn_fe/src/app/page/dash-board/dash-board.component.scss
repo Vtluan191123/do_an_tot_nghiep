@@ -8,4 +8,21 @@
     top: 170%;
     left: -164px;
   }
+
+  &::before{
+    content: "1";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #ffffff;
+    font-weight: 500;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #4195e8;
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+  }
 }

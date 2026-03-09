@@ -9,6 +9,7 @@ import {MessageDetailComponent} from './page/message/message-detail/message-deta
 import {TransferDataService} from './service/tranfer-data/transfer-data.service';
 import {isPlatformBrowser, NgIf} from '@angular/common';
 import {AuthServiceService} from './service/auth/auth-service.service';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-root',
@@ -20,12 +21,14 @@ import {AuthServiceService} from './service/auth/auth-service.service';
 export class AppComponent implements OnInit ,OnDestroy{
   title = 'dotn-fe';
 
-  isshowMessageDetail:any
+  isShowMessageDetail:any
+  countMessage:any
 
   constructor(private websocketService:WebsocketService,
               private transferDataService:TransferDataService,
               private authServiceService:AuthServiceService,
-              @Inject(PLATFORM_ID) private platformId: Object
+              @Inject(PLATFORM_ID) private platformId: Object,
+              private toastService:ToastrService
               ) {
   }
 
@@ -37,8 +40,8 @@ export class AppComponent implements OnInit ,OnDestroy{
 
 
   handleShowMessageDetail(){
-    this.transferDataService.showMessageDetail$.subscribe((res:any)=>{
-      this.isshowMessageDetail = res
+    this.transferDataService.userDetailGroud$.subscribe((res:any)=>{
+      this.isShowMessageDetail = res
     })
   }
 
@@ -46,8 +49,15 @@ export class AppComponent implements OnInit ,OnDestroy{
     if (isPlatformBrowser(this.platformId)) {
       this.websocketService.connect()
     }
+
+    //get info user
     this.authServiceService.getInfoUser().subscribe((res:any)=>{
       this.transferDataService.sendInfoUser(res)
+    })
+
+    this.transferDataService.receiverMess$.subscribe((res:any)=>{
+      if(res)
+      this.toastService.success(`${res} gửi cho bạn tin nhắn`,'Thông báo')
     })
   }
 

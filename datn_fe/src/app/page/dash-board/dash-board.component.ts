@@ -1,9 +1,10 @@
-import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import {Component, AfterViewInit, Inject, PLATFORM_ID, OnInit} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {NgStyle} from '@angular/common';
 import {AVATAR_DEFAULT, ICON_MESSAGE} from '../share/other/icons/icons';
 import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
 import {ListMessageComponent} from '../message/list-message/list-message.component';
+import {TransferDataService} from '../../service/tranfer-data/transfer-data.service';
 
 
 declare var $: any;
@@ -19,12 +20,20 @@ declare var $: any;
   ],
   styleUrls: ['./dash-board.component.scss']
 })
-export class DashBoardComponent implements AfterViewInit {
+export class DashBoardComponent implements AfterViewInit,OnInit {
 
   isShowListMessage: boolean = false
+  countMessage:any
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object,
+              private transferDataService:TransferDataService) {}
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  ngOnInit(): void {
+    //get count mess
+    this.transferDataService.countMess$.subscribe((res)=>{
+      this.countMessage = res
+    })
+  }
   ngAfterViewInit(): void {
     this.initPreloader();
     this.initBackground();

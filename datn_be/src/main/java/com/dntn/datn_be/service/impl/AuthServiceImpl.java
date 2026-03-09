@@ -4,6 +4,7 @@ import com.dntn.datn_be.dto.common.UserDetailCustom;
 import com.dntn.datn_be.dto.request.LoginRequest;
 import com.dntn.datn_be.dto.request.RegisterRequest;
 import com.dntn.datn_be.dto.response.LoginResponse;
+import com.dntn.datn_be.exception.BaseAuthenticationException;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.service.AuthService;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -76,15 +78,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Long getCurrentUserId() {
+    public  Users getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long id = null;
         if(authentication.isAuthenticated()){
             UserDetailCustom userDetailCustom = (UserDetailCustom) authentication.getPrincipal();
             id = userDetailCustom.getId();
         }
-        return id;
+        if(id == null){
+            throw new BaseAuthenticationException("Token hết hạn hoặc không hợp lệ");
+        }
+        Optional<Users> userOtp = userRepository.findById(id);
+        return userOtp.orElse(null);
     }
+
+
 
 
 }

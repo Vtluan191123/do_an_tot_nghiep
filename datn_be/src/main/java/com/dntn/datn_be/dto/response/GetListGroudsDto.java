@@ -38,7 +38,11 @@ public class GetListGroudsDto {
 
         private String groudId;
 
-        private LocalDateTime createdAt;
+        private LocalDateTime createdAt; //thời gian user đc tạo
+
+        private LocalDateTime lateMessageTime;
+
+        private boolean isRead;
     }
 
 }

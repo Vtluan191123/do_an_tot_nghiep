@@ -7,8 +7,11 @@ import com.dntn.datn_be.dto.request.MessageDetailRequest;
 import com.dntn.datn_be.dto.request.MessageRequest;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
+import com.dntn.datn_be.model.GroudMessageUser;
 import com.dntn.datn_be.model.mongo.BaseMongoMessage;
+import com.dntn.datn_be.repository.GroudMessageUserRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoMessageRepository;
+import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.MessageService;
 import com.dntn.datn_be.service.UploadFileService;
 import com.dntn.datn_be.service.WebSocketService;
@@ -25,9 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 @AllArgsConstructor
 @Service
@@ -38,6 +39,8 @@ public class MessageServiceImpl implements MessageService {
     private final UploadFileService uploadFileService;
     private final ObjectMapper objectMapper;
     private final WebSocketService webSocketService;
+    private final GroudMessageUserRepository groudMessageUserRepository;
+    private final AuthService authService;
 
     @Override
     @Transactional
@@ -51,6 +54,19 @@ public class MessageServiceImpl implements MessageService {
                     .senderId(request.getSenderId())
                     .build();
             this.baseMongoMessageRepository.save(message);
+            //set isRead
+            List<GroudMessageUser> groudMessageUsers = this.groudMessageUserRepository.findByGroudId(request.getGroudId());
+            Long currentUserId = this.authService.getCurrentUser().getId();
+
+            groudMessageUsers.forEach(user -> {
+                if (user.getId().equals(currentUserId)) {
+                    user.setRead(false);
+                }else  {
+                    user.setRead(true);
+                }
+            });
+
+            this.groudMessageUserRepository.saveAll(groudMessageUsers);
 
 
             //send socket
@@ -103,6 +119,16 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public ResponseGlobalDto<List<BaseMongoMessage>> gets(String request) {
         List<BaseMongoMessage> messages = this.baseMongoMessageRepository.findByGroudId(request);
+        List<GroudMessageUser> groudMessageUsers = this.groudMessageUserRepository.findByGroudId(request);
+        Long currentUserId = this.authService.getCurrentUser().getId();
+
+        groudMessageUsers.forEach(groudMessageUser -> {
+            if (!groudMessageUser.getId().equals(currentUserId)) {
+                groudMessageUser.setRead(true);
+                this.groudMessageUserRepository.save(groudMessageUser);
+            }
+        });
+
         return ResponseGlobalDto.<List<BaseMongoMessage>>builder()
                 .status(HttpStatus.OK.value())
                 .data(messages)
@@ -183,8 +209,8 @@ public class MessageServiceImpl implements MessageService {
             }
             this.baseMongoMessageRepository.delete(baseMongoMessage);
             String topic = String.format(
-                    "messageDelete:%s",
-                    request
+                    "groudId:%s",
+                    baseMongoMessage.getGroudId()
             );
             this.webSocketService.sendMessage(topic,request,null);
         }

@@ -1,5 +1,6 @@
 package com.dntn.datn_be.dto.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDetailCustom extends  User {
 
     private Long id;
@@ -24,9 +24,12 @@ public class UserDetailCustom extends  User {
 
     public UserDetailCustom(Long id,String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
-        super.eraseCredentials();
         this.id = id;
     }
-
+    @Override
+    @JsonIgnore
+    public String getPassword() {
+        return super.getPassword();
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.dntn.datn_be.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -29,10 +30,12 @@ public class BaseEntity implements Serializable {
     private Long id;
 
     @CreatedBy
+    @JsonIgnore
     @Column(name = "creator", updatable = false)
     private Integer creator;
 
     @LastModifiedBy
+    @JsonIgnore
     @Column(name = "updater", length = 50)
     private Integer updater;
 
@@ -41,6 +44,7 @@ public class BaseEntity implements Serializable {
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @JsonIgnore
     private LocalDateTime updatedAt;
 
 }

@@ -1,5 +1,6 @@
 package com.dntn.datn_be.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
@@ -14,9 +15,12 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Builder
 public class GroudMessageUser extends BaseEntity {
 
-    @Field("user_id")
+    @Column(name = "user_id")
     private Integer userId;
 
-    @Field("groud_id")
+    @Column(name = "groud_id")
     private String groudId;
+
+    @Column(name = "is_read")
+    private boolean isRead;
 }

@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface GroudMessageUserRepository extends JpaRepository<GroudMessageUser,String> {
+public interface GroudMessageUserRepository extends JpaRepository<GroudMessageUser,String>, GroudMessageUserRepositoryCustom {
     List<GroudMessageUser> findByGroudId(String groudId);
 }

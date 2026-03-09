@@ -1,13 +1,15 @@
 <div *ngIf="isLoaded" class="message-detail">
   <div class="nav-message">
     <div class="d-flex justify-content-center align-items-center">
-      <div class="avatar">
+      <div class="avatar" [ngStyle]="{
+    'background': 'url(' + (userDetailMessage.imagesUrl ? userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+  }" >
         <div class="dot-status-online"></div>
       </div>
     </div>
     <div class="info">
       <div class="user_name">
-        <span>Vũ Thành Luân</span>
+        <span>{{userDetailMessage.username}}</span>
       </div>
       <div class="time_status_online">
         <span>3 giờ trước</span>
@@ -24,9 +26,11 @@
   </div>
   <div #scrollContainer class="body_message">
     <div *ngFor="let mess of infoMessageDetail" class="message_item" [ngStyle]="{
-    'flex-direction': mess.senderId === userCurrentId ? 'row-reverse' : 'row'
+    'flex-direction': mess.senderId === infoCurrentUser.id ? 'row-reverse' : 'row'
   }">
-      <div *ngIf="mess.senderId !== userCurrentId" class="avatar-item">
+      <div *ngIf="mess.senderId !== infoCurrentUser.id" class="avatar-item" [ngStyle]="{
+    'background': 'url(' + (userDetailMessage.imagesUrl ? userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+  }">
 
       </div>
 
@@ -60,8 +64,8 @@
           <div *ngIf="mess.content !== ''" (click)="handleShowListEmote(mess.id)" class="emote hover_circle mx-2">
             <span [innerHTML]="ICON_EMOTE | safeHtml"></span>
             <div *ngIf="messageActive === mess.id && isShowListEmote" class="list_emote" [ngStyle]="{
-    'left': mess.senderId === userCurrentId ? '0' : null,
-    'right': mess.senderId !== userCurrentId ? '0' : null
+    'left': mess.senderId === infoCurrentUser.id ? '0' : null,
+    'right': mess.senderId !== infoCurrentUser.id ? '0' : null
   }">
               <img
                 *ngFor="let emote of emotes"
@@ -77,8 +81,8 @@
           <div (click)="handleShowRecallMess(mess.id)" class="dot_three hover_circle">
             <span [innerHTML]="ICON_DOT_THREE | safeHtml"></span>
             <div *ngIf="messageActive === mess.id && isShowAction" class="action" [ngStyle]="{
-    'left': mess.senderId === userCurrentId ? '0' : null,
-    'right': mess.senderId !== userCurrentId ? '0' : null
+    'left': mess.senderId === infoCurrentUser.id ? '0' : null,
+    'right': mess.senderId !== infoCurrentUser.id ? '0' : null
   }">
               <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleUpdateMess(mess.id,'',true)">Gỡ tin nhắn</span>
               <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>

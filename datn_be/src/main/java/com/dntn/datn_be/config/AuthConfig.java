@@ -35,7 +35,10 @@ public class AuthConfig {
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationProvider authenticationProvider) {
+        ProviderManager providerManager = new ProviderManager(authenticationProvider);
 
-        return new ProviderManager(authenticationProvider);
+        // cấu hình erase credentials
+        providerManager.setEraseCredentialsAfterAuthentication(true);
+        return providerManager;
     }
 }

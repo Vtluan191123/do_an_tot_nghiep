@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +34,7 @@ public class AuthController {
     }
 
     @GetMapping("get_info")
-    ResponseEntity<UserDetailCustom> getInfo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ResponseEntity.ok((UserDetailCustom) authentication.getPrincipal());
+    ResponseEntity<Users> getInfo(@AuthenticationPrincipal UserDetailCustom user) {
+        return ResponseEntity.ok(authService.getCurrentUser());
     }
 }
