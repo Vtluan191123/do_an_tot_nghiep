@@ -239,7 +239,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   openImage(img: string,blog:boolean) {
     if(blog)
     window.open(img, '_blank');
-    else window.open("http://localhost:8080/uploads/" + img, '_blank');
+    else window.open(BASE_URL_UPLOAD  + img, '_blank');
   }
 
   removeFile(index: number) {

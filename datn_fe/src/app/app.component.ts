@@ -10,11 +10,12 @@ import {TransferDataService} from './service/tranfer-data/transfer-data.service'
 import {isPlatformBrowser, NgIf} from '@angular/common';
 import {AuthServiceService} from './service/auth/auth-service.service';
 import {ToastrService} from 'ngx-toastr';
+import {UserDetailComponent} from './page/message/user-detail/user-detail.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf,UserDetailComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

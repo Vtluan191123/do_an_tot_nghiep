@@ -1,0 +1,129 @@
+$border-color: rgba(255,255,255,0.1);
+
+.wrapper-user-detail{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 50px;
+  background-color: #111111;
+  border-radius: 20px;
+  border: 1px solid $border-color;
+  height: 100vh;
+  color: #ffffff;
+
+  .user-detail-info{
+    overflow: hidden;
+    border-radius: 20px;
+    background-color: #444444;
+    height: 100%;
+    width: 50%;
+    position: relative;
+    .user-detail-info-header{
+      background-color: #fa9c9c;
+      height: 20%;
+    }
+    .user-detail-info-body{
+      padding: 20px;
+
+      .name{
+        margin-top: 70px;
+      }
+
+      .action{
+
+        .add-friend{
+          padding: 5px 10px;
+          border-radius: 5px;
+          font-weight: 600;
+          font-size: 16px;
+          background-color: #1f8cf9;
+          cursor: pointer;
+          margin-right: 10px;
+          border: 1px solid $border-color;
+
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+          &:hover{
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+          }
+        }
+
+        .send-message{
+          cursor: pointer;
+          padding: 5px 10px;
+          border-radius: 5px;
+          border: 1px solid $border-color;
+
+          transition: transform 0.2s ease, background-color 0.2s ease;
+
+          &:hover{
+            transform: scale(1.1);
+            background-color: rgba(255,255,255,0.1);
+          }
+        }
+
+        .user-extra-info{
+          margin-top: 20px;
+
+          .info-item{
+            display: flex;
+            margin-bottom: 10px;
+            font-size: 15px;
+
+            .label{
+              font-weight: 600;
+              width: 130px;
+              color: #cccccc;
+            }
+
+            .value{
+              color: #ffffff;
+            }
+          }
+
+          .description{
+            flex-direction: column;
+
+            p{
+              margin-top: 5px;
+              color: #dddddd;
+              line-height: 1.5;
+            }
+          }
+        }
+      }
+    }
+    .avatar{
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 10px solid #444444;
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      background: url("https://scontent.fhan17-1.fna.fbcdn.net/v/t39.30808-1/648680061_1597141368204857_2230970375566720549_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=111&ccb=1-7&_nc_sid=1d2534&_nc_ohc=tgKPL9gy82EQ7kNvwFWwEqv&_nc_oc=Adml9GGf69dOwu4-R8b6BIpw4yyhAArOHZDTN2rQI1ul6Oruj7px16LzEtPmhXFuoIQ&_nc_zt=24&_nc_ht=scontent.fhan17-1.fna&_nc_gid=DXRFzA6wZ7fDYB59sLdsgQ&_nc_ss=8&oh=00_AfxYHJTyEgs0v61LCd1fcrTwjfUPESTQVU8BSvYUWPaC7w&oe=69B84387")  center/contain no-repeat;
+      &:before{
+        position: absolute;
+        content: "";
+        width: 36px;
+        height: 36px;
+        background-color: #0fee1f;
+        border: 7px solid #444444;
+        border-radius: 50%;
+        bottom: 0;
+        right: -6px;
+      }
+    }
+  }
+
+  .mutual-friends{
+
+  }
+}
+
+.rating{
+  margin-top: 10px;
+  font-size: 18px;
+  color: #ffc107;
+}
