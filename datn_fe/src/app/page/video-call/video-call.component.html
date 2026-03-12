@@ -67,7 +67,7 @@
     </div>
   </div>
   <div class="call-current" [class.open]="isOpenScreenUserCurrent">
-    <video #localVideo id="localVideo" playsinline autoplay *ngIf="isOpenScreenUserCurrent" style="background: #0b0b0b;width: 100%;height: 100%">
+    <video #localVideo id="localVideo" muted playsinline autoplay *ngIf="isOpenScreenUserCurrent" style="background: #0b0b0b;width: 100%;height: 100%">
 
     </video>
     <div  class="toggle-open-close" >
