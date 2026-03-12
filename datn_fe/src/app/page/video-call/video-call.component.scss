@@ -1,53 +1,98 @@
-$video-width: 500px;
-$button-width: 83px;
-
-#container {
+.wrapper-video-call{
+  background-color: #111111;
   height: 100vh;
+  border-radius: 20px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
-}
+  position: relative;
+  overflow: hidden;
 
-button {
-  margin: 0 20px 0 0;
-  width: $button-width;
-
-  &#hangupButton {
-    margin: 0;
-  }
-}
-
-video {
-  width: $video-width;
-  height: calc(#{$video-width} * 0.75);
-  margin: 0 0 20px 0;
-  vertical-align: top;
-
-  &#localVideo {
-    margin: 0 20px 20px 0;
-  }
-}
-
-div {
-  &.box {
-    margin: 1em;
-  }
-}
-
-@media screen and (max-width: 400px) {
-  button {
-    width: $button-width;
-    margin: 0 11px 10px 0;
-  }
-
-  video {
-    width: calc(50% - 7px);
-    height: 90px;
-    margin: 0 0 10px 0;
-
-    &#localVideo {
-      margin: 0 10px 20px 0;
+  .call-receiver{
+    color: #ffffff;
+    text-align: center;
+    p{
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .avatar{
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 10px solid #444444;
+      background: url("https://scontent.fhan17-1.fna.fbcdn.net/v/t39.30808-1/648680061_1597141368204857_2230970375566720549_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=111&ccb=1-7&_nc_sid=1d2534&_nc_ohc=tgKPL9gy82EQ7kNvwFWwEqv&_nc_oc=Adml9GGf69dOwu4-R8b6BIpw4yyhAArOHZDTN2rQI1ul6Oruj7px16LzEtPmhXFuoIQ&_nc_zt=24&_nc_ht=scontent.fhan17-1.fna&_nc_gid=DXRFzA6wZ7fDYB59sLdsgQ&_nc_ss=8&oh=00_AfxYHJTyEgs0v61LCd1fcrTwjfUPESTQVU8BSvYUWPaC7w&oe=69B84387")  center/contain no-repeat;
+      margin-bottom: 20px;
     }
   }
+
+  .action{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 300px;
+    height: auto;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    .action-item{
+      padding: 20px;
+      border-radius: 50%;
+      background-color: #444444;
+      color: #8f8b8b;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+
+      &:hover{
+        transform: scale(1.1);
+        background-color: rgba(255,255,255,0.1);
+      }
+    }
+    .action-item:last-child{
+      background-color: red;
+      color: #ffffff;
+    }
+  }
+
+  .call-current{
+    height: 250px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    transition: all .3s ease;
+    width: 20px;
+    overflow: hidden;
+
+    .toggle-open-close{
+      width: 40px;
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    video{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  .call-current.open{
+    width: 450px;
+  }
 }
+
+:host ::ng-deep .toggle-open-close svg {
+  width: 40px;
+  fill: #fff;
+  cursor: pointer;
+}
+
+:host ::ng-deep .toggle-open-close svg:hover {
+  scale: 1.1;
+  fill: #faf3f3;
+}
+
+
+
