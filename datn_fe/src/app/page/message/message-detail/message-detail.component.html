@@ -97,10 +97,10 @@
 
   <div class="bottom_message">
     <div class="d-flex justify-content-center align-items-center">
-      <div class="hover_circle">
-        <span [innerHTML]="ICON_MIC_MESSAGE | safeHtml"></span>
+      <div (click)="handleMicro()" class="hover_circle">
+        <span [innerHTML]="(isPlayingMicro ?  ICON_CLOSE_AUDIO :ICON_MIC_MESSAGE) | safeHtml"></span>
       </div>
-      <div (click)="fileInput.click()" class="hover_circle upload">
+      <div *ngIf="!isMicro" (click)="fileInput.click()" class="hover_circle upload">
         <span [innerHTML]="ICON_UPLOAD | safeHtml"></span>
         <input
           type="file"
@@ -147,9 +147,22 @@
         </div>
       </div>
     </div>
-    <input class="send_message" (keyup.enter)="isUpdateMess  ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
-    <div class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)">
+    <div  *ngIf="isMicro" class="micro my-auto">
+      <div class="pause-play" style="background-color: #ffffff">
+        <span (click)="handlePlayPauseMicro()"  [innerHTML]="(isPlayingMicro ? ICON_PAUSE : ICON_PLAY) | safeHtml"></span>
+      </div>
+      <div class="time-micro">
+        <span>{{totalSecondsDisplay}}</span>
+      </div>
+      <progress *ngIf="audioUrl" [value]="totalSeconds" [max]="maxTimeAudio"></progress>
+      <audio class="d-none" #audio controls [src]="audioUrl"></audio>
+    </div>
+    <input *ngIf="!isMicro" class="send_message" (keyup.enter)="isUpdateMess  ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
+    <div *ngIf="!isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)">
       <span class="like" [innerHTML]="ICON_LIKE | safeHtml"></span>
+    </div>
+    <div *ngIf="isMicro" class="hover_circle" (click)="handleTestPlayAudio()">
+      <span  [innerHTML]="ICON_SEND | safeHtml"></span>
     </div>
   </div>
 </div>

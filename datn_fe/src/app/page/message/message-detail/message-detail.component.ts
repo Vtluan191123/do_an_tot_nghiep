@@ -2,10 +2,10 @@ import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from 
 import {SafeHtmlPipe} from '../../share/pipe/pipe-html.pipe';
 import {
   AVATAR_DEFAULT,
-  ICON_CLOSE, ICON_DOT_THREE, ICON_EMOTE, ICON_LIKE,
+  ICON_CLOSE, ICON_CLOSE_AUDIO, ICON_DOT_THREE, ICON_EMOTE, ICON_LIKE,
   ICON_MIC_MESSAGE,
-  ICON_MINUS,
-  ICON_PHONE,
+  ICON_MINUS, ICON_PAUSE,
+  ICON_PHONE, ICON_PLAY, ICON_SEND,
   ICON_UPLOAD
 } from '../../share/other/icons/icons';
 import {CommonModule, NgForOf, NgIf, NgStyle} from '@angular/common';
@@ -57,7 +57,19 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   previewVideos: string[] = [];
   isImage:boolean = false
   isVideo:boolean = false
+  isMicro:boolean = false
+  isPlayingMicro:boolean = false
   infoCurrentUser: any;
+  totalSecondsDisplay: string = '00.00';
+  timeMicro:any
+  totalSeconds:number = 0
+
+  mediaRecorder!: MediaRecorder;
+  audioChunks: Blob[] = [];
+  audioUrl: string | null = null;
+  audioBlob!: Blob;
+  maxTimeAudio: any;
+
 
   constructor(private transferData:TransferDataService,
               private modalService:NgbModal,
@@ -74,6 +86,22 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
     this.getInfoUser()
     this.getGroudDetail()
     this.handleWebsocketListen();
+  }
+
+
+  handleCountMicro(){
+    this.timeMicro = setInterval(() => {
+
+      const minutes = Math.floor(this.totalSeconds / 60);
+      const seconds = this.totalSeconds % 60;
+
+      this.totalSecondsDisplay =
+        minutes.toString().padStart(2, '0') + "." +
+        seconds.toString().padStart(2, '0');
+
+      this.totalSeconds++;
+
+    }, 1000);
   }
 
   getInfoUser(){
@@ -96,7 +124,6 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
     this.transferData.userDetailGroud$
       .pipe(takeUntil(this.destroy$))
       .subscribe((res:any)=>{
-      console.log('res',res)
       this.userDetailMessage = res
       this.getListMessage(this.userDetailMessage?.groudId);
     })
@@ -327,12 +354,92 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
       }
     })
   }
+  @ViewChild('audio') audio!: ElementRef<HTMLAudioElement>;
+  handleMicro() {
+    this.isMicro = !this.isMicro
+    this.isPlayingMicro = !this.isPlayingMicro
+    this.handleCountMicro()
+    this.startRecord()
+  }
 
+
+  handlePlayPauseMicro() {
+    this.isPlayingMicro = !this.isPlayingMicro
+    clearInterval(this.timeMicro)
+    //sau khi pause lần đầu sẽ lưu file tạm để chạy
+    this.stopRecord()
+  }
+
+
+  async startRecord() {
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    this.mediaRecorder = new MediaRecorder(stream);
+
+    // nhận dữ liệu audio
+    this.mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        this.audioChunks.push(event.data);
+      }
+    };
+
+    this.mediaRecorder.onstop = () => {
+
+      const audio = this.audio.nativeElement;
+
+      this.audioBlob = new Blob(this.audioChunks, { type: "audio/webm" });
+
+      this.audioUrl = URL.createObjectURL(this.audioBlob);
+
+      // gán src cho audio
+      //audio.src = this.audioUrl;
+
+      this.audioChunks = [];
+
+      // chờ metadata load
+      audio.onloadedmetadata = () => {
+        this.maxTimeAudio = audio.duration;
+        console.log("Audio duration:", this.maxTimeAudio);
+      };
+
+    };
+
+    this.mediaRecorder.start();
+  }
+
+  stopRecord() {
+    this.mediaRecorder.stop();
+  }
+
+  //chuông thông báo
   playMessageSound() {
     const audio = new Audio();
     audio.src = 'assets/sounds/mp3_info_mess.mp3';
     audio.load();
     audio.play();
+  }
+
+  handleTestPlayAudio() {
+    const audio = this.audio.nativeElement;
+
+    if (audio.paused) {
+      audio.play();
+      audio.ontimeupdate = () => {
+
+        this.totalSeconds = Math.floor(audio.currentTime);
+
+        console.log("Current second:", this.totalSeconds);
+
+      };
+      console.log('dang phat')
+      this.isPlayingMicro = true;
+    } else {
+      audio.pause();
+      console.log('dung phat')
+      this.isPlayingMicro = false;
+    }
+
   }
 
 
@@ -353,4 +460,14 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   protected readonly ICON_DOT_THREE = ICON_DOT_THREE;
   protected readonly MESSAGE_TYPE = MESSAGE_TYPE;
   protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
+
+
+  protected readonly ICON_SEND = ICON_SEND;
+  protected readonly ICON_PAUSE = ICON_PAUSE;
+
+
+  protected readonly ICON_PLAY = ICON_PLAY;
+
+
+  protected readonly ICON_CLOSE_AUDIO = ICON_CLOSE_AUDIO;
 }

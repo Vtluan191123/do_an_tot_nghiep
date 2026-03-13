@@ -37,17 +37,13 @@ export class ListMessageComponent implements OnInit{
 
   getInfoUser(){
     this.transferDataService.infoUser$.subscribe((res:any)=>{
-      console.log('this.infoCurrentUser',res)
       this.infoCurrentUser = res
     })
   }
 
   getListGrouds(){
-    console.log(this.infoCurrentUser)
     this.userService.getListGroup(this.infoCurrentUser.id).subscribe((res:any)=>{
       if(res.status === 200) this.listGroud = res.data.userDetailGroudDto
-
-      console.log('res',this.listGroud)
     })
   }
 
