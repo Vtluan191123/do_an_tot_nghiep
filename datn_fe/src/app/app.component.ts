@@ -11,11 +11,12 @@ import {isPlatformBrowser, NgIf} from '@angular/common';
 import {AuthServiceService} from './service/auth/auth-service.service';
 import {ToastrService} from 'ngx-toastr';
 import {UserDetailComponent} from './page/message/user-detail/user-detail.component';
+import {VideoConferenceClientComponent} from './page/video-conference-client/video-conference-client.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf,UserDetailComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

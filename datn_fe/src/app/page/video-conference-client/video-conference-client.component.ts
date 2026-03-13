@@ -22,7 +22,6 @@ import {FormsModule} from '@angular/forms';
     NgForOf,
     NgIf,
     NgStyle,
-    NgSelectComponent,
     FormsModule
   ],
   templateUrl: './video-conference-client.component.html',
@@ -40,7 +39,7 @@ export class VideoConferenceClientComponent {
   isShowCameraDevices:boolean = false
   isShowBackground:boolean = false
 
-  listViewUserMain:any[] = [1,2,4,5,9,8]
+  listViewUserMain:any[] = [1]
   listViewUser:any[] = []
   userViewDetail:any[] = []
   listMicroDevices: readonly any[] = [

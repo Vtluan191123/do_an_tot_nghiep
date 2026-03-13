@@ -1,15 +1,18 @@
 import {Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild} from '@angular/core';
 import {WebsocketService} from '../../service/socket/websocket.service';
-import {isPlatformBrowser, NgForOf, NgIf} from '@angular/common';
+import {isPlatformBrowser, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
+import {CAMERA_OPEN, ICON_ARROW_LEFT, ICON_ARROW_RIGHT, ICON_PHONE, MICRO} from '../share/other/icons/icons';
 
 @Component({
   selector: 'app-video-call',
   standalone: true,
   imports: [
-    NgIf,
     FormsModule,
-    NgForOf
+    SafeHtmlPipe,
+    NgStyle,
+    NgIf
   ],
   templateUrl: './video-call.component.html',
   styleUrl: './video-call.component.scss'
@@ -28,6 +31,7 @@ export class VideoCallComponent implements OnInit{
   @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
   userSendId:any
   userReceiveId:any
+  isOpenScreenUserCurrent:boolean = true
 
   //=====================
   @ViewChild('video', { static: true })
@@ -403,4 +407,16 @@ export class VideoCallComponent implements OnInit{
       this.openMic = undefined;
     }
   }
+
+  handleToggleCallCurrent() {
+    this.isOpenScreenUserCurrent = !this.isOpenScreenUserCurrent;
+  }
+
+  protected readonly ICON_PHONE = ICON_PHONE;
+  protected readonly MICRO = MICRO;
+  protected readonly CAMERA_OPEN = CAMERA_OPEN;
+  protected readonly ICON_ARROW_RIGHT = ICON_ARROW_RIGHT;
+
+
+  protected readonly ICON_ARROW_LEFT = ICON_ARROW_LEFT;
 }
