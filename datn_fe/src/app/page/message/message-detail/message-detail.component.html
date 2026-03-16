@@ -34,25 +34,31 @@
 
       </div>
 
-        <div  class="message-content">
-        @if(mess.messageDetail.type === 'text'){
-          <span class="message-text"> {{ mess.messageDetail.content !== '' ? mess.messageDetail.content : 'Tin nhắn đã bị gỡ'}}</span>
-        }
+        <div  class="message-content" [ngStyle]="mess.messageDetail.type === MESSAGE_TYPE.AUDIO
+    ? {'width': '100%'}
+    : {}">
+          @if(mess.messageDetail.type === MESSAGE_TYPE.TEXT){
+            <span class="message-text"> {{ mess.messageDetail.content !== '' ? mess.messageDetail.content : 'Tin nhắn đã bị gỡ'}}</span>
+          }
 
-        @if(mess.messageDetail.type === 'image'){
-          <div class="wrapper-images" [ngClass]="['cols-' + mess.cols, 'rows-' + mess.rows]">
-            <img (click)="openImage(img,false)"  *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img">
-          </div>
-        }
-        @if(mess.messageDetail.type === 'video'){
-          <div class="wrapper-images" >
-            <video *ngFor="let video of mess.messageDetail.urlFiles" class="message-image-item"  controls>
-              <source [src]="baseUrl + video" type="video/mp4">
-            </video>
-          </div>
-        }
-          @if (mess.messageDetail.type==='icon') {
+          @if(mess.messageDetail.type === MESSAGE_TYPE.IMAGE){
+            <div class="wrapper-images" [ngClass]="['cols-' + mess.cols, 'rows-' + mess.rows]">
+              <img (click)="openImage(img,false)"  *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img">
+            </div>
+          }
+          @if(mess.messageDetail.type === MESSAGE_TYPE.VIDEO){
+            <div class="wrapper-images" >
+              <video *ngFor="let video of mess.messageDetail.urlFiles" class="message-image-item"  controls>
+                <source [src]="baseUrl + video" type="video/mp4">
+              </video>
+            </div>
+          }
+          @if (mess.messageDetail.type===MESSAGE_TYPE.ICON) {
             <span class="like ms-2 fs-3" [innerHTML]="mess.messageDetail.content | safeHtml"></span>
+          }
+
+          @if (mess.messageDetail.type===MESSAGE_TYPE.AUDIO) {
+            <audio class="w-100" controls [src]="BASE_URL_UPLOAD + mess.messageDetail.urlFiles[0]"></audio>
           }
 
           <div (click)="handleShowModal(mess)" class="emote-of-message">
@@ -98,7 +104,7 @@
   <div class="bottom_message">
     <div class="d-flex justify-content-center align-items-center">
       <div (click)="handleMicro()" class="hover_circle">
-        <span [innerHTML]="(isPlayingMicro ?  ICON_CLOSE_AUDIO :ICON_MIC_MESSAGE) | safeHtml"></span>
+        <span [innerHTML]="(audioUrl ?  ICON_CLOSE_AUDIO :ICON_MIC_MESSAGE) | safeHtml"></span>
       </div>
       <div *ngIf="!isMicro" (click)="fileInput.click()" class="hover_circle upload">
         <span [innerHTML]="ICON_UPLOAD | safeHtml"></span>
@@ -154,14 +160,13 @@
       <div class="time-micro">
         <span>{{totalSecondsDisplay}}</span>
       </div>
-      <progress *ngIf="audioUrl" [value]="totalSeconds" [max]="maxTimeAudio"></progress>
       <audio class="d-none" #audio controls [src]="audioUrl"></audio>
     </div>
     <input *ngIf="!isMicro" class="send_message" (keyup.enter)="isUpdateMess  ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
     <div *ngIf="!isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)">
       <span class="like" [innerHTML]="ICON_LIKE | safeHtml"></span>
     </div>
-    <div *ngIf="isMicro" class="hover_circle" (click)="handleTestPlayAudio()">
+    <div *ngIf="isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.AUDIO)">
       <span  [innerHTML]="ICON_SEND | safeHtml"></span>
     </div>
   </div>

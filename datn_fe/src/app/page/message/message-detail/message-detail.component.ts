@@ -62,9 +62,9 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   infoCurrentUser: any;
   totalSecondsDisplay: string = '00.00';
   timeMicro:any
-  totalSeconds:number = 0
+  currentTime:number = 0
 
-  mediaRecorder!: MediaRecorder;
+  mediaRecorder: MediaRecorder | null | undefined;
   audioChunks: Blob[] = [];
   audioUrl: string | null = null;
   audioBlob!: Blob;
@@ -92,14 +92,14 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   handleCountMicro(){
     this.timeMicro = setInterval(() => {
 
-      const minutes = Math.floor(this.totalSeconds / 60);
-      const seconds = this.totalSeconds % 60;
+      const minutes = Math.floor(this.currentTime / 60);
+      const seconds = this.currentTime % 60;
 
       this.totalSecondsDisplay =
         minutes.toString().padStart(2, '0') + "." +
         seconds.toString().padStart(2, '0');
 
-      this.totalSeconds++;
+      this.currentTime++;
 
     }, 1000);
   }
@@ -162,7 +162,6 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
 
   handleSendMessage(type?: any, icon?: string) {
     if(!this.valueNewMessage && !icon && !this.selectedFiles.length) return
-
     const message: MessageRequest = {
       groudId: this.userDetailMessage?.groudId,
       senderId: this.infoCurrentUser.id,
@@ -221,6 +220,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
     this.previewImages = []
     this.previewVideos = []
     this.isUpdateMess = false
+    this.isMicro = false
   }
 
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -229,30 +229,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!file.type.startsWith('image') && !file.type.startsWith('video')) {
-        this.toartService.error("File không hợp lệ: " + file.type, 'Thông báo' );
-        return;
-      }
-      const fileSizeMB = file.size / (1024 * 1024);
-      if (fileSizeMB > 50) {
-        this.toartService.error("File không vượt quá: 50M", 'Thông báo' );
-        return;
-      }
-
-
-
-      if(file.type.startsWith('image')){
-        this.isImage = true
-        this.isVideo = false
-        this.previewImages.push(URL.createObjectURL(file));
-      }else{
-        this.isImage =false
-        this.isVideo =true
-        this.previewVideos.push(URL.createObjectURL(file));
-      }
-      this.selectedFiles.push(file);
-
-
+      this.handleFiles(file)
       // const reader = new FileReader();
       // reader.onload = (e: any) => {
       //   this.previewImages.push(e.target.result);
@@ -261,6 +238,43 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
       // reader.readAsDataURL(file);
     }
     this.fileInput.nativeElement.value = [];
+  }
+
+  handleFiles(file: any) {
+
+    if (
+      !file.type.startsWith('image') &&
+      !file.type.startsWith('video') &&
+      !file.type.startsWith('audio')
+    ) {
+      this.toartService.error("File không hợp lệ: " + file.type, 'Thông báo');
+      return;
+    }
+
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 50) {
+      this.toartService.error("File không vượt quá: 50M", 'Thông báo');
+      return;
+    }
+
+    if (file.type.startsWith('image')) {
+
+      this.isImage = true;
+      this.isVideo = false;
+
+      this.previewImages.push(URL.createObjectURL(file));
+
+    }
+    if (file.type.startsWith('video')) {
+
+      this.isImage = false;
+      this.isVideo = true;
+
+      this.previewVideos.push(URL.createObjectURL(file));
+
+    }
+
+    this.selectedFiles.push(file);
   }
 
   openImage(img: string,blog:boolean) {
@@ -358,16 +372,70 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   handleMicro() {
     this.isMicro = !this.isMicro
     this.isPlayingMicro = !this.isPlayingMicro
-    this.handleCountMicro()
-    this.startRecord()
+
+    //nếu có file tạm reset để tạo file mới
+    if(this.audioUrl){
+      this.audioUrl = null
+      this.totalSecondsDisplay = '00.00';
+      this.isPlayingMicro = false
+      this.maxTimeAudio = 0
+      this.currentTime = 0
+      if (this.mediaRecorder) {
+
+        // dừng ghi âm
+        if (this.mediaRecorder.state !== 'inactive') {
+          this.mediaRecorder.stop();
+        }
+
+        // tắt microphone
+        const tracks = this.mediaRecorder.stream.getTracks();
+        tracks.forEach(track => track.stop());
+
+        // xoá recorder
+        this.mediaRecorder = null;
+      }
+    }else {
+      this.handleCountMicro()
+      this.startRecord()
+    }
   }
 
 
   handlePlayPauseMicro() {
     this.isPlayingMicro = !this.isPlayingMicro
     clearInterval(this.timeMicro)
-    //sau khi pause lần đầu sẽ lưu file tạm để chạy
-    this.stopRecord()
+    //dừng ghi âm
+    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+      this.stopRecord()
+    }else {
+      const audio = this.audio.nativeElement;
+
+      if (audio.paused) {
+        this.totalSecondsDisplay = '00.00';
+        audio.play();
+        audio.ontimeupdate = () => {
+
+          this.currentTime = Math.floor(audio.currentTime);
+          const minutes = Math.floor(this.currentTime / 60);
+          const seconds = this.currentTime % 60;
+
+          this.totalSecondsDisplay =
+            minutes.toString().padStart(2, '0') + "." +
+            seconds.toString().padStart(2, '0');
+          console.log("Current second:", this.currentTime);
+          if(this.currentTime >= this.maxTimeAudio){
+            this.isPlayingMicro = false;
+          }
+
+        };
+        console.log('dang phat')
+        this.isPlayingMicro = true;
+      } else {
+        audio.pause();
+        console.log('dung phat')
+        this.isPlayingMicro = false;
+      }
+    }
   }
 
 
@@ -384,22 +452,31 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
       }
     };
 
+    //listen khi dừng
     this.mediaRecorder.onstop = () => {
 
       const audio = this.audio.nativeElement;
 
+      //tạo 1 file audio vào trong ram
       this.audioBlob = new Blob(this.audioChunks, { type: "audio/webm" });
+      const fileName = "audio_" + Date.now() + ".webm";
+
+      const audioFile = new File([this.audioBlob], fileName, {
+        type: "audio/webm"
+      });
+      this.handleFiles(audioFile)
 
       this.audioUrl = URL.createObjectURL(this.audioBlob);
 
       // gán src cho audio
       //audio.src = this.audioUrl;
 
+      //reset
       this.audioChunks = [];
 
       // chờ metadata load
       audio.onloadedmetadata = () => {
-        this.maxTimeAudio = audio.duration;
+        this.maxTimeAudio =Math.floor(audio.duration);
         console.log("Audio duration:", this.maxTimeAudio);
       };
 
@@ -409,7 +486,8 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   }
 
   stopRecord() {
-    this.mediaRecorder.stop();
+    if(this.mediaRecorder)
+      this.mediaRecorder.stop();
   }
 
   //chuông thông báo
@@ -421,24 +499,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   }
 
   handleTestPlayAudio() {
-    const audio = this.audio.nativeElement;
 
-    if (audio.paused) {
-      audio.play();
-      audio.ontimeupdate = () => {
-
-        this.totalSeconds = Math.floor(audio.currentTime);
-
-        console.log("Current second:", this.totalSeconds);
-
-      };
-      console.log('dang phat')
-      this.isPlayingMicro = true;
-    } else {
-      audio.pause();
-      console.log('dung phat')
-      this.isPlayingMicro = false;
-    }
 
   }
 

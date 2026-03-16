@@ -98,7 +98,8 @@ public class MessageServiceImpl implements MessageService {
 
         switch (typeMessage) {
             case MessageConstants.MessageType.IMAGE:
-            case MessageConstants.MessageType.VIDEO: {
+            case MessageConstants.MessageType.VIDEO:
+            case MessageConstants.MessageType.AUDIO: {
                 List<String> listPaths = this.uploadFileService.uploads(files);
                 messageDetailDto.setUrlFiles(listPaths);
                 messageDetailDto.setType(typeMessage);

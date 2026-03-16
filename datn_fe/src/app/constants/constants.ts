@@ -36,7 +36,8 @@ export const MESSAGE_TYPE = {
   TEXT: "text",
   IMAGE: "image",
   VIDEO: "video",
-  ICON: "icon"
+  ICON: "icon",
+  AUDIO: "audio"
 };
 
 export const BASE_URL_UPLOAD = 'http://localhost:8080/uploads/'

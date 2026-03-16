@@ -12,5 +12,6 @@ public class MessageConstants {
         public String IMAGE = "image";
         public String ICON = "icon";
         public String VIDEO = "video";
+        public String AUDIO = "audio";
     }
 }
