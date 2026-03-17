@@ -2,5 +2,5 @@ package com.dntn.datn_be.constants;
 
 public final class AuthConstants {
 
-    public static final String[] URL_PUBLIC = {"/api/auth/**","/uploads/**"};
+    public static final String[] URL_PUBLIC = {"/api/auth/**","/uploads/**","/api/ai/**"};
 }
