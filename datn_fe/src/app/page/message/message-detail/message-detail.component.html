@@ -17,7 +17,7 @@
     </div>
     <div class="call">
       <div class="hover_circle">
-        <span [innerHTML]="ICON_PHONE | safeHtml"></span>
+        <span (click)="handleCall()" [innerHTML]="ICON_PHONE | safeHtml"></span>
       </div>
       <div class="ms-2 hover_circle">
         <span (click)="handleCloseMessage()" [innerHTML]="ICON_MINUS | safeHtml"></span>

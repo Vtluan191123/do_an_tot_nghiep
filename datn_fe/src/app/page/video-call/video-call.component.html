@@ -2,7 +2,7 @@
 <!--  <div class="d-flex">-->
 <!--    <div>-->
 <!--      <p>Camera: {{userSendId}}</p>-->
-<!--      <video  #localVideo id="localVideo" playsinline autoplay></video>-->
+<!--&lt;!&ndash;      <video muted #localVideo id="localVideo" playsinline autoplay></video>&ndash;&gt;-->
 <!--    </div>-->
 
 <!--    <div>-->
@@ -18,56 +18,106 @@
 <!--</div>-->
 
 
-<!--<video #video autoplay playsinline></video>-->
 
-<!--<div class="controls">-->
-<!--  <label>-->
-<!--    Microphone:-->
-<!--    <select [(ngModel)]="audioInput" (change)="start()">-->
-<!--      <option *ngFor="let d of audioInputs" [value]="d.deviceId">-->
-<!--        {{ d.label }}-->
-<!--      </option>-->
-<!--    </select>-->
-<!--  </label>-->
+<div class="controls">
+  <label>
+    Microphone:
+    <select [(ngModel)]="audioInput" (ngModelChange)="startAgain()">
+      <option *ngFor="let d of audioInputs" [value]="d.deviceId">
+        {{ d.label }}
+      </option>
+    </select>
+  </label>
 
-<!--  <label>-->
-<!--    Speaker:-->
-<!--    <select [(ngModel)]="audioOutput" (change)="changeAudioDestination()">-->
-<!--      <option *ngFor="let d of audioOutputs" [value]="d.deviceId">-->
-<!--        {{ d.label }}-->
-<!--      </option>-->
-<!--    </select>-->
-<!--  </label>-->
+  <label>
+    Speaker:
+    <select [(ngModel)]="audioOutput" (ngModelChange)="changeAudioDestination()">
+      <option *ngFor="let d of audioOutputs" [value]="d.deviceId">
+        {{ d.label }}
+      </option>
+    </select>
+  </label>
 
-<!--  <label>-->
-<!--    Camera:-->
-<!--    <select [(ngModel)]="videoInput" (change)="start()">-->
-<!--      <option *ngFor="let d of videoInputs" [value]="d.deviceId">-->
-<!--        {{ d.label }}-->
-<!--      </option>-->
-<!--    </select>-->
-<!--  </label>-->
-<!--</div>-->
+  <label>
+    Camera:
+    <select [(ngModel)]="videoInput" (ngModelChange)="startAgain()">
+      <option *ngFor="let d of videoInputs" [value]="d.deviceId">
+        {{ d.label }}
+      </option>
+    </select>
+  </label>
+</div>
 
 <div class="wrapper-video-call">
-  <div class="call-receiver">
-    <div class="avatar"></div>
-    <h2>Vũ Thành Luân</h2>
+  <div *ngIf="!toStream" class="call-receiver">
+    <div class="avatar"
+         [ngStyle]="{
+    'background': 'url(' + (infoFriendUser.imagesUrl ? infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+  }"
+    ></div>
+    <h2>{{infoFriendUser.username}}</h2>
     <p>Đang gọi ...</p>
   </div>
+  <video [hidden]="toStream" #remoteVideo id="remoteVideo" playsinline autoplay></video>
   <div class="action">
-    <div class="action-item">
-      <span (click)="handleStart()" [innerHTML]="CAMERA_OPEN | safeHtml"></span>
+    <div (click)="handleStart()" class="action-item">
+      <span  [innerHTML]="CAMERA_OPEN | safeHtml"></span>
     </div>
-    <div class="action-item">
-      <span [innerHTML]="MICRO | safeHtml"></span>
+    <div (click)="handleAnswerPhone()" class="action-item">
+      <span  [innerHTML]="MICRO_CLOSE | safeHtml"></span>
     </div>
-    <div class="action-item">
-      <span [innerHTML]="ICON_PHONE | safeHtml"></span>
+    <div (click)="handleHangup()" class="action-item">
+      <span  [innerHTML]="ICON_PHONE | safeHtml"></span>
     </div>
+    <div (click)="handleShowChangeDevice()" class="action-item">
+      <span  [innerHTML]="ICON_PHONE | safeHtml"></span>
+    </div>
+
+    <ng-container *ngIf="isShowChangeDevice" >
+      <div class="wrapper-change-device">
+        <div>
+          <label>
+            Microphone:
+          </label>
+            <select [(ngModel)]="audioInput" (ngModelChange)="startAgain()">
+              <option *ngFor="let d of audioInputs" [value]="d.deviceId">
+                {{ d.label }}
+              </option>
+            </select>
+
+        </div>
+
+        <div>
+          <label>
+            Speaker:</label>
+            <select [(ngModel)]="audioOutput" (ngModelChange)="changeAudioDestination()">
+              <option *ngFor="let d of audioOutputs" [value]="d.deviceId">
+                {{ d.label }}
+              </option>
+            </select>
+
+        </div>
+
+        <div>
+          <label>
+            Camera:  </label>
+            <select [(ngModel)]="videoInput" (ngModelChange)="startAgain()">
+              <option *ngFor="let d of videoInputs" [value]="d.deviceId">
+                {{ d.label }}
+              </option>
+            </select>
+
+        </div>
+
+      </div>
+
+    </ng-container>
+
+
+
   </div>
   <div class="call-current" [class.open]="isOpenScreenUserCurrent">
-    <video #localVideo id="localVideo" muted playsinline autoplay *ngIf="isOpenScreenUserCurrent" style="background: #0b0b0b;width: 100%;height: 100%">
+    <video #localVideo id="localVideo" muted playsinline autoplay [hidden]="!isOpenScreenUserCurrent" style="background: #0b0b0b;width: 100%;height: 100%">
 
     </video>
     <div  class="toggle-open-close" >

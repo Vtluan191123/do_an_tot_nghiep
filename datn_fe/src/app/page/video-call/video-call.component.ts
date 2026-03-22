@@ -2,17 +2,30 @@ import {Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild} from '@an
 import {WebsocketService} from '../../service/socket/websocket.service';
 import {isPlatformBrowser, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import {
+  CAMERA_OPEN,
+  ICON_ARROW_LEFT,
+  ICON_ARROW_RIGHT,
+  ICON_PHONE,
+  MICRO,
+  MICRO_CLOSE
+} from '../share/other/icons/icons';
+import {AuthServiceService} from '../../service/auth/auth-service.service';
+import {getInfoCurrentUser} from '../../common/function_util';
+import {TransferDataService} from '../../service/tranfer-data/transfer-data.service';
 import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
-import {CAMERA_OPEN, ICON_ARROW_LEFT, ICON_ARROW_RIGHT, ICON_PHONE, MICRO} from '../share/other/icons/icons';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import {BASE_URL_UPLOAD} from '../../constants/constants';
 
 @Component({
   selector: 'app-video-call',
   standalone: true,
   imports: [
     FormsModule,
+    NgIf,
+    NgForOf,
     SafeHtmlPipe,
-    NgStyle,
-    NgIf
+    NgStyle
   ],
   templateUrl: './video-call.component.html',
   styleUrl: './video-call.component.scss'
@@ -20,6 +33,7 @@ import {CAMERA_OPEN, ICON_ARROW_LEFT, ICON_ARROW_RIGHT, ICON_PHONE, MICRO} from 
 export class VideoCallComponent implements OnInit{
   isDisableCall: boolean = false
   isDisableReply: boolean = false
+  isShowChangeDevice:boolean = false
   fromStream:any
   toStream:any
   pc:any
@@ -41,30 +55,58 @@ export class VideoCallComponent implements OnInit{
   audioOutputs: MediaDeviceInfo[] = [];
   videoInputs: MediaDeviceInfo[] = [];
 
+  //thiết bị lua chọn
   audioInput?: string;
   audioOutput?: string;
   videoInput?: string;
 
+  //thiết bị hiện tại
   private stream?: MediaStream;
-  private openMic?: string;
-  private openCamera?: string;
+  private audioInputCurrent?: string;
+  private videoInputCurrent?: string;
+  private audioOutputCurrent?: string;
   hasPermission = false;
+  infoCurrentUser:any
+  infoFriendUser:any
+  audioMp3 = new Audio('assets/sounds/call_mp3.mp3');
 
-  constructor(private websocketService:WebsocketService,@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private websocketService:WebsocketService,@Inject(PLATFORM_ID) private platformId: Object,
+              private authService:AuthServiceService,
+              private transferDataService:TransferDataService,
+              public activeModal: NgbActiveModal) {
   }
 
   async ngOnInit(): Promise<void> {
     if(!this.isBrowser()) return
     if (!isPlatformBrowser(this.platformId)) return;
+    await this.init()
+  }
+
+  async init(){
+    this.infoCurrentUser = await getInfoCurrentUser(
+      this.authService.getInfoUser()
+    );
+
+    this.infoFriendUser = await getInfoCurrentUser(
+      this.transferDataService.userDetailGroud$
+    );
+
+    console.log("infoCurrentUser",this.infoCurrentUser)
+    console.log("infoFriendUser",this.infoFriendUser)
     this.userSendId = this.getUserSendId()
     this.userReceiveId = this.getUserReceiveId()
     this.handleSignaling();
+    await this.handleStart();
 
     navigator.mediaDevices.ondevicechange = () => {
       this.getDevices();
     };
     await this.getDevices();
+
+    //audioMp3
+    //this.playCallSound()
   }
+
 
   isBrowser(): boolean {
     return typeof window !== 'undefined';
@@ -110,45 +152,6 @@ export class VideoCallComponent implements OnInit{
       }
       }
     })
-
-    // this.signaling.onmessage = (res:any) =>{
-    //
-    //     if (!this.localStream) {
-    //       console.log('not ready yet');
-    //       return;
-    //     }
-    //
-    //     switch (res.data.type) {
-    //       case 'offer':
-    //         console.log('handle handleOffer',res.data);
-    //         this.handleOffer(res.data);
-    //         break;
-    //       case 'answer':
-    //         console.log('handle handleAnswer',res.data);
-    //         this.handleAnswer(res.data);
-    //         break;
-    //       case 'candidate':
-    //         this.handleCandidate(res.data);
-    //         console.log('handle handleCandidate',res.data);
-    //         break;
-    //       case 'ready':
-    //         if (this.pc) {
-    //           console.log('already in call, ignoring');
-    //           return;
-    //         }
-    //         console.log('handle makeCall');
-    //         this.makeCall();
-    //         break;
-    //       case 'bye':
-    //         if (this.pc) {
-    //           this.hangup();
-    //         }
-    //         break;
-    //       default:
-    //         console.log('unhandled', res);
-    //         break;
-    //   }
-    // }
   }
 
   async hangup() {
@@ -156,8 +159,12 @@ export class VideoCallComponent implements OnInit{
       this.pc.close();
       this.pc = null;
     }
-    this.toStream.getTracks().forEach((track:any) => track.stop());
-    this.toStream = null;
+    if(this.toStream){
+      this.toStream.getTracks().forEach((track:any) => track.stop());
+      this.toStream = null;
+    }
+    this.stopCallSound()
+    this.closeModal()
   };
 
 
@@ -177,15 +184,10 @@ export class VideoCallComponent implements OnInit{
       //this.signaling.postMessage(message);
       this.websocketService.sendMessage(`${this.topic}${this.userSendId}`,message);
     };
-    this.pc.ontrack = (event:any) => {
-      if(this.toStream){
-        this.remoteVideo.nativeElement.srcObject = event.streams[0];
-        this.remoteVideo.nativeElement.srcObject = event.streams[0];
-      }else {
-        this.localVideo.nativeElement.srcObject = event.streams[0];
-        this.remoteVideo.nativeElement.srcObject = event.streams[0];
-      }
 
+    this.remoteVideo.nativeElement.srcObject = this.toStream || this.fromStream
+    this.pc.ontrack = (event:any) => {
+        this.remoteVideo.nativeElement.srcObject = event.streams[0];
     }
     if(this.toStream){
       this.toStream.getTracks().forEach((track:any) => this.pc.addTrack(track, this.toStream));
@@ -198,7 +200,11 @@ export class VideoCallComponent implements OnInit{
   async makeCall() {
 
     //set audio và video cho B
-    this.toStream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+    this.toStream = await navigator.mediaDevices.getUserMedia({audio: {
+        echoCancellation: true,  // loại bỏ tiếng vang
+        noiseSuppression: true,  // giảm tiếng ồn
+        autoGainControl: true    // cân bằng âm lượng
+      }, video: true});
     this.localVideo.nativeElement.srcObject = this.toStream;
     this.createPeerConnection();
 
@@ -213,6 +219,7 @@ export class VideoCallComponent implements OnInit{
       console.error('existing peerconnection');
       return;
     }
+
     this.createPeerConnection();
     await this.pc.setRemoteDescription(offer);
     const answer = await this.pc.createAnswer();
@@ -277,7 +284,11 @@ export class VideoCallComponent implements OnInit{
   }
 
   async handleStart() {
-    this.fromStream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+    this.fromStream = await navigator.mediaDevices.getUserMedia({audio: {
+        echoCancellation: true,  // loại bỏ tiếng vang
+        noiseSuppression: true,  // giảm tiếng ồn
+        autoGainControl: true    // cân bằng âm lượng
+      }, video: true});
     this.localVideo.nativeElement.srcObject = this.fromStream;
     console.log('handleStart')
     //this.signaling.postMessage({userId:this.getUserId(),type: 'ready'});
@@ -293,13 +304,12 @@ export class VideoCallComponent implements OnInit{
   }
 
   getUserSendId(){
-    const userId = localStorage.getItem('userSendId')
-    return userId;
+    return this.infoCurrentUser.id;
   }
 
   getUserReceiveId(){
-    const userId = localStorage.getItem('userReceiveId')
-    return userId;
+    //return this.infoFriendUser.id;
+    return 10002;
   }
 
 //   =============================handle device info=======================================
@@ -322,22 +332,35 @@ export class VideoCallComponent implements OnInit{
         if (d.kind === 'videoinput') this.videoInputs.push(d);
       }
 
-      this.start();
+      if (!this.audioOutput && this.audioOutputs.length) {
+        this.audioOutput = this.audioOutputs[0].deviceId;
+        this.audioOutputCurrent = this.audioOutput;
+      }
+      const videoTrack = this.fromStream.getVideoTracks()[0];
+      const audioTrack = this.fromStream.getAudioTracks()[0];
+
+      this.videoInput = videoTrack?.getSettings().deviceId;
+      this.audioInput = audioTrack?.getSettings().deviceId;
+
+      this.videoInputCurrent = this.videoInput;
+      this.audioInputCurrent = this.audioInput;
+
+      // await this.startAgain();
     } catch (err) {
       console.error('enumerateDevices error', err);
     }
   }
 
-  async start() {
+  async startAgain() {
     // Không mở lại device cũ
     if (
       this.hasPermission &&
-      this.openMic === this.audioInput &&
-      this.openCamera === this.videoInput
+      this.audioInputCurrent === this.audioInput &&
+      this.videoInputCurrent === this.videoInput &&
+      this.audioOutputCurrent === this.audioOutput
     ) {
       return;
     }
-
     this.stopStream();
 
     const constraints: MediaStreamConstraints = {
@@ -351,26 +374,32 @@ export class VideoCallComponent implements OnInit{
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      this.gotStream(stream);
+      await this.getStream(stream);
     } catch (err) {
       console.error('getUserMedia error', err);
     }
   }
 
-  async gotStream(stream: MediaStream) {
+  async getStream(stream: MediaStream) {
     this.stream = stream;
     //xét local
     this.localVideo.nativeElement.srcObject = stream;
 
     //xét remote
     const newVideoTrack = stream.getVideoTracks()[0];
-    const sender = this.pc
-      .getSenders()
-      .find((s:any) => s.track?.kind === 'video');
-
-    if (sender) {
-      await sender.replaceTrack(newVideoTrack);
+    try {
+      const sender = this.pc
+        .getSenders()
+        .find((s:any) => s.track?.kind === 'video');
+      if (sender) {
+        await sender.replaceTrack(newVideoTrack);
+      }
+    }catch (err) {
+      console.error('getSenders error', err);
     }
+
+
+
 
     // stop track cũ
     this.fromStream?.getVideoTracks()[0]?.stop();
@@ -380,8 +409,11 @@ export class VideoCallComponent implements OnInit{
     const videoTrack = stream.getVideoTracks()[0];
     const audioTrack = stream.getAudioTracks()[0];
 
-    this.openCamera = videoTrack?.getSettings().deviceId;
-    this.openMic = audioTrack?.getSettings().deviceId;
+    this.videoInput = videoTrack?.getSettings().deviceId;
+    this.audioInput = audioTrack?.getSettings().deviceId;
+
+    this.videoInputCurrent = this.videoInput;
+    this.audioInputCurrent = this.audioInput;
   }
 
   async changeAudioDestination() {
@@ -403,14 +435,33 @@ export class VideoCallComponent implements OnInit{
     if (this.stream) {
       this.stream.getTracks().forEach(t => t.stop());
       this.stream = undefined;
-      this.openCamera = undefined;
-      this.openMic = undefined;
+      this.videoInputCurrent = undefined;
+      this.audioInputCurrent = undefined;
     }
   }
 
   handleToggleCallCurrent() {
     this.isOpenScreenUserCurrent = !this.isOpenScreenUserCurrent;
   }
+
+  playCallSound() {
+    this.audioMp3.loop = true;          // phát liên tục
+    this.audioMp3.currentTime = 0;
+
+    this.audioMp3.play().catch(() => {});
+    setTimeout(() => {
+      this.stopCallSound();
+      this.closeModal();
+    }, 30000);
+  }
+
+  stopCallSound() {
+    this.audioMp3.pause();
+    this.audioMp3.currentTime = 0;
+    this.audioMp3.loop = false;
+  }
+
+  closeModal(){this.activeModal.close();}
 
   protected readonly ICON_PHONE = ICON_PHONE;
   protected readonly MICRO = MICRO;
@@ -419,4 +470,10 @@ export class VideoCallComponent implements OnInit{
 
 
   protected readonly ICON_ARROW_LEFT = ICON_ARROW_LEFT;
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
+  protected readonly MICRO_CLOSE = MICRO_CLOSE;
+
+  handleShowChangeDevice() {
+    this.isShowChangeDevice = !this.isShowChangeDevice
+  }
 }

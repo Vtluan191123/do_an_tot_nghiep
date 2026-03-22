@@ -20,6 +20,8 @@ import {WebsocketService} from '../../../service/socket/websocket.service';
 import {ToastrService} from 'ngx-toastr';
 import {Subject, takeUntil} from 'rxjs';
 import {Title} from '@angular/platform-browser';
+import {Route, Router} from '@angular/router';
+import {VideoCallComponent} from '../../video-call/video-call.component';
 
 @Component({
   selector: 'app-message-detail',
@@ -69,6 +71,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   audioUrl: string | null = null;
   audioBlob!: Blob;
   maxTimeAudio: any;
+  audioMp3 = new Audio('assets/sounds/mp3_info_mess.mp3');
 
 
   constructor(private transferData:TransferDataService,
@@ -77,7 +80,9 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
               private webSocketService:WebsocketService,
               private toartService:ToastrService,
               private transferDataService:TransferDataService,
-              private titleService: Title) {
+              private titleService: Title,
+              private router:Router,
+              ) {
   }
 
 
@@ -492,14 +497,22 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
 
   //chuông thông báo
   playMessageSound() {
-    const audio = new Audio();
-    audio.src = 'assets/sounds/mp3_info_mess.mp3';
-    audio.load();
-    audio.play();
+    if (!this.audioMp3.paused) {
+      this.audioMp3.currentTime = 0;
+    } else {
+      this.audioMp3.play().catch(() => {});
+    }
   }
 
-  handleTestPlayAudio() {
 
+  handleCall() {
+    const modalRef = this.modalService.open(VideoCallComponent, {
+      size: 'xl',
+      fullscreen: 'xxl',
+      backdrop: "static",
+      centered: true,
+      windowClass: 'video-call-modal'
+    });
 
   }
 
@@ -531,4 +544,6 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
 
 
   protected readonly ICON_CLOSE_AUDIO = ICON_CLOSE_AUDIO;
+
+
 }

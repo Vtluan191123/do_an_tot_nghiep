@@ -332,3 +332,15 @@ $border-color: rgba(255,255,255,0.1);
   background-color: #444444;
 }
 
+.video-call-modal {
+  .modal-dialog {
+    max-width: 95vw;
+    width: 95vw;
+    height: 95vh;
+  }
+
+  .modal-content {
+    height: 95vh;
+    border-radius: 40px !important;
+  }
+}

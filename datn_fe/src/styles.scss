@@ -3263,3 +3263,14 @@ ul, li {
     font-size: 28px;
   }
 }
+
+.video-call-modal {
+  .modal-dialog {
+  }
+
+  .modal-content {
+    height: 100%;
+    display: flex;
+    border-radius: 40px !important;
+  }
+}
