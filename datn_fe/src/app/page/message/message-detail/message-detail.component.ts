@@ -514,6 +514,11 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
       windowClass: 'video-call-modal'
     });
 
+    //bắn socket sang bên gọi
+    this.webSocketService.sendMessage('/api/websocket/call', {
+      type: 'call',
+    });
+
   }
 
 

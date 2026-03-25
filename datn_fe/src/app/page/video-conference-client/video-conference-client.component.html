@@ -48,7 +48,7 @@
       <div class="nav-room-item">
         <div class="nav-room-item-button" (click)="handleStatusMicro()">
           @if (statusMicro) {
-            <span class="me-2" [innerHTML]=" MICRO | safeHtml"></span>
+            <span class="me-2" [innerHTML]=" MICRO_OPEN | safeHtml"></span>
           } @else {
             <span class="me-2" [innerHTML]=" MICRO_CLOSE | safeHtml"></span>
           }

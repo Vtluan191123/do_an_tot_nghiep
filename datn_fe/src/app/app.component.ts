@@ -12,6 +12,9 @@ import {AuthServiceService} from './service/auth/auth-service.service';
 import {ToastrService} from 'ngx-toastr';
 import {UserDetailComponent} from './page/message/user-detail/user-detail.component';
 import {VideoConferenceClientComponent} from './page/video-conference-client/video-conference-client.component';
+import {BASE_TOPIC_SOCKET} from './constants/constants';
+import {SocketData} from './model/socket';
+import {Subject, Subscription, takeUntil} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +27,8 @@ export class AppComponent implements OnInit ,OnDestroy{
   title = 'dotn-fe';
 
   isShowMessageDetail:any
-  countMessage:any
+  infoCurrentUser:any
+  destroy$ = new Subject<void>();
 
   constructor(private websocketService:WebsocketService,
               private transferDataService:TransferDataService,
@@ -54,6 +58,9 @@ export class AppComponent implements OnInit ,OnDestroy{
 
     //get info user
     this.authServiceService.getInfoUser().subscribe((res:any)=>{
+      console.log('getInfoUser',res)
+      this.infoCurrentUser = res
+      this.handleConnectTopic()
       this.transferDataService.sendInfoUser(res)
     })
 
@@ -61,9 +68,39 @@ export class AppComponent implements OnInit ,OnDestroy{
       if(res)
       this.toastService.success(`${res} gửi cho bạn tin nhắn`,'Thông báo')
     })
+
+
+  }
+
+  handleConnectTopic(){
+    // this.websocketService.subscribeToTopic(`${BASE_TOPIC_SOCKET}/${this.infoCurrentUser.id}`)
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe((res:any)=>{
+    //
+    //   switch (res.type){
+    //     case 'call': {
+    //       console.log('call event');
+    //       break;
+    //     }
+    //
+    //     case 'mess': {
+    //       console.log('mess');
+    //       break;
+    //     }
+    //     default: {
+    //       console.log('unknown type', res);
+    //     }
+    //   }
+    //
+    // })
+    this.websocketService.subscribeToTopic('/topic/call').subscribe((res:any)=>{
+      console.log('result',res)
+    })
   }
 
   ngOnDestroy(): void {
     this.websocketService.disconnect()
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

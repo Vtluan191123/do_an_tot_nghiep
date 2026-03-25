@@ -5,7 +5,7 @@ import {
   CAMERA_OPEN, CLOSE_MESSAGE,
   LEAVE,
   MESSAGE_CHAT,
-  MICRO, MICRO_CLOSE,
+  MICRO_CLOSE, MICRO_OPEN,
   SETTING,
   SHARE_SCREEN, VIEW_CHANGE, VIEW_QUALITY
 } from '../share/other/icons/icons';
@@ -169,7 +169,7 @@ export class VideoConferenceClientComponent {
   }
 
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;
-  protected readonly MICRO = MICRO;
+  protected readonly MICRO_OPEN = MICRO_OPEN;
   protected readonly MICRO_CLOSE = MICRO_CLOSE;
   protected readonly CAMERA_OPEN = CAMERA_OPEN;
   protected readonly SHARE_SCREEN = SHARE_SCREEN;

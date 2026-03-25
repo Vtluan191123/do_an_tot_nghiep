@@ -3,19 +3,19 @@ import {WebsocketService} from '../../service/socket/websocket.service';
 import {isPlatformBrowser, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
+  CAMERA_CLOSE,
   CAMERA_OPEN,
   ICON_ARROW_LEFT,
-  ICON_ARROW_RIGHT,
-  ICON_PHONE,
-  MICRO,
-  MICRO_CLOSE
+  ICON_ARROW_RIGHT, ICON_CALL_AGAIN, ICON_EDIT_SQUARE,
+  ICON_PHONE, ICON_THREE_DOT,
+  MICRO_CLOSE, MICRO_OPEN, VIEW_CHANGE
 } from '../share/other/icons/icons';
 import {AuthServiceService} from '../../service/auth/auth-service.service';
 import {getInfoCurrentUser} from '../../common/function_util';
 import {TransferDataService} from '../../service/tranfer-data/transfer-data.service';
 import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
-import {BASE_URL_UPLOAD} from '../../constants/constants';
+import {BASE_TOPIC_SOCKET, BASE_URL_UPLOAD} from '../../constants/constants';
 
 @Component({
   selector: 'app-video-call',
@@ -59,6 +59,10 @@ export class VideoCallComponent implements OnInit{
   audioInput?: string;
   audioOutput?: string;
   videoInput?: string;
+
+  //bật tắt mic và camera
+  isEnableMic: boolean = true
+  isEnableCamera: boolean = true
 
   //thiết bị hiện tại
   private stream?: MediaStream;
@@ -113,7 +117,7 @@ export class VideoCallComponent implements OnInit{
   }
 
   handleSignaling(){
-    this.websocketService.subscribeToTopic(`${this.topic}${this.userReceiveId}`).subscribe(async (res:any)=>{
+    this.websocketService.subscribeToTopic(`${BASE_TOPIC_SOCKET}${this.userReceiveId}`).subscribe(async (res:any)=>{
       if (res.binaryBody && res.binaryBody.length > 0) {
         const decoder = new TextDecoder('utf-8');
         const text = decoder.decode(res.binaryBody);
@@ -182,7 +186,7 @@ export class VideoCallComponent implements OnInit{
         message.sdpMLineIndex = event.candidate.sdpMLineIndex;
       }
       //this.signaling.postMessage(message);
-      this.websocketService.sendMessage(`${this.topic}${this.userSendId}`,message);
+      this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,message);
     };
 
     this.remoteVideo.nativeElement.srcObject = this.toStream || this.fromStream
@@ -210,7 +214,7 @@ export class VideoCallComponent implements OnInit{
 
     const offer = await this.pc.createOffer();
     //this.signaling.postMessage({userId:this.getUserId(),type: 'offer', sdp: offer.sdp});
-    this.websocketService.sendMessage(`${this.topic}${this.userSendId}`,{userId:this.userSendId,type: 'offer', sdp: offer.sdp})
+    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'offer', sdp: offer.sdp})
     await this.pc.setLocalDescription(offer);
   }
 
@@ -225,7 +229,7 @@ export class VideoCallComponent implements OnInit{
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
     //this.signaling.postMessage({userId:this.getUserId(),type: 'answer', sdp: answer.sdp});
-    this.websocketService.sendMessage(`${this.topic}${this.userSendId}`,{userId:this.userSendId,type: 'answer', sdp: answer.sdp})
+    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'answer', sdp: answer.sdp})
 
   }
 
@@ -294,13 +298,13 @@ export class VideoCallComponent implements OnInit{
     //this.signaling.postMessage({userId:this.getUserId(),type: 'ready'});
     console.log("call to userID: ", this.userSendId)
     this.isDisableCall = true
-    this.websocketService.sendMessage(`${this.topic}${this.userSendId}`,{userId:this.userSendId,type: 'call'})
+    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'call'})
   }
 
   handleHangup() {
     this.hangup();
     //this.signaling.postMessage({userId:this.getUserId(),type: 'bye'});
-    //this.websocketService.sendMessage(`${this.topic}${this.userSendId}`,{userId:this.userSendId,type: 'bye'})
+    //this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'bye'})
   }
 
   getUserSendId(){
@@ -461,19 +465,39 @@ export class VideoCallComponent implements OnInit{
     this.audioMp3.loop = false;
   }
 
-  closeModal(){this.activeModal.close();}
+  handleToggleMicro() {
+    if(this.fromStream){
+      this.fromStream.getAudioTracks().forEach((track:any) => {
+        track.enabled = !track.enabled;
+        this.isEnableMic = !this.isEnableMic
+      });
+    }
 
-  protected readonly ICON_PHONE = ICON_PHONE;
-  protected readonly MICRO = MICRO;
-  protected readonly CAMERA_OPEN = CAMERA_OPEN;
-  protected readonly ICON_ARROW_RIGHT = ICON_ARROW_RIGHT;
+  }
 
-
-  protected readonly ICON_ARROW_LEFT = ICON_ARROW_LEFT;
-  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
-  protected readonly MICRO_CLOSE = MICRO_CLOSE;
+  handleToggleCamera() {
+    if(this.fromStream){
+      this.fromStream.getVideoTracks().forEach((track:any) => {
+        track.enabled = !track.enabled;
+        this.isEnableCamera = !this.isEnableCamera
+      });
+    }
+  }
 
   handleShowChangeDevice() {
     this.isShowChangeDevice = !this.isShowChangeDevice
   }
+
+  closeModal(){this.activeModal.close();}
+
+  protected readonly ICON_PHONE = ICON_PHONE;
+  protected readonly MICRO_OPEN = MICRO_OPEN;
+  protected readonly CAMERA_OPEN = CAMERA_OPEN;
+  protected readonly ICON_ARROW_RIGHT = ICON_ARROW_RIGHT;
+  protected readonly ICON_ARROW_LEFT = ICON_ARROW_LEFT;
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
+  protected readonly MICRO_CLOSE = MICRO_CLOSE;
+  protected readonly ICON_THREE_DOT = ICON_THREE_DOT;
+  protected readonly CAMERA_CLOSE = CAMERA_CLOSE;
+  protected readonly ICON_CALL_AGAIN = ICON_CALL_AGAIN;
 }

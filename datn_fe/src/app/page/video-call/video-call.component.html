@@ -17,42 +17,11 @@
 <!--  </div>-->
 <!--</div>-->
 
-
-
-<div class="controls">
-  <label>
-    Microphone:
-    <select [(ngModel)]="audioInput" (ngModelChange)="startAgain()">
-      <option *ngFor="let d of audioInputs" [value]="d.deviceId">
-        {{ d.label }}
-      </option>
-    </select>
-  </label>
-
-  <label>
-    Speaker:
-    <select [(ngModel)]="audioOutput" (ngModelChange)="changeAudioDestination()">
-      <option *ngFor="let d of audioOutputs" [value]="d.deviceId">
-        {{ d.label }}
-      </option>
-    </select>
-  </label>
-
-  <label>
-    Camera:
-    <select [(ngModel)]="videoInput" (ngModelChange)="startAgain()">
-      <option *ngFor="let d of videoInputs" [value]="d.deviceId">
-        {{ d.label }}
-      </option>
-    </select>
-  </label>
-</div>
-
 <div class="wrapper-video-call">
   <div *ngIf="!toStream" class="call-receiver">
     <div class="avatar"
          [ngStyle]="{
-    'background': 'url(' + (infoFriendUser.imagesUrl ? infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+    'background': 'url(' + (infoFriendUser.imagesUrl  ? infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
   }"
     ></div>
     <h2>{{infoFriendUser.username}}</h2>
@@ -60,16 +29,16 @@
   </div>
   <video [hidden]="toStream" #remoteVideo id="remoteVideo" playsinline autoplay></video>
   <div class="action">
-    <div (click)="handleStart()" class="action-item">
-      <span  [innerHTML]="CAMERA_OPEN | safeHtml"></span>
+    <div (click)="handleToggleCamera()" class="action-item">
+      <span  [innerHTML]="(isEnableCamera ? CAMERA_CLOSE : CAMERA_OPEN) | safeHtml"></span>
     </div>
-    <div (click)="handleAnswerPhone()" class="action-item">
-      <span  [innerHTML]="MICRO_CLOSE | safeHtml"></span>
-    </div>
-    <div (click)="handleHangup()" class="action-item">
-      <span  [innerHTML]="ICON_PHONE | safeHtml"></span>
+    <div (click)="handleToggleMicro()" class="action-item">
+      <span  [innerHTML]="(isEnableMic ? MICRO_CLOSE : MICRO_OPEN) | safeHtml"></span>
     </div>
     <div (click)="handleShowChangeDevice()" class="action-item">
+      <span  [innerHTML]="ICON_THREE_DOT | safeHtml"></span>
+    </div>
+    <div (click)="handleHangup()" class="action-item">
       <span  [innerHTML]="ICON_PHONE | safeHtml"></span>
     </div>
 
@@ -122,6 +91,9 @@
     </video>
     <div  class="toggle-open-close" >
       <span (click)="handleToggleCallCurrent()" [innerHTML]="(isOpenScreenUserCurrent ?  ICON_ARROW_RIGHT: ICON_ARROW_LEFT )| safeHtml"></span>
+    </div>
+    <div *ngIf="!isEnableMic" class="mute">
+      <span  [innerHTML]="MICRO_CLOSE | safeHtml"></span>
     </div>
   </div>
 </div>
