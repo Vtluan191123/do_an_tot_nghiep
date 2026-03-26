@@ -10,7 +10,7 @@ import {
 } from '../../share/other/icons/icons';
 import {CommonModule, NgForOf, NgIf, NgStyle} from '@angular/common';
 import {TransferDataService} from '../../../service/tranfer-data/transfer-data.service';
-import {BASE_URL_UPLOAD, LIST_EMOTE, MESSAGE_TYPE} from '../../../constants/constants';
+import {BASE_TOPIC_SOCKET_FE, BASE_URL_UPLOAD, LIST_EMOTE, MESSAGE_TYPE} from '../../../constants/constants';
 import {FormsModule} from '@angular/forms';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {EmoteModalComponent} from './emote-modal/emote-modal.component';
@@ -22,6 +22,7 @@ import {Subject, takeUntil} from 'rxjs';
 import {Title} from '@angular/platform-browser';
 import {Route, Router} from '@angular/router';
 import {VideoCallComponent} from '../../video-call/video-call.component';
+import {SocketData} from '../../../model/socket';
 
 @Component({
   selector: 'app-message-detail',
@@ -52,6 +53,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   infoMessageDetail: any = [];
   selectedFiles:any[] = [];
   messageCurrent:any
+  //thông tin bạn bè
   userDetailMessage:any
   @ViewChild('scrollContainer')
   private scrollContainer!: ElementRef;
@@ -72,6 +74,7 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   audioBlob!: Blob;
   maxTimeAudio: any;
   audioMp3 = new Audio('assets/sounds/mp3_info_mess.mp3');
+
 
 
   constructor(private transferData:TransferDataService,
@@ -514,11 +517,19 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
       windowClass: 'video-call-modal'
     });
 
-    //bắn socket sang bên gọi
-    this.webSocketService.sendMessage('/api/websocket/call', {
+    console.log('this.userDetailMessage',this.userDetailMessage)
+    const data: SocketData = {
       type: 'call',
-    });
+      metadata: {
+        groupId: this.userDetailMessage.groudId,
+        infoCaller: this.infoCurrentUser
+      }
+    }
 
+    //bắn socket sang bên gọi
+    this.webSocketService.sendMessage(`${BASE_TOPIC_SOCKET_FE}global/${this.userDetailMessage.id}`,
+      data
+    );
   }
 
 

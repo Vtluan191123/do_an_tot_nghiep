@@ -12,9 +12,10 @@ import {AuthServiceService} from './service/auth/auth-service.service';
 import {ToastrService} from 'ngx-toastr';
 import {UserDetailComponent} from './page/message/user-detail/user-detail.component';
 import {VideoConferenceClientComponent} from './page/video-conference-client/video-conference-client.component';
-import {BASE_TOPIC_SOCKET} from './constants/constants';
+import {BASE_TOPIC_SOCKET, BASE_TOPIC_SOCKET_FE} from './constants/constants';
 import {SocketData} from './model/socket';
 import {Subject, Subscription, takeUntil} from 'rxjs';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
@@ -34,7 +35,8 @@ export class AppComponent implements OnInit ,OnDestroy{
               private transferDataService:TransferDataService,
               private authServiceService:AuthServiceService,
               @Inject(PLATFORM_ID) private platformId: Object,
-              private toastService:ToastrService
+              private toastService:ToastrService,
+              private modalService:NgbModal,
               ) {
   }
 
@@ -73,30 +75,43 @@ export class AppComponent implements OnInit ,OnDestroy{
   }
 
   handleConnectTopic(){
-    // this.websocketService.subscribeToTopic(`${BASE_TOPIC_SOCKET}/${this.infoCurrentUser.id}`)
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe((res:any)=>{
-    //
-    //   switch (res.type){
-    //     case 'call': {
-    //       console.log('call event');
-    //       break;
-    //     }
-    //
-    //     case 'mess': {
-    //       console.log('mess');
-    //       break;
-    //     }
-    //     default: {
-    //       console.log('unknown type', res);
-    //     }
-    //   }
-    //
-    // })
-    this.websocketService.subscribeToTopic('/topic/call').subscribe((res:any)=>{
-      console.log('result',res)
-    })
+    this.websocketService
+      .subscribeToTopic(`${BASE_TOPIC_SOCKET_FE}global/${this.infoCurrentUser.id}`)
+      .subscribe((res: any) => {
+        const data = JSON.parse(res.body)
+        switch (data.type) {
+          case 'call': {
+            console.log('call', data.metadata);
+            this.handleShowModal(data.metadata)
+            break;
+          }
+
+          case 'message': {
+            console.log('message', data.metadata);
+            break;
+          }
+
+          default: {
+            console.warn('Unknown type:', res);
+            break;
+          }
+        }
+      });
   }
+
+  handleShowModal(metadata:any){
+    const modalRef = this.modalService.open(VideoCallComponent, {
+      size: 'xl',
+      fullscreen: 'xxl',
+      backdrop: "static",
+      centered: true,
+      windowClass: 'video-call-modal'
+    });
+    modalRef.componentInstance.receiverCall = true;
+    modalRef.componentInstance.metadataCall = metadata
+  }
+
+
 
   ngOnDestroy(): void {
     this.websocketService.disconnect()

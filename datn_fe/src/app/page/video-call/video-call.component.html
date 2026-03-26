@@ -21,22 +21,25 @@
   <div *ngIf="!toStream" class="call-receiver">
     <div class="avatar"
          [ngStyle]="{
-    'background': 'url(' + (infoFriendUser.imagesUrl  ? infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+    'background': 'url(' + (infoFriendUser?.imagesUrl  ? BASE_URL_UPLOAD + infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
   }"
     ></div>
-    <h2>{{infoFriendUser.username}}</h2>
+    <h2>{{infoFriendUser?.username}}</h2>
     <p>Đang gọi ...</p>
   </div>
-  <video [hidden]="toStream" #remoteVideo id="remoteVideo" playsinline autoplay></video>
+  <video [hidden]="!toStream" #remoteVideo id="remoteVideo" playsinline autoplay></video>
   <div class="action">
-    <div (click)="handleToggleCamera()" class="action-item">
+    <div *ngIf="!receiverCall" (click)="handleToggleCamera()" class="action-item">
       <span  [innerHTML]="(isEnableCamera ? CAMERA_CLOSE : CAMERA_OPEN) | safeHtml"></span>
     </div>
-    <div (click)="handleToggleMicro()" class="action-item">
+    <div *ngIf="!receiverCall" (click)="handleToggleMicro()" class="action-item">
       <span  [innerHTML]="(isEnableMic ? MICRO_CLOSE : MICRO_OPEN) | safeHtml"></span>
     </div>
-    <div (click)="handleShowChangeDevice()" class="action-item">
+    <div *ngIf="!receiverCall" (click)="handleShowChangeDevice()" class="action-item">
       <span  [innerHTML]="ICON_THREE_DOT | safeHtml"></span>
+    </div>
+    <div *ngIf="receiverCall" (click)="handleAnswerPhone()" class="action-item">
+      <span  [innerHTML]="ICON_CALL_AGAIN | safeHtml"></span>
     </div>
     <div (click)="handleHangup()" class="action-item">
       <span  [innerHTML]="ICON_PHONE | safeHtml"></span>

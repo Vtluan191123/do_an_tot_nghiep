@@ -9,7 +9,7 @@
     <div class="message-body">
       <div *ngFor="let groud of listGroud" (click)="handleShowMessageDetail(groud)" class="message-item">
         <div class="avatar-user" [ngStyle]="{
-    'background': 'url(' + (groud.imagesUrl ? groud.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+    'background': 'url(' + (groud.imagesUrl ?  BASE_URL_UPLOAD + groud.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
   }">
           <div class="dot-status-online"></div>
         </div>

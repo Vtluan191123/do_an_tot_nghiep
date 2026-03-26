@@ -31,8 +31,6 @@ import {BASE_TOPIC_SOCKET, BASE_URL_UPLOAD} from '../../constants/constants';
   styleUrl: './video-call.component.scss'
 })
 export class VideoCallComponent implements OnInit{
-  isDisableCall: boolean = false
-  isDisableReply: boolean = false
   isShowChangeDevice:boolean = false
   fromStream:any
   toStream:any
@@ -54,6 +52,11 @@ export class VideoCallComponent implements OnInit{
   audioInputs: MediaDeviceInfo[] = [];
   audioOutputs: MediaDeviceInfo[] = [];
   videoInputs: MediaDeviceInfo[] = [];
+
+  //status
+  receiverCall:any
+
+  metadataCall:any
 
   //thiết bị lua chọn
   audioInput?: string;
@@ -91,17 +94,20 @@ export class VideoCallComponent implements OnInit{
       this.authService.getInfoUser()
     );
 
-    this.infoFriendUser = await getInfoCurrentUser(
-      this.transferDataService.userDetailGroud$
-    );
+    this.transferDataService.userDetailGroud$.subscribe(user => {
+      if (!user) return;
 
-    console.log("infoCurrentUser",this.infoCurrentUser)
-    console.log("infoFriendUser",this.infoFriendUser)
-    this.userSendId = this.getUserSendId()
-    this.userReceiveId = this.getUserReceiveId()
-    this.handleSignaling();
-    await this.handleStart();
+      this.infoFriendUser = user;
 
+      this.userSendId = this.infoCurrentUser.id;
+      this.userReceiveId = this.infoFriendUser.id;
+
+      console.log("infoCurrentUser", this.infoCurrentUser);
+      console.log("infoFriendUser", this.infoFriendUser);
+
+      this.handleSignaling();
+      this.handleStart();
+    });
     navigator.mediaDevices.ondevicechange = () => {
       this.getDevices();
     };
@@ -118,6 +124,7 @@ export class VideoCallComponent implements OnInit{
 
   handleSignaling(){
     this.websocketService.subscribeToTopic(`${BASE_TOPIC_SOCKET}${this.userReceiveId}`).subscribe(async (res:any)=>{
+      debugger
       if (res.binaryBody && res.binaryBody.length > 0) {
         const decoder = new TextDecoder('utf-8');
         const text = decoder.decode(res.binaryBody);
@@ -142,7 +149,6 @@ export class VideoCallComponent implements OnInit{
             console.log('already in call, ignoring');
             return;
           }
-          this.isDisableCall = true
           this.hasCall = true
           break;
         case 'bye':
@@ -283,7 +289,7 @@ export class VideoCallComponent implements OnInit{
   // }
   handleAnswerPhone(){
     console.log('handle reply')
-    this.isDisableReply = true
+    this.receiverCall = false
     this.makeCall();
   }
 
@@ -297,7 +303,6 @@ export class VideoCallComponent implements OnInit{
     console.log('handleStart')
     //this.signaling.postMessage({userId:this.getUserId(),type: 'ready'});
     console.log("call to userID: ", this.userSendId)
-    this.isDisableCall = true
     this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'call'})
   }
 
@@ -312,8 +317,8 @@ export class VideoCallComponent implements OnInit{
   }
 
   getUserReceiveId(){
-    //return this.infoFriendUser.id;
-    return 10002;
+    debugger
+    return this.infoFriendUser.id;
   }
 
 //   =============================handle device info=======================================

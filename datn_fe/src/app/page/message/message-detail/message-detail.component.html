@@ -2,7 +2,7 @@
   <div class="nav-message">
     <div class="d-flex justify-content-center align-items-center">
       <div class="avatar" [ngStyle]="{
-    'background': 'url(' + (userDetailMessage.imagesUrl ? userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+    'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
   }" >
         <div class="dot-status-online"></div>
       </div>
@@ -29,7 +29,7 @@
     'flex-direction': mess.senderId === infoCurrentUser.id ? 'row-reverse' : 'row'
   }">
       <div *ngIf="mess.senderId !== infoCurrentUser.id" class="avatar-item" [ngStyle]="{
-    'background': 'url(' + (userDetailMessage.imagesUrl ? userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+    'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
   }">
 
       </div>

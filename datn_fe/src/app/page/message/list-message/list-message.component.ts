@@ -52,6 +52,7 @@ export class ListMessageComponent implements OnInit{
   handleShowMessageDetail(groud:any) {
     this.isShowMessageDetail = true
     this.transferDataService.sendMessage(groud)
+    debugger
   }
 
   protected readonly ICON_SEARCH = ICON_SEARCH;
