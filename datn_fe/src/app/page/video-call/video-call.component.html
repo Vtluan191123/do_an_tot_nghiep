@@ -18,7 +18,7 @@
 <!--</div>-->
 
 <div class="wrapper-video-call">
-  <div *ngIf="!toStream" class="call-receiver">
+  <div *ngIf="isHideReceiverCall" class="call-receiver">
     <div class="avatar"
          [ngStyle]="{
     'background': 'url(' + (infoFriendUser?.imagesUrl  ? BASE_URL_UPLOAD + infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
@@ -27,7 +27,7 @@
     <h2>{{infoFriendUser?.username}}</h2>
     <p>Đang gọi ...</p>
   </div>
-  <video [hidden]="!toStream" #remoteVideo id="remoteVideo" playsinline autoplay></video>
+  <video [hidden]="isHideReceiverCall" #remoteVideo id="remoteVideo" playsinline autoplay></video>
   <div class="action">
     <div *ngIf="!receiverCall" (click)="handleToggleCamera()" class="action-item">
       <span  [innerHTML]="(isEnableCamera ? CAMERA_CLOSE : CAMERA_OPEN) | safeHtml"></span>
@@ -97,6 +97,9 @@
     </div>
     <div *ngIf="!isEnableMic" class="mute">
       <span  [innerHTML]="MICRO_CLOSE | safeHtml"></span>
+    </div>
+    <div class="name">
+      <span>{{infoCurrentUser?.username}}</span>
     </div>
   </div>
 </div>

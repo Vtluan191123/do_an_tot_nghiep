@@ -30,13 +30,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 300px;
     height: auto;
     position: absolute;
     bottom: 0;
     left: 50%;
     transform: translate(-50%, -50%);
     .action-item{
+      margin: 0 10px;
       padding: 20px;
       border-radius: 50%;
       background-color: #444444;
@@ -167,6 +167,14 @@
       bottom: 10px;
       left: 14px;
       color: #f30606;
+    }
+    .name{
+      position: absolute;
+      bottom: 4px;
+      left: 16px;
+      color: #ffff;
+      font-size: 18px;
+      font-weight: 600;
     }
   }
   .call-current.open{

@@ -55,7 +55,7 @@ export class VideoCallComponent implements OnInit{
 
   //status
   receiverCall:any
-
+  isHideReceiverCall:boolean = true
   metadataCall:any
 
   //thiết bị lua chọn
@@ -94,20 +94,21 @@ export class VideoCallComponent implements OnInit{
       this.authService.getInfoUser()
     );
 
+      // lấy khi mở message detail
     this.transferDataService.userDetailGroud$.subscribe(user => {
       if (!user) return;
-
       this.infoFriendUser = user;
-
-      this.userSendId = this.infoCurrentUser.id;
-      this.userReceiveId = this.infoFriendUser.id;
-
-      console.log("infoCurrentUser", this.infoCurrentUser);
-      console.log("infoFriendUser", this.infoFriendUser);
-
-      this.handleSignaling();
-      this.handleStart();
     });
+
+    if(!this.infoFriendUser){
+      this.infoFriendUser = this.metadataCall.infoCaller
+    }
+
+    this.userSendId = this.infoCurrentUser.id;
+    this.userReceiveId = this.infoFriendUser.id;
+
+    this.handleSignaling();
+    this.handleStart();
     navigator.mediaDevices.ondevicechange = () => {
       this.getDevices();
     };
@@ -124,7 +125,6 @@ export class VideoCallComponent implements OnInit{
 
   handleSignaling(){
     this.websocketService.subscribeToTopic(`${BASE_TOPIC_SOCKET}${this.userReceiveId}`).subscribe(async (res:any)=>{
-      debugger
       if (res.binaryBody && res.binaryBody.length > 0) {
         const decoder = new TextDecoder('utf-8');
         const text = decoder.decode(res.binaryBody);
@@ -195,14 +195,14 @@ export class VideoCallComponent implements OnInit{
       this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,message);
     };
 
-    this.remoteVideo.nativeElement.srcObject = this.toStream || this.fromStream
-    this.pc.ontrack = (event:any) => {
-        this.remoteVideo.nativeElement.srcObject = event.streams[0];
-    }
     if(this.toStream){
       this.toStream.getTracks().forEach((track:any) => this.pc.addTrack(track, this.toStream));
     }else {
       this.fromStream.getTracks().forEach((track:any) => this.pc.addTrack(track, this.fromStream));
+    }
+    this.pc.ontrack = (event:any) => {
+        this.remoteVideo.nativeElement.srcObject = event.streams[0];
+        this.isHideReceiverCall = false
     }
 
   }
@@ -215,7 +215,6 @@ export class VideoCallComponent implements OnInit{
         noiseSuppression: true,  // giảm tiếng ồn
         autoGainControl: true    // cân bằng âm lượng
       }, video: true});
-    this.localVideo.nativeElement.srcObject = this.toStream;
     this.createPeerConnection();
 
     const offer = await this.pc.createOffer();
@@ -229,6 +228,7 @@ export class VideoCallComponent implements OnInit{
       console.error('existing peerconnection');
       return;
     }
+
 
     this.createPeerConnection();
     await this.pc.setRemoteDescription(offer);
@@ -309,7 +309,7 @@ export class VideoCallComponent implements OnInit{
   handleHangup() {
     this.hangup();
     //this.signaling.postMessage({userId:this.getUserId(),type: 'bye'});
-    //this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'bye'})
+    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'bye'})
   }
 
   getUserSendId(){
@@ -317,7 +317,6 @@ export class VideoCallComponent implements OnInit{
   }
 
   getUserReceiveId(){
-    debugger
     return this.infoFriendUser.id;
   }
 
@@ -345,8 +344,11 @@ export class VideoCallComponent implements OnInit{
         this.audioOutput = this.audioOutputs[0].deviceId;
         this.audioOutputCurrent = this.audioOutput;
       }
-      const videoTrack = this.fromStream.getVideoTracks()[0];
-      const audioTrack = this.fromStream.getAudioTracks()[0];
+
+      if (!this.toStream) return;
+
+      const videoTrack = this.toStream.getVideoTracks()[0];
+      const audioTrack = this.toStream.getAudioTracks()[0];
 
       this.videoInput = videoTrack?.getSettings().deviceId;
       this.audioInput = audioTrack?.getSettings().deviceId;
@@ -478,11 +480,24 @@ export class VideoCallComponent implements OnInit{
       });
     }
 
+    if(this.toStream){
+      this.toStream.getAudioTracks().forEach((track:any) => {
+        track.enabled = !track.enabled;
+        this.isEnableMic = !this.isEnableMic
+      });
+    }
+
   }
 
   handleToggleCamera() {
     if(this.fromStream){
       this.fromStream.getVideoTracks().forEach((track:any) => {
+        track.enabled = !track.enabled;
+        this.isEnableCamera = !this.isEnableCamera
+      });
+    }
+    if(this.toStream){
+      this.toStream.getVideoTracks().forEach((track:any) => {
         track.enabled = !track.enabled;
         this.isEnableCamera = !this.isEnableCamera
       });
