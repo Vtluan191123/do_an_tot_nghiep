@@ -173,6 +173,11 @@ export class VideoCallComponent implements OnInit{
       this.toStream.getTracks().forEach((track:any) => track.stop());
       this.toStream = null;
     }
+
+    if(this.fromStream){
+      this.fromStream.getTracks().forEach((track:any) => track.stop());
+      this.fromStream = null;
+    }
     this.stopCallSound()
     this.closeModal()
   };
