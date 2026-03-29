@@ -1,5 +1,12 @@
-.wrapper-video-call{
-  background-color: #111111;
+$accent-blue: #0070f6;
+$accent-green: #31a24c;
+$bg-dark: #1a1d21;
+$bg-darker: #0f1117;
+$border-color: rgba(255, 255, 255, 0.1);
+$danger: #d32f2f;
+
+.wrapper-video-call {
+  background: linear-gradient(135deg, $bg-darker 0%, #0a0d0f 100%);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -8,71 +15,140 @@
   position: relative;
   overflow: hidden;
   padding: 200px 500px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+  width: 1200px;
+  height: 600px;
+  min-width: 1200px;
+  min-height: 600px;
 
-  .call-receiver{
+  #remoteVideo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .call-receiver {
     color: #ffffff;
     text-align: center;
-    p{
-      font-size: 16px;
-      font-weight: 600;
+    animation: fadeInDown 0.4s ease-out;
+
+    h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 20px 0 8px;
+      letter-spacing: 0.5px;
     }
-    .avatar{
+
+    p {
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+      animation: pulse-text 2s ease-in-out infinite;
+    }
+
+    .avatar {
       width: 200px;
       height: 200px;
       border-radius: 50%;
-      border: 10px solid #444444;
-      //background: url("https://scontent.fhan17-1.fna.fbcdn.net/v/t39.30808-1/648680061_1597141368204857_2230970375566720549_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=111&ccb=1-7&_nc_sid=1d2534&_nc_ohc=tgKPL9gy82EQ7kNvwFWwEqv&_nc_oc=Adml9GGf69dOwu4-R8b6BIpw4yyhAArOHZDTN2rQI1ul6Oruj7px16LzEtPmhXFuoIQ&_nc_zt=24&_nc_ht=scontent.fhan17-1.fna&_nc_gid=DXRFzA6wZ7fDYB59sLdsgQ&_nc_ss=8&oh=00_AfxYHJTyEgs0v61LCd1fcrTwjfUPESTQVU8BSvYUWPaC7w&oe=69B84387")  center/contain no-repeat;
-      margin-bottom: 20px;
+      border: 6px solid $bg-dark;
+      background-size: cover;
+      background-position: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+      animation: scaleIn 0.5s ease-out;
     }
   }
 
-  .action{
+  .action {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    gap: 16px;
     height: auto;
     position: absolute;
-    bottom: 0;
+    bottom: 20px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    .action-item{
-      margin: 0 10px;
-      padding: 20px;
-      border-radius: 50%;
-      background-color: #444444;
-      color: #8f8b8b;
-      transition: transform 0.2s ease, background-color 0.2s ease;
-      position: relative;
+    transform: translateX(-50%);
+    padding: 16px;
+    background: rgba(26, 29, 33, 0.8);
+    border-radius: 20px;
+    border: 1px solid $border-color;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 
-      &:hover{
+    .action-item {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(58, 63, 69, 0.8);
+      color: rgba(255, 255, 255, 0.8);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid $border-color;
+
+      &:hover {
         transform: scale(1.1);
-        background-color: rgba(255,255,255,0.1);
+        background: rgba(0, 112, 246, 0.2);
+        color: #ffffff;
+        box-shadow: 0 0 16px rgba(0, 112, 246, 0.3);
+      }
+
+      &:active {
+        transform: scale(0.95);
       }
     }
-    .action-item:last-child{
-      background-color: red;
+
+    // Answer Phone Button - Green
+    .action-item.accept-call {
+      background: linear-gradient(135deg, $accent-green 0%, #229540 100%);
       color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(49, 162, 76, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #3bc461 0%, #1e8e36 100%);
+        box-shadow: 0 8px 20px rgba(49, 162, 76, 0.5);
+        transform: scale(1.1);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    // Hang Up Button - Red (Last child)
+    .action-item:last-child {
+      background: linear-gradient(135deg, $danger 0%, #b71c1c 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+        box-shadow: 0 8px 20px rgba(211, 47, 47, 0.5);
+      }
     }
 
     .wrapper-change-device {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-
+      gap: 12px;
       position: absolute;
-      top: -290px;
-      right: 78px;
-
-      width: 260px;
+      top: -310px;
+      right: 0;
+      width: 280px;
       padding: 16px;
-
-      background: #ffffff;
-      border-radius: 12px;
-
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      border: 1px solid #eee;
-
-      animation: fadeIn 0.2s ease-in-out;
+      background: linear-gradient(135deg, $bg-dark 0%, $bg-darker 100%);
+      border-radius: 16px;
+      border: 1px solid $border-color;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      animation: slideUp 0.3s ease-out;
+      backdrop-filter: blur(10px);
 
       div {
         display: flex;
@@ -83,114 +159,218 @@
       label {
         font-size: 13px;
         font-weight: 600;
-        color: #333;
+        color: rgba(255, 255, 255, 0.8);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       select {
         width: 100%;
-        padding: 8px 10px;
-
-        border: 1px solid #ccc;
+        padding: 10px 12px;
+        border: 1px solid $border-color;
         border-radius: 8px;
-
         font-size: 13px;
-        color: #333;
-
-        background: #fafafa;
+        color: #ffffff;
+        background: rgba(58, 63, 69, 0.6);
         cursor: pointer;
-
         transition: all 0.2s ease;
 
+        option {
+          background: $bg-darker;
+          color: #ffffff;
+        }
+
         &:hover {
-          border-color: #409eff;
+          border-color: $accent-blue;
+          background: rgba(58, 63, 69, 0.8);
         }
 
         &:focus {
           outline: none;
-          border-color: #409eff;
-          box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-          background: #fff;
+          border-color: $accent-blue;
+          box-shadow: 0 0 12px rgba(0, 112, 246, 0.2);
+          background: rgba(58, 63, 69, 1);
+        }
+      }
+
+      // Responsive for tablet
+      @media (max-width: 1024px) {
+        width: 250px;
+        top: -280px;
+        right: -20px;
+
+        label {
+          font-size: 12px;
+        }
+
+        select {
+          font-size: 12px;
+          padding: 8px 10px;
+        }
+      }
+
+      // Responsive for mobile
+      @media (max-width: 768px) {
+        width: calc(100vw - 40px);
+        top: auto;
+        bottom: -320px;
+        right: 50%;
+        transform: translateX(50%);
+        z-index: 1000;
+
+        div {
+          margin-bottom: 4px;
+        }
+
+        label {
+          font-size: 12px;
+        }
+
+        select {
+          font-size: 14px;
+          padding: 10px 12px;
+        }
+      }
+
+      // Responsive for small mobile
+      @media (max-width: 480px) {
+        width: calc(100vw - 20px);
+        padding: 12px;
+        gap: 10px;
+
+        label {
+          font-size: 11px;
+        }
+
+        select {
+          font-size: 13px;
+          padding: 8px 10px;
         }
       }
     }
-
-    /* animation nhẹ */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-
   }
 
-  .call-current{
+  .call-current {
     height: 200px;
-    border-radius: 20px;
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    transition: all .3s ease;
     width: 20px;
+    border-radius: 16px;
+    position: absolute;
+    bottom: 20px;
+    right: 10px;
+    transition: all 0.3s ease;
     overflow: hidden;
+    border: 2px solid $border-color;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    background: #0b0b0b;
 
-    .toggle-open-close{
-      width: 40px;
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    video{
+    video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .camera-off-overlay{
+    .toggle-open-close {
+      width: 40px;
+      height: 40px;
       position: absolute;
-      inset: 0;
-      background: #0b0b0b;
+      left: 16px;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.3s ease;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+
+      &:hover {
+        background: rgba(0, 112, 246, 0.3);
+        transform: translate(-50%, -50%) scale(1.1);
+      }
     }
 
-    .mute{
+    .mute {
       position: absolute;
-      bottom: 10px;
+      bottom: 14px;
       left: 14px;
-      color: #f30606;
+      color: #ff5252;
+      font-size: 20px;
+      z-index: 5;
     }
-    .name{
+
+    .name {
       position: absolute;
-      bottom: 4px;
+      bottom: 8px;
       left: 16px;
-      color: #ffff;
-      font-size: 18px;
+      color: #ffffff;
+      font-size: 13px;
       font-weight: 600;
+      z-index: 5;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
     }
   }
-  .call-current.open{
+
+  .call-current.open {
     width: 300px;
   }
 }
 
-:host ::ng-deep .toggle-open-close svg {
-  width: 40px;
-  fill: #fff;
-  cursor: pointer;
+// Animations
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-:host ::ng-deep .toggle-open-close svg:hover {
-  scale: 1.1;
-  fill: #faf3f3;
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-text {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+:host ::ng-deep .toggle-open-close svg {
+  width: 24px;
+  height: 24px;
+  fill: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .toggle-open-close:hover svg {
+  filter: drop-shadow(0 0 8px rgba(0, 112, 246, 0.4));
 }
 
 

@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef, AfterViewChecked} from '@angular/core';
 import {SafeHtmlPipe} from '../../share/pipe/pipe-html.pipe';
 import {
   AVATAR_DEFAULT,
@@ -38,7 +38,7 @@ import {SocketData} from '../../../model/socket';
   templateUrl: './message-detail.component.html',
   styleUrl: './message-detail.component.scss'
 })
-export class MessageDetailComponent implements OnInit,OnDestroy{
+export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy{
   private destroy$ = new Subject<void>();
   isLoaded = false;
   cols = 2;
@@ -75,17 +75,19 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
   maxTimeAudio: any;
   audioMp3 = new Audio('assets/sounds/mp3_info_mess.mp3');
 
+  private lastMessageCount = 0;
 
-
-  constructor(private transferData:TransferDataService,
-              private modalService:NgbModal,
-              private messageService:MessageService,
-              private webSocketService:WebsocketService,
-              private toartService:ToastrService,
-              private transferDataService:TransferDataService,
-              private titleService: Title,
-              private router:Router,
-              ) {
+  constructor(
+    private transferData:TransferDataService,
+    private modalService:NgbModal,
+    private messageService:MessageService,
+    private webSocketService:WebsocketService,
+    private toartService:ToastrService,
+    private transferDataService:TransferDataService,
+    private titleService: Title,
+    private router:Router,
+    private cdr: ChangeDetectorRef,
+  ) {
   }
 
 
@@ -94,6 +96,35 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
     this.getInfoUser()
     this.getGroudDetail()
     this.handleWebsocketListen();
+  }
+
+  ngAfterViewInit(): void {
+    // Scroll to bottom sau khi view được khởi tạo
+    this.scrollToBottom();
+  }
+
+  ngAfterViewChecked(): void {
+    // Nếu số lượng tin nhắn thay đổi thì scroll xuống dưới cùng
+    if (this.infoMessageDetail && this.infoMessageDetail.length !== this.lastMessageCount) {
+      this.lastMessageCount = this.infoMessageDetail.length;
+      this.scrollToBottom();
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Hàm scroll đến cuối cùng của container
+  private scrollToBottom(): void {
+    try {
+      // Sử dụng setTimeout để đảm bảo DOM đã được update
+      setTimeout(() => {
+        if (this.scrollContainer && this.scrollContainer.nativeElement) {
+          const element = this.scrollContainer.nativeElement;
+          element.scrollTop = element.scrollHeight;
+        }
+      }, 0);
+    } catch (err) {
+      console.error('Lỗi khi scroll:', err);
+    }
   }
 
 
@@ -148,6 +179,8 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
         this.infoMessageDetail.forEach((mess:any)=>{
           this.setLayout(mess);
         })
+        // Scroll to bottom sau khi load tin nhắn xong
+        this.scrollToBottom();
       }
     })
 
@@ -183,6 +216,8 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
     this.messageService.send(message, this.selectedFiles).subscribe((res:any)=>{
       if(res.status === 200){
         this.resetDataMessage()
+        // Scroll to bottom sau khi gửi tin nhắn
+        this.scrollToBottom();
       }
     });
   }
@@ -219,6 +254,8 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
 
     this.messageService.update(message).subscribe((res:any)=>{
       this.resetDataMessage()
+      // Scroll to bottom sau khi update tin nhắn
+      this.scrollToBottom();
     });
   }
 
@@ -366,6 +403,8 @@ export class MessageDetailComponent implements OnInit,OnDestroy{
               this.playMessageSound()
             }
           }
+          // Scroll to bottom khi có tin nhắn mới
+          this.scrollToBottom();
 
         } catch (e) {
           const index = this.infoMessageDetail.findIndex(

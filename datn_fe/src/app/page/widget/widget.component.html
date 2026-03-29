@@ -3,31 +3,54 @@
   [style.left.px]="position.x"
   [style.top.px]="position.y"
   (mousedown)="startDrag($event)"
+  [class.dragging]="isDragging"
 >
-
-  <!-- Button -->
-  <div class="ai-button" (click)="toggle($event)">
+  <!-- AI Button -->
+  <button
+    class="ai-button"
+    (click)="toggle($event)"
+    title="Mở AI Support"
+    aria-label="AI Support Chat Button"
+  >
     🤖
-  </div>
+  </button>
 
-  <!-- Chat -->
-  <div class="chat-panel" *ngIf="isOpen">
-
+  <!-- Chat Panel -->
+  <div
+    class="chat-panel"
+    *ngIf="isOpen"
+    role="dialog"
+    aria-label="AI Support Chat"
+  >
+    <!-- Header -->
     <div class="header">
-      AI Support
-      <span class="close" (click)="toggle($event)">✖</span>
+      <span>AI Support 🚀</span>
+      <span
+        class="close"
+        (click)="toggle($event)"
+        role="button"
+        tabindex="0"
+        title="Đóng chat"
+        aria-label="Đóng chat"
+      >✖</span>
     </div>
 
-    <div class="messages">
-      <div *ngFor="let msg of messages">{{ msg }}</div>
+    <!-- Messages -->
+    <div class="messages" role="log" aria-live="polite">
+      <div *ngFor="let msg of messages" role="article">
+        {{ msg }}
+      </div>
     </div>
 
+    <!-- Input -->
     <input
       [(ngModel)]="input"
       (keyup.enter)="send()"
-      placeholder="Ask AI..."
+      type="text"
+      placeholder="Nhập câu hỏi..."
+      aria-label="Nhập tin nhắn"
+      role="textbox"
     />
-
   </div>
 
 </div>

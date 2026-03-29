@@ -16,11 +16,13 @@ import {BASE_TOPIC_SOCKET, BASE_TOPIC_SOCKET_FE} from './constants/constants';
 import {SocketData} from './model/socket';
 import {Subject, Subscription, takeUntil} from 'rxjs';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NavComponent} from './page/share/nav/nav.component';
+import {FooterComponent} from './page/share/footer/footer.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -44,6 +46,7 @@ export class AppComponent implements OnInit ,OnDestroy{
   ngOnInit() {
     this.init()
     this.handleShowMessageDetail();
+    this.hidePreloder();
   }
 
 
@@ -111,6 +114,25 @@ export class AppComponent implements OnInit ,OnDestroy{
     modalRef.componentInstance.metadataCall = metadata
   }
 
+  hidePreloder() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    // Delay 1000ms để đảm bảo DOM fully render, rồi fadeOut preloder
+    setTimeout(() => {
+      if (typeof (window as any).$ !== 'undefined') {
+        const $ = (window as any).$;
+        $('.loader').fadeOut(300);
+        $('#preloder').delay(300).fadeOut(300, () => {
+          $('#preloder').remove();
+        });
+      } else {
+        // Nếu không có jQuery, xóa preloder bằng DOM API
+        const preloder = document.getElementById('preloder');
+        if (preloder) {
+          preloder.style.display = 'none';
+        }
+      }
+    }, 1000);
+  }
 
 
   ngOnDestroy(): void {

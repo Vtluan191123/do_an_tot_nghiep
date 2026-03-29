@@ -55,12 +55,12 @@ export class WidgetComponent {
   }
 
   send() {
-    if (!this.input) return;
+    if (!this.input.trim()) return;
 
     this.messages.push("You: " + this.input);
 
     setTimeout(() => {
-      this.messages.push("AI: I understand!");
+      this.messages.push("AI: Đây là một phản hồi tự động từ AI 🤖");
     }, 500);
 
     this.input = "";

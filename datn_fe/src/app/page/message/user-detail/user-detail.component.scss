@@ -1,129 +1,172 @@
-$border-color: rgba(255,255,255,0.1);
+$border-color: rgba(255, 255, 255, 0.1);
+$bg-dark: #1a1d21;
+$bg-darker: #0f1117;
+$accent-blue: #0070f6;
+$accent-green: #31a24c;
+$accent-pink: #f45f7b;
 
-.wrapper-user-detail{
+.wrapper-user-detail {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 50px;
-  background-color: #111111;
+  padding: 40px;
+  background: linear-gradient(135deg, $bg-darker 0%, #0a0d0f 100%);
   border-radius: 20px;
   border: 1px solid $border-color;
   height: 100vh;
   color: #ffffff;
+  gap: 40px;
 
-  .user-detail-info{
+  .user-detail-info {
     overflow: hidden;
     border-radius: 20px;
-    background-color: #444444;
+    background: linear-gradient(135deg, $bg-dark 0%, $bg-darker 100%);
     height: 100%;
     width: 50%;
     position: relative;
-    .user-detail-info-header{
-      background-color: #fa9c9c;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+    .user-detail-info-header {
+      background: linear-gradient(135deg, $accent-pink 0%, #d84056 100%);
       height: 20%;
+      position: relative;
+      overflow: hidden;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+      }
     }
-    .user-detail-info-body{
+
+    .user-detail-info-body {
       padding: 20px;
 
-      .name{
+      .name {
         margin-top: 70px;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 10px;
       }
 
-      .action{
-
-        .add-friend{
-          padding: 5px 10px;
-          border-radius: 5px;
+      .action {
+        .add-friend {
+          padding: 10px 20px;
+          border-radius: 20px;
           font-weight: 600;
-          font-size: 16px;
-          background-color: #1f8cf9;
+          font-size: 14px;
+          background: linear-gradient(135deg, $accent-blue 0%, #0052cc 100%);
+          color: #ffffff;
           cursor: pointer;
-          margin-right: 10px;
-          border: 1px solid $border-color;
+          margin-right: 12px;
+          border: none;
+          box-shadow: 0 4px 12px rgba(0, 112, 246, 0.3);
+          transition: all 0.3s ease;
 
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 112, 246, 0.4);
+          }
 
-          &:hover{
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+          &:active {
+            transform: translateY(0);
           }
         }
 
-        .send-message{
+        .send-message {
           cursor: pointer;
-          padding: 5px 10px;
-          border-radius: 5px;
+          padding: 10px 20px;
+          border-radius: 20px;
           border: 1px solid $border-color;
+          background: rgba(58, 63, 69, 0.6);
+          color: #ffffff;
+          font-weight: 600;
+          font-size: 14px;
+          transition: all 0.3s ease;
 
-          transition: transform 0.2s ease, background-color 0.2s ease;
-
-          &:hover{
-            transform: scale(1.1);
-            background-color: rgba(255,255,255,0.1);
+          &:hover {
+            background: rgba(0, 112, 246, 0.2);
+            border-color: $accent-blue;
+            box-shadow: 0 0 12px rgba(0, 112, 246, 0.2);
           }
         }
 
-        .user-extra-info{
-          margin-top: 20px;
+        .user-extra-info {
+          margin-top: 30px;
 
-          .info-item{
+          .info-item {
             display: flex;
-            margin-bottom: 10px;
-            font-size: 15px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            align-items: flex-start;
 
-            .label{
+            .label {
               font-weight: 600;
               width: 130px;
-              color: #cccccc;
+              color: rgba(255, 255, 255, 0.6);
             }
 
-            .value{
+            .value {
               color: #ffffff;
+              flex: 1;
             }
           }
 
-          .description{
+          .description {
             flex-direction: column;
 
-            p{
-              margin-top: 5px;
-              color: #dddddd;
-              line-height: 1.5;
+            p {
+              margin-top: 8px;
+              color: rgba(255, 255, 255, 0.7);
+              line-height: 1.6;
+              font-size: 14px;
             }
           }
         }
       }
     }
-    .avatar{
+
+    .avatar {
       width: 150px;
       height: 150px;
       border-radius: 50%;
-      border: 10px solid #444444;
+      border: 6px solid $bg-dark;
       position: absolute;
-      top: 100px;
+      top: 80px;
       left: 20px;
-      background: url("https://scontent.fhan17-1.fna.fbcdn.net/v/t39.30808-1/648680061_1597141368204857_2230970375566720549_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=111&ccb=1-7&_nc_sid=1d2534&_nc_ohc=tgKPL9gy82EQ7kNvwFWwEqv&_nc_oc=Adml9GGf69dOwu4-R8b6BIpw4yyhAArOHZDTN2rQI1ul6Oruj7px16LzEtPmhXFuoIQ&_nc_zt=24&_nc_ht=scontent.fhan17-1.fna&_nc_gid=DXRFzA6wZ7fDYB59sLdsgQ&_nc_ss=8&oh=00_AfxYHJTyEgs0v61LCd1fcrTwjfUPESTQVU8BSvYUWPaC7w&oe=69B84387")  center/contain no-repeat;
-      &:before{
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+      &::before {
         position: absolute;
         content: "";
         width: 36px;
         height: 36px;
-        background-color: #0fee1f;
-        border: 7px solid #444444;
+        background-color: $accent-green;
+        border: 5px solid $bg-dark;
         border-radius: 50%;
         bottom: 0;
         right: -6px;
+        box-shadow: 0 0 12px rgba(49, 162, 76, 0.6);
       }
     }
   }
 
-  .mutual-friends{
-
+  .mutual-friends {
+    flex: 1;
   }
 }
 
-.rating{
+.rating {
   margin-top: 10px;
   font-size: 18px;
   color: #ffc107;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }

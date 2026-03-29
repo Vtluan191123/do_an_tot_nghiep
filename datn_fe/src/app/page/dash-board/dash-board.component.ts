@@ -5,6 +5,8 @@ import {AVATAR_DEFAULT, ICON_MESSAGE} from '../share/other/icons/icons';
 import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
 import {ListMessageComponent} from '../message/list-message/list-message.component';
 import {TransferDataService} from '../../service/tranfer-data/transfer-data.service';
+import {NavComponent} from '../share/nav/nav.component';
+import {FooterComponent} from '../share/footer/footer.component';
 
 
 declare var $: any;
@@ -16,13 +18,15 @@ declare var $: any;
   imports: [
     NgStyle,
     SafeHtmlPipe,
-    ListMessageComponent
+    ListMessageComponent,
+    NavComponent,
+    FooterComponent
   ],
   styleUrls: ['./dash-board.component.scss']
 })
 export class DashBoardComponent implements AfterViewInit,OnInit {
 
-  isShowListMessage: boolean = false
+
   countMessage:any
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
@@ -43,10 +47,9 @@ export class DashBoardComponent implements AfterViewInit,OnInit {
 
   /* Preloader */
   initPreloader() {
-    window.addEventListener('load', () => {
-      $('.loader').fadeOut();
-      $('#preloder').delay(200).fadeOut('slow');
-    });
+    if (!isPlatformBrowser(this.platformId)) return;
+    $('.loader').fadeOut();
+    $('#preloder').delay(200).fadeOut('slow');
   }
 
   /* Background image set */
@@ -106,9 +109,7 @@ export class DashBoardComponent implements AfterViewInit,OnInit {
 
   }
 
-  showListMessage() {
-    this.isShowListMessage = !this.isShowListMessage
-  }
+
 
   protected readonly ICON_MESSAGE = ICON_MESSAGE;
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;

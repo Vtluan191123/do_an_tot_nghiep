@@ -1,9 +1,10 @@
 <div *ngIf="isLoaded" class="message-detail">
+  <!-- Navigation Header -->
   <div class="nav-message">
     <div class="d-flex justify-content-center align-items-center">
       <div class="avatar" [ngStyle]="{
-    'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
-  }" >
+        'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+      }">
         <div class="dot-status-online"></div>
       </div>
     </div>
@@ -16,158 +17,165 @@
       </div>
     </div>
     <div class="call">
-      <div class="hover_circle">
+      <div class="hover_circle" title="Gọi điện">
         <span (click)="handleCall()" [innerHTML]="ICON_PHONE | safeHtml"></span>
       </div>
-      <div class="ms-2 hover_circle">
+      <div class="hover_circle" title="Đóng">
         <span (click)="handleCloseMessage()" [innerHTML]="ICON_MINUS | safeHtml"></span>
       </div>
     </div>
   </div>
+
+  <!-- Message Content -->
   <div #scrollContainer class="body_message">
     <div *ngFor="let mess of infoMessageDetail" class="message_item" [ngStyle]="{
-    'flex-direction': mess.senderId === infoCurrentUser.id ? 'row-reverse' : 'row'
-  }">
+      'flex-direction': mess.senderId === infoCurrentUser.id ? 'row-reverse' : 'row'
+    }">
+      <!-- User Avatar -->
       <div *ngIf="mess.senderId !== infoCurrentUser.id" class="avatar-item" [ngStyle]="{
-    'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
-  }">
-
+        'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
+      }">
       </div>
 
-        <div  class="message-content" [ngStyle]="mess.messageDetail.type === MESSAGE_TYPE.AUDIO
-    ? {'width': '100%'}
-    : {}">
-          @if(mess.messageDetail.type === MESSAGE_TYPE.TEXT){
-            <span class="message-text"> {{ mess.messageDetail.content !== '' ? mess.messageDetail.content : 'Tin nhắn đã bị gỡ'}}</span>
-          }
+      <!-- Message Content -->
+      <div class="message-content" [ngStyle]="mess.messageDetail.type === MESSAGE_TYPE.AUDIO ? {'width': '100%'} : {}">
+        @if(mess.messageDetail.type === MESSAGE_TYPE.TEXT){
+          <span class="message-text">{{ mess.messageDetail.content !== '' ? mess.messageDetail.content : 'Tin nhắn đã bị gỡ'}}</span>
+        }
 
-          @if(mess.messageDetail.type === MESSAGE_TYPE.IMAGE){
-            <div class="wrapper-images" [ngClass]="['cols-' + mess.cols, 'rows-' + mess.rows]">
-              <img (click)="openImage(img,false)"  *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img">
-            </div>
-          }
-          @if(mess.messageDetail.type === MESSAGE_TYPE.VIDEO){
-            <div class="wrapper-images" >
-              <video *ngFor="let video of mess.messageDetail.urlFiles" class="message-image-item"  controls>
-                <source [src]="baseUrl + video" type="video/mp4">
-              </video>
-            </div>
-          }
-          @if (mess.messageDetail.type===MESSAGE_TYPE.ICON) {
-            <span class="like ms-2 fs-3" [innerHTML]="mess.messageDetail.content | safeHtml"></span>
-          }
+        @if(mess.messageDetail.type === MESSAGE_TYPE.IMAGE){
+          <div class="wrapper-images" [ngClass]="['cols-' + mess.cols, 'rows-' + mess.rows]">
+            <img (click)="openImage(img,false)" *ngFor="let img of mess.messageDetail.urlFiles" class="message-image-item" [src]="baseUrl + img" [alt]="'Image'">
+          </div>
+        }
 
-          @if (mess.messageDetail.type===MESSAGE_TYPE.AUDIO) {
-            <audio class="w-100" controls [src]="BASE_URL_UPLOAD + mess.messageDetail.urlFiles[0]"></audio>
-          }
+        @if(mess.messageDetail.type === MESSAGE_TYPE.VIDEO){
+          <div class="wrapper-images">
+            <video *ngFor="let video of mess.messageDetail.urlFiles" class="message-image-item" controls>
+              <source [src]="baseUrl + video" type="video/mp4">
+            </video>
+          </div>
+        }
 
-          <div (click)="handleShowModal(mess)" class="emote-of-message">
-            <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="mess.messageDetail.emote">
+        @if (mess.messageDetail.type===MESSAGE_TYPE.ICON) {
+          <span class="like ms-2 fs-3" [innerHTML]="mess.messageDetail.content | safeHtml"></span>
+        }
+
+        @if (mess.messageDetail.type===MESSAGE_TYPE.AUDIO) {
+          <audio class="w-100" controls [src]="BASE_URL_UPLOAD + mess.messageDetail.urlFiles[0]"></audio>
+        }
+
+        <!-- Emote Display -->
+        <div (click)="handleShowModal(mess)" class="emote-of-message" *ngIf="mess.messageDetail.emote">
+          <img class="hover_emote" referrerpolicy="origin-when-cross-origin" [src]="mess.messageDetail.emote" [alt]="'Emote'">
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="message-actions" [ngStyle]="{
+        'flex-direction': mess.senderId === infoCurrentUser.id ? 'row-reverse' : 'row'
+      }">
+        <!-- Emote Button -->
+        <div *ngIf="mess.messageDetail.content !== ''" (click)="handleShowListEmote(mess.id)" class="emote hover_circle" title="Thêm emote">
+          <span [innerHTML]="ICON_EMOTE | safeHtml"></span>
+          <div *ngIf="messageActive === mess.id && isShowListEmote" class="list_emote" [ngStyle]="{
+            'left': mess.senderId === infoCurrentUser.id ? '0' : null,
+            'right': mess.senderId !== infoCurrentUser.id ? '0' : null
+          }">
+            <img
+              *ngFor="let emote of emotes"
+              (click)="handleUpdateMess(mess.id,emote.url)"
+              class="hover_emote"
+              [src]="emote.url"
+              [alt]="emote.alt"
+              height="32"
+              width="32"
+              title="{{emote.alt}}"
+            />
           </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center">
-          <div *ngIf="mess.content !== ''" (click)="handleShowListEmote(mess.id)" class="emote hover_circle mx-2">
-            <span [innerHTML]="ICON_EMOTE | safeHtml"></span>
-            <div *ngIf="messageActive === mess.id && isShowListEmote" class="list_emote" [ngStyle]="{
-    'left': mess.senderId === infoCurrentUser.id ? '0' : null,
-    'right': mess.senderId !== infoCurrentUser.id ? '0' : null
-  }">
-              <img
-                *ngFor="let emote of emotes"
-                (click)="handleUpdateMess(mess.id,emote.url)"
-                class="hover_emote"
-                [src]="emote.url"
-                [alt]="emote.alt"
-                height="32"
-                width="32"
-              />
-            </div>
-          </div>
-          <div (click)="handleShowRecallMess(mess.id)" class="dot_three hover_circle">
-            <span [innerHTML]="ICON_DOT_THREE | safeHtml"></span>
-            <div *ngIf="messageActive === mess.id && isShowAction" class="action" [ngStyle]="{
-    'left': mess.senderId === infoCurrentUser.id ? '0' : null,
-    'right': mess.senderId !== infoCurrentUser.id ? '0' : null
-  }">
-              <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleUpdateMess(mess.id,'',true)">Gỡ tin nhắn</span>
-              <span (click)="handleRemoveMess(mess.id)">Xóa tin nhắn</span>
-              <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleChangeInput(mess.id)">Sửa tin nhắn</span>
-            </div>
+        <!-- Menu Button -->
+        <div (click)="handleShowRecallMess(mess.id)" class="dot_three hover_circle" title="Thêm options">
+          <span [innerHTML]="ICON_DOT_THREE | safeHtml"></span>
+          <div *ngIf="messageActive === mess.id && isShowAction" class="action" [ngStyle]="{
+            'left': mess.senderId === infoCurrentUser.id ? '0' : null,
+            'right': mess.senderId !== infoCurrentUser.id ? '0' : null
+          }">
+            <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleUpdateMess(mess.id,'',true)" title="Xóa tin nhắn">Gỡ tin nhắn</span>
+            <span (click)="handleRemoveMess(mess.id)" title="Xóa vĩnh viễn">Xóa tin nhắn</span>
+            <span *ngIf="mess.messageDetail.type === MESSAGE_TYPE.TEXT" (click)="handleChangeInput(mess.id)" title="Chỉnh sửa">Sửa tin nhắn</span>
           </div>
         </div>
-
-
+      </div>
     </div>
   </div>
 
+  <!-- Bottom Message Input -->
   <div class="bottom_message">
-    <div class="d-flex justify-content-center align-items-center">
-      <div (click)="handleMicro()" class="hover_circle">
-        <span [innerHTML]="(audioUrl ?  ICON_CLOSE_AUDIO :ICON_MIC_MESSAGE) | safeHtml"></span>
-      </div>
-      <div *ngIf="!isMicro" (click)="fileInput.click()" class="hover_circle upload">
-        <span [innerHTML]="ICON_UPLOAD | safeHtml"></span>
-        <input
-          type="file"
-          style="display: none"
-          multiple
-          (keyup.enter)="handleSendMessage()"
-          (change)="onFileSelected($event)"
-          #fileInput
-        >
-        <div class="preview-container" (click)=" $event.stopPropagation()"  *ngIf="selectedFiles.length" [style.top]="selectedFiles.length>4 ? '-130px' : '-114px'">
+    <!-- Mic Button -->
+    <div (click)="handleMicro()" class="hover_circle" title="Ghi âm">
+      <span [innerHTML]="(audioUrl ? ICON_CLOSE_AUDIO : ICON_MIC_MESSAGE) | safeHtml"></span>
+    </div>
 
-          @if(isImage){
-            <div  class="preview-item"
-                  *ngFor="let item of previewImages; let i = index">
+    <!-- File Upload -->
+    <div *ngIf="!isMicro" (click)="fileInput.click()" class="hover_circle upload" title="Upload file">
+      <span [innerHTML]="ICON_UPLOAD | safeHtml"></span>
+      <input
+        type="file"
+        style="display: none"
+        multiple
+        (keyup.enter)="handleSendMessage()"
+        (change)="onFileSelected($event)"
+        #fileInput
+      >
+      <!-- File Preview -->
+      <div class="preview-container" (click)="$event.stopPropagation()" *ngIf="selectedFiles.length" [style.top]="selectedFiles.length>4 ? '-130px' : '-114px'">
+        @if(isImage){
+          <div class="preview-item" *ngFor="let item of previewImages; let i = index">
+            <img [src]="item" (click)="openImage(item,true)" [alt]="'Preview ' + i" />
+            <span class="remove" (click)="removeFile(i); $event.stopPropagation()">✕</span>
+          </div>
+        }
 
-              <!-- IMAGE -->
-              <img
-                [src]="item"
-                (click)="openImage(item,true)" />
-
-              <span class="remove"
-                    (click)="removeFile(i); $event.stopPropagation()">✕</span>
-
-            </div>
-          }
-
-          @if(isVideo){
-            <div  class="preview-item"
-                 *ngFor="let item of previewVideos; let i = index">
-              <!-- VIDEO -->
-              <video
-                [src]="item"
-                (click)="openImage(item,true)"
-                controls>
-              </video>
-
-              <span class="remove"
-                    (click)="removeFile(i); $event.stopPropagation()">✕</span>
-
-            </div>
-          }
-
-
-        </div>
+        @if(isVideo){
+          <div class="preview-item" *ngFor="let item of previewVideos; let i = index">
+            <video [src]="item" (click)="openImage(item,true)" controls></video>
+            <span class="remove" (click)="removeFile(i); $event.stopPropagation()">✕</span>
+          </div>
+        }
       </div>
     </div>
-    <div  *ngIf="isMicro" class="micro my-auto">
-      <div class="pause-play" style="background-color: #ffffff">
-        <span (click)="handlePlayPauseMicro()"  [innerHTML]="(isPlayingMicro ? ICON_PAUSE : ICON_PLAY) | safeHtml"></span>
+
+    <!-- Input Message or Micro Recording -->
+    <div *ngIf="!isMicro" class="flex-grow-1">
+      <input
+        class="send_message"
+        (keyup.enter)="isUpdateMess ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)"
+        [(ngModel)]="valueNewMessage"
+        placeholder="Aa"
+      >
+    </div>
+
+    <!-- Micro Recording UI -->
+    <div *ngIf="isMicro" class="micro">
+      <div class="pause-play" title="Play/Pause">
+        <span (click)="handlePlayPauseMicro()" [innerHTML]="(isPlayingMicro ? ICON_PAUSE : ICON_PLAY) | safeHtml"></span>
       </div>
       <div class="time-micro">
         <span>{{totalSecondsDisplay}}</span>
       </div>
       <audio class="d-none" #audio controls [src]="audioUrl"></audio>
     </div>
-    <input *ngIf="!isMicro" class="send_message" (keyup.enter)="isUpdateMess  ? handleUpdateMess(this.messageCurrent.id) : handleSendMessage(MESSAGE_TYPE.TEXT)" [(ngModel)]=valueNewMessage placeholder="Aa">
-    <div *ngIf="!isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)">
+
+    <!-- Send Like Button -->
+    <div *ngIf="!isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.ICON,ICON_LIKE)" title="Gửi Like">
       <span class="like" [innerHTML]="ICON_LIKE | safeHtml"></span>
     </div>
-    <div *ngIf="isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.AUDIO)">
-      <span  [innerHTML]="ICON_SEND | safeHtml"></span>
+
+    <!-- Send Audio Button -->
+    <div *ngIf="isMicro" class="hover_circle" (click)="handleSendMessage(MESSAGE_TYPE.AUDIO)" title="Gửi tin nhắn thoại">
+      <span [innerHTML]="ICON_SEND | safeHtml"></span>
     </div>
   </div>
 </div>

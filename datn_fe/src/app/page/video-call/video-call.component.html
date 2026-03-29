@@ -18,88 +18,189 @@
 <!--</div>-->
 
 <div class="wrapper-video-call">
-  <div *ngIf="isHideReceiverCall" class="call-receiver">
-    <div class="avatar"
-         [ngStyle]="{
-    'background': 'url(' + (infoFriendUser?.imagesUrl  ? BASE_URL_UPLOAD + infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
-  }"
+  <!-- Call Receiver - Show when incoming call -->
+  <div *ngIf="isHideReceiverCall" class="call-receiver" role="status" aria-live="polite">
+    <div
+      class="avatar"
+      [ngStyle]="{
+        'background': 'url(' + (infoFriendUser?.imagesUrl ? BASE_URL_UPLOAD + infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/cover no-repeat'
+      }"
+      [attr.aria-label]="'Avatar của ' + infoFriendUser?.username"
     ></div>
-    <h2>{{infoFriendUser?.username}}</h2>
-    <p>Đang gọi ...</p>
+    <h2 aria-label="Tên người dùng">{{ infoFriendUser?.username }}</h2>
+    <p aria-label="Trạng thái cuộc gọi">Đang gọi ...</p>
   </div>
-  <video [hidden]="isHideReceiverCall" #remoteVideo id="remoteVideo" playsinline autoplay></video>
+
+  <!-- Remote Video Feed -->
+  <video
+    [hidden]="isHideReceiverCall"
+    #remoteVideo
+    id="remoteVideo"
+    playsinline
+    autoplay
+    aria-label="Video từ người khác"
+  ></video>
+
+  <!-- Action Bar -->
   <div class="action">
-    <div *ngIf="!receiverCall" (click)="handleToggleCamera()" class="action-item">
-      <span  [innerHTML]="(isEnableCamera ? CAMERA_CLOSE : CAMERA_OPEN) | safeHtml"></span>
-    </div>
-    <div *ngIf="!receiverCall" (click)="handleToggleMicro()" class="action-item">
-      <span  [innerHTML]="(isEnableMic ? MICRO_CLOSE : MICRO_OPEN) | safeHtml"></span>
-    </div>
-    <div *ngIf="!receiverCall" (click)="handleShowChangeDevice()" class="action-item">
-      <span  [innerHTML]="ICON_THREE_DOT | safeHtml"></span>
-    </div>
-    <div *ngIf="receiverCall" (click)="handleAnswerPhone()" class="action-item">
-      <span  [innerHTML]="ICON_CALL_AGAIN | safeHtml"></span>
-    </div>
-    <div (click)="handleHangup()" class="action-item">
-      <span  [innerHTML]="ICON_PHONE | safeHtml"></span>
+    <!-- Toggle Camera -->
+    <div
+      *ngIf="!receiverCall"
+      (click)="handleToggleCamera()"
+      class="action-item"
+      role="button"
+      tabindex="0"
+      title="Bật/Tắt camera"
+      aria-label="Bật/Tắt camera"
+    >
+      <span [innerHTML]="(isEnableCamera ? CAMERA_CLOSE : CAMERA_OPEN) | safeHtml"></span>
     </div>
 
-    <ng-container *ngIf="isShowChangeDevice" >
-      <div class="wrapper-change-device">
+    <!-- Toggle Microphone -->
+    <div
+      *ngIf="!receiverCall"
+      (click)="handleToggleMicro()"
+      class="action-item"
+      role="button"
+      tabindex="0"
+      title="Bật/Tắt micrô"
+      aria-label="Bật/Tắt micrô"
+    >
+      <span [innerHTML]="(isEnableMic ? MICRO_CLOSE : MICRO_OPEN) | safeHtml"></span>
+    </div>
+
+    <!-- Change Device Settings -->
+    <div
+      *ngIf="!receiverCall"
+      (click)="handleShowChangeDevice()"
+      class="action-item"
+      role="button"
+      tabindex="0"
+      title="Thay đổi thiết bị"
+      aria-label="Thay đổi thiết bị"
+    >
+      <span [innerHTML]="ICON_THREE_DOT | safeHtml"></span>
+    </div>
+
+    <!-- Answer Phone -->
+    <div
+      *ngIf="receiverCall"
+      (click)="handleAnswerPhone()"
+      class="action-item accept-call"
+      role="button"
+      tabindex="0"
+      title="Chấp nhận cuộc gọi"
+      aria-label="Chấp nhận cuộc gọi"
+    >
+      <span [innerHTML]="ICON_CALL_AGAIN | safeHtml"></span>
+    </div>
+
+    <!-- Hang Up Button -->
+    <div
+      (click)="handleHangup()"
+      class="action-item"
+      role="button"
+      tabindex="0"
+      title="Kết thúc cuộc gọi"
+      aria-label="Kết thúc cuộc gọi"
+    >
+      <span [innerHTML]="ICON_PHONE | safeHtml"></span>
+    </div>
+
+    <!-- Device Selection Dropdown -->
+    <ng-container *ngIf="isShowChangeDevice">
+      <div class="wrapper-change-device" role="dialog" aria-label="Chọn thiết bị">
+        <!-- Microphone Selection -->
         <div>
-          <label>
-            Microphone:
-          </label>
-            <select [(ngModel)]="audioInput" (ngModelChange)="startAgain()">
-              <option *ngFor="let d of audioInputs" [value]="d.deviceId">
-                {{ d.label }}
-              </option>
-            </select>
-
+          <label for="microphone-select">Microphone:</label>
+          <select
+            id="microphone-select"
+            [(ngModel)]="audioInput"
+            (ngModelChange)="startAgain()"
+            aria-label="Chọn microphone"
+          >
+            <option *ngFor="let d of audioInputs" [value]="d.deviceId">
+              {{ d.label }}
+            </option>
+          </select>
         </div>
 
+        <!-- Speaker Selection -->
         <div>
-          <label>
-            Speaker:</label>
-            <select [(ngModel)]="audioOutput" (ngModelChange)="changeAudioDestination()">
-              <option *ngFor="let d of audioOutputs" [value]="d.deviceId">
-                {{ d.label }}
-              </option>
-            </select>
-
+          <label for="speaker-select">Speaker:</label>
+          <select
+            id="speaker-select"
+            [(ngModel)]="audioOutput"
+            (ngModelChange)="changeAudioDestination()"
+            aria-label="Chọn loa"
+          >
+            <option *ngFor="let d of audioOutputs" [value]="d.deviceId">
+              {{ d.label }}
+            </option>
+          </select>
         </div>
 
+        <!-- Camera Selection -->
         <div>
-          <label>
-            Camera:  </label>
-            <select [(ngModel)]="videoInput" (ngModelChange)="startAgain()">
-              <option *ngFor="let d of videoInputs" [value]="d.deviceId">
-                {{ d.label }}
-              </option>
-            </select>
-
+          <label for="camera-select">Camera:</label>
+          <select
+            id="camera-select"
+            [(ngModel)]="videoInput"
+            (ngModelChange)="startAgain()"
+            aria-label="Chọn camera"
+          >
+            <option *ngFor="let d of videoInputs" [value]="d.deviceId">
+              {{ d.label }}
+            </option>
+          </select>
         </div>
-
       </div>
-
     </ng-container>
-
-
-
   </div>
-  <div class="call-current" [class.open]="isOpenScreenUserCurrent">
-    <video #localVideo id="localVideo" muted playsinline autoplay [hidden]="!isOpenScreenUserCurrent" style="background: #0b0b0b;width: 100%;height: 100%">
 
-    </video>
-    <div  class="toggle-open-close" >
-      <span (click)="handleToggleCallCurrent()" [innerHTML]="(isOpenScreenUserCurrent ?  ICON_ARROW_RIGHT: ICON_ARROW_LEFT )| safeHtml"></span>
+  <!-- Local Video - Current User Camera -->
+  <div
+    class="call-current"
+    [class.open]="isOpenScreenUserCurrent"
+    role="region"
+    aria-label="Video của bạn"
+  >
+    <video
+      #localVideo
+      id="localVideo"
+      muted
+      playsinline
+      autoplay
+      [hidden]="!isOpenScreenUserCurrent"
+      aria-label="Video camera của bạn"
+    ></video>
+
+    <!-- Toggle Expand Button -->
+    <div
+      class="toggle-open-close"
+      role="button"
+      tabindex="0"
+      (click)="handleToggleCallCurrent()"
+      title="Mở rộng/Thu gọn video của bạn"
+      aria-label="Mở rộng/Thu gọn video của bạn"
+    >
+      <span [innerHTML]="(isOpenScreenUserCurrent ? ICON_ARROW_RIGHT : ICON_ARROW_LEFT) | safeHtml"></span>
     </div>
-    <div *ngIf="!isEnableMic" class="mute">
-      <span  [innerHTML]="MICRO_CLOSE | safeHtml"></span>
+
+    <!-- Mute Indicator -->
+    <div
+      *ngIf="!isEnableMic"
+      class="mute"
+      role="status"
+      aria-label="Microphone bị tắt"
+      title="Microphone bị tắt"
+    >
+      <span [innerHTML]="MICRO_CLOSE | safeHtml"></span>
     </div>
-    <div class="name">
-      <span>{{infoCurrentUser?.username}}</span>
+
+    <!-- Current User Name -->
+    <div class="name" aria-label="Tên người dùng">
+      <span>{{ infoCurrentUser?.username }}</span>
     </div>
   </div>
 </div>

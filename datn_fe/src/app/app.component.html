@@ -1,10 +1,19 @@
+<!-- Page Preloder -->
+<div id="preloder">
+  <div class="loader"></div>
+</div>
+
+<!-- Offcanvas Menu Section Begin -->
+<div class="offcanvas-menu-overlay"></div>
+
 <div class="main">
+  <app-nav></app-nav>
   <router-outlet></router-outlet>
+  <app-footer></app-footer>
   <app-widget></app-widget>
   <div *ngIf="isShowMessageDetail" class="message-detail">
     <app-message-detail></app-message-detail>
   </div>
-
 </div>
 
 <!--<div>-->

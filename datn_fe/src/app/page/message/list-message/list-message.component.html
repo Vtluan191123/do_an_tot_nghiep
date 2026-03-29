@@ -1,27 +1,49 @@
 <div *ngIf="!isShowMessageDetail" class="wrapper-list-message">
-    <div class="message-herder">
-      <p>Đoạn chat</p>
-      <div class="wrapper-search">
-        <span [innerHTML]="ICON_SEARCH | safeHtml"></span>
-        <input class="search" placeholder="search">
-      </div>
+  <!-- Header Section -->
+  <div class="message-herder">
+    <p>Đoạn chat</p>
+    <div class="wrapper-search">
+      <span [innerHTML]="ICON_SEARCH | safeHtml" title="Tìm kiếm"></span>
+      <input
+        class="search"
+        placeholder="Tìm kiếm đoạn chat..."
+        type="text"
+      >
     </div>
-    <div class="message-body">
-      <div *ngFor="let groud of listGroud" (click)="handleShowMessageDetail(groud)" class="message-item">
-        <div class="avatar-user" [ngStyle]="{
-    'background': 'url(' + (groud.imagesUrl ?  BASE_URL_UPLOAD + groud.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
-  }">
-          <div class="dot-status-online"></div>
-        </div>
-        <div class="message-user" [class.hide-before]="groud.read">
-          <p class="name-user">{{groud.username}}</p>
-          <p class="late-message-user">Hôm nay tôi làm gì....</p>
-        </div>
+  </div>
+
+  <!-- Message List Body -->
+  <div class="message-body">
+    <div
+      *ngFor="let groud of listGroud"
+      (click)="handleShowMessageDetail(groud)"
+      class="message-item"
+      [attr.data-user-id]="groud.id"
+      role="button"
+      tabindex="0"
+      title="Mở cuộc hội thoại"
+    >
+      <!-- User Avatar -->
+      <div
+        class="avatar-user"
+        [ngStyle]="{
+          'background': 'url(' + (groud.imagesUrl ? BASE_URL_UPLOAD + groud.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/cover no-repeat'
+        }"
+        [attr.aria-label]="'Avatar của ' + groud.username"
+      >
+        <div class="dot-status-online" title="Online"></div>
       </div>
 
+      <!-- Message User Info -->
+      <div class="message-user" [class.hide-before]="groud.read">
+        <p class="name-user">{{ groud.username }}</p>
+        <p class="late-message-user">Hôm nay tôi làm gì....</p>
+      </div>
     </div>
-    <div class="message-bottom">
-      <span>Xem tất cả tin nhắn</span>
-    </div>
+  </div>
 
+  <!-- Footer Section -->
+  <div class="message-bottom">
+    <span  role="button" tabindex="0">Xem tất cả tin nhắn</span>
+  </div>
 </div>

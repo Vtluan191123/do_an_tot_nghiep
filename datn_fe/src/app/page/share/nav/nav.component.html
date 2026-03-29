@@ -1,0 +1,47 @@
+<header class="header-section">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-3">
+        <div class="logo">
+          <a routerLink="/">
+            <img src="assets/img/logo.png" alt="">
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <nav class="nav-menu">
+          <ul>
+            <li class="active"><a routerLink="/">Home</a></li>
+            <li><a routerLink="/category">Classes</a></li>
+            <li><a href="./services.html">Services</a></li>
+            <li><a href="./team.html">Our Team</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="col-lg-3">
+        <div class="top-option">
+          <div class="to-search search-switch message" (click)="showListMessage()">
+            <span style="display: inline-block;
+    color: #ffffff;
+    font-size: 16px;
+    margin-left: 15px;" [innerHTML]="ICON_MESSAGE | safeHtml"></span>
+            @if(isShowListMessage){
+              <div class="child-list-message" (click)="$event.stopPropagation()">
+                <app-list-message></app-list-message>
+              </div>
+            }
+          </div>
+          <div class="to-social">
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+            <a href="#"><i class="fa fa-youtube-play"></i></a>
+            <a href="#"><i class="fa fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-open">
+      <i class="fa fa-bars"></i>
+    </div>
+  </div>
+</header>

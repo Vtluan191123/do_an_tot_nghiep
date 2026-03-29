@@ -46,7 +46,7 @@ export class VideoCallComponent implements OnInit{
   isOpenScreenUserCurrent:boolean = true
 
   //=====================
-  @ViewChild('video', { static: true })
+  @ViewChild('remoteVideo', { static: false })
   videoElement!: ElementRef<HTMLVideoElement>;
 
   audioInputs: MediaDeviceInfo[] = [];
@@ -165,22 +165,50 @@ export class VideoCallComponent implements OnInit{
   }
 
   async hangup() {
+    // Close and cleanup peer connection
     if (this.pc) {
-      this.pc.close();
+      try {
+        this.pc.onicecandidate = null;
+        this.pc.ontrack = null;
+        this.pc.getSenders().forEach((sender: any) => {
+          try { sender.replaceTrack(null); } catch (e) {}
+        });
+        this.pc.close();
+      } catch (e) {}
       this.pc = null;
     }
-    if(this.toStream){
-      this.toStream.getTracks().forEach((track:any) => track.stop());
+    // Stop and cleanup all streams
+    if (this.toStream) {
+      this.toStream.getTracks().forEach((track: any) => track.stop());
       this.toStream = null;
     }
-
-    if(this.fromStream){
-      this.fromStream.getTracks().forEach((track:any) => track.stop());
+    if (this.fromStream) {
+      this.fromStream.getTracks().forEach((track: any) => track.stop());
       this.fromStream = null;
     }
-    this.stopCallSound()
-    this.closeModal()
-  };
+    if (this.stream) {
+      this.stream.getTracks().forEach((track: any) => track.stop());
+      this.stream = undefined;
+    }
+    // Clear video elements
+    if (this.localVideo && this.localVideo.nativeElement) {
+      this.localVideo.nativeElement.srcObject = null;
+    }
+    if (this.remoteVideo && this.remoteVideo.nativeElement) {
+      this.remoteVideo.nativeElement.srcObject = null;
+    }
+    // Reset device info
+    this.audioInputCurrent = undefined;
+    this.videoInputCurrent = undefined;
+    this.audioOutputCurrent = undefined;
+    // Reset UI state
+    this.receiverCall = undefined;
+    this.isHideReceiverCall = true;
+    this.hasCall = false;
+    this.stopCallSound();
+    this.closeModal();
+    window.location.reload();
+  }
 
 
   createPeerConnection() {
@@ -214,33 +242,68 @@ export class VideoCallComponent implements OnInit{
 
   async makeCall() {
 
+    // Always reset peer connection and stream before making a new call
+    if (this.pc) {
+      this.pc.close();
+      this.pc = null;
+    }
+    if (this.toStream) {
+      this.toStream.getTracks().forEach((track: any) => track.stop());
+      this.toStream = null;
+    }
+
     //set audio và video cho B
     this.toStream = await navigator.mediaDevices.getUserMedia({audio: {
         echoCancellation: true,  // loại bỏ tiếng vang
         noiseSuppression: true,  // giảm tiếng ồn
         autoGainControl: true    // cân bằng âm lượng
       }, video: true});
+
+    // Cập nhật device info sau khi toStream được tạo
+    await this.getDevices();
+
     this.createPeerConnection();
 
     const offer = await this.pc.createOffer();
     //this.signaling.postMessage({userId:this.getUserId(),type: 'offer', sdp: offer.sdp});
     this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'offer', sdp: offer.sdp})
     await this.pc.setLocalDescription(offer);
+    // Always set local video srcObject to new stream
+    if (this.localVideo && this.localVideo.nativeElement) {
+      this.localVideo.nativeElement.srcObject = this.toStream;
+    }
   }
 
   async  handleOffer(offer:any) {
+    // Always reset peer connection and stream when receiving a new offer
     if (this.pc) {
-      console.error('existing peerconnection');
-      return;
+      this.pc.close();
+      this.pc = null;
     }
+    if (this.toStream) {
+      this.toStream.getTracks().forEach((track: any) => track.stop());
+      this.toStream = null;
+    }
+    // Tạo toStream khi nhận offer
+    this.toStream = await navigator.mediaDevices.getUserMedia({audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }, video: true});
 
+    // Cập nhật device info
+    await this.getDevices();
 
     this.createPeerConnection();
     await this.pc.setRemoteDescription(offer);
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
-    //this.signaling.postMessage({userId:this.getUserId(),type: 'answer', sdp: answer.sdp});
     this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'answer', sdp: answer.sdp})
+
+    // Always set local video srcObject to new stream
+    if (this.localVideo && this.localVideo.nativeElement) {
+      this.localVideo.nativeElement.srcObject = this.toStream;
+    }
 
   }
 
@@ -350,10 +413,12 @@ export class VideoCallComponent implements OnInit{
         this.audioOutputCurrent = this.audioOutput;
       }
 
-      if (!this.toStream) return;
+      // Lấy device từ stream hiện có (ưu tiên toStream, nếu không có thì fromStream)
+      const activeStream = this.toStream || this.fromStream;
+      if (!activeStream) return;
 
-      const videoTrack = this.toStream.getVideoTracks()[0];
-      const audioTrack = this.toStream.getAudioTracks()[0];
+      const videoTrack = activeStream.getVideoTracks()[0];
+      const audioTrack = activeStream.getAudioTracks()[0];
 
       this.videoInput = videoTrack?.getSettings().deviceId;
       this.audioInput = audioTrack?.getSettings().deviceId;
@@ -398,36 +463,33 @@ export class VideoCallComponent implements OnInit{
 
   async getStream(stream: MediaStream) {
     this.stream = stream;
-    //xét local
-    this.localVideo.nativeElement.srcObject = stream;
-
-    //xét remote
-    const newVideoTrack = stream.getVideoTracks()[0];
-    try {
-      const sender = this.pc
-        .getSenders()
-        .find((s:any) => s.track?.kind === 'video');
-      if (sender) {
-        await sender.replaceTrack(newVideoTrack);
-      }
-    }catch (err) {
-      console.error('getSenders error', err);
+    // Local video
+    if (this.localVideo && this.localVideo.nativeElement) {
+      this.localVideo.nativeElement.srcObject = stream;
     }
 
+    // Replace video track on peer connection if exists
+    if (this.pc) {
+      const newVideoTrack = stream.getVideoTracks()[0];
+      try {
+        const sender = this.pc.getSenders().find((s: any) => s.track?.kind === 'video');
+        if (sender && newVideoTrack) {
+          await sender.replaceTrack(newVideoTrack);
+        }
+      } catch (err) {
+        console.error('replaceTrack error', err);
+      }
+    }
 
-
-
-    // stop track cũ
+    // Stop old track
     this.fromStream?.getVideoTracks()[0]?.stop();
     this.fromStream = stream;
 
-
+    // Update device info
     const videoTrack = stream.getVideoTracks()[0];
     const audioTrack = stream.getAudioTracks()[0];
-
     this.videoInput = videoTrack?.getSettings().deviceId;
     this.audioInput = audioTrack?.getSettings().deviceId;
-
     this.videoInputCurrent = this.videoInput;
     this.audioInputCurrent = this.audioInput;
   }
@@ -514,6 +576,18 @@ export class VideoCallComponent implements OnInit{
   }
 
   closeModal(){this.activeModal.close();}
+
+  resetAll() {
+    this.hangup();
+    this.isShowChangeDevice = false;
+    this.isEnableMic = true;
+    this.isEnableCamera = true;
+    this.isOpenScreenUserCurrent = true;
+    // Reset thêm biến nếu cần
+    setTimeout(() => {
+      this.init();
+    }, 100);
+  }
 
   protected readonly ICON_PHONE = ICON_PHONE;
   protected readonly MICRO_OPEN = MICRO_OPEN;
