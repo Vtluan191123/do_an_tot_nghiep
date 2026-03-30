@@ -8,27 +8,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "combo_subject")
-public class ComboSubject extends  BaseEntity{
+public class ComboSubject extends BaseEntity{
 
-    @Column(name = "code")
-    private String code;
+    @Column(name = "combo_id")
+    private Long comboSubjectId;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "subject_id")
+    private Long subjectId;
 
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "prices")
-    private BigDecimal prices;
-
-
+    @Column(name = "total_teach") //tổng số buổi học
+    private Long totalTeach;
 }

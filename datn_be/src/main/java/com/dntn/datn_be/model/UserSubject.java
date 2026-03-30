@@ -25,7 +25,7 @@ public class UserSubject extends BaseEntity{
     @Column(name = "total_teach") //tổng số buổi học
     private Long totalTeach;
 
-    @OneToMany(mappedBy = "userSubject",fetch = FetchType.LAZY)
-    private List<UserSubjectDetail> userSubjectDetails;
+    @Column(name = "is_coach")
+    private boolean isCoach;
 
 }

@@ -42,9 +42,6 @@ public class Users  extends  BaseEntity
     @Column(name = "images_url",length = 1000)
     private String imagesUrl;
 
-    @Column(name = "is_coach")
-    private boolean isCoach;
-
     @Column(name = "vote_star")
     private Integer voteStar;
 

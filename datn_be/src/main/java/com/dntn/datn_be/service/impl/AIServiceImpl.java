@@ -26,7 +26,10 @@ public class AIServiceImpl implements AIService {
 
 
     @Override
-    public ResponseGlobalDto<Object> createPrompt(String prompt) throws Exception {
+    public ResponseGlobalDto<Object> createPrompt(String question) throws Exception {
+
+        String prompt = BuildPrompt(question);
+
         //send prompt to gemini
         String rawAiResponse = callAiWithRetryAndFallback(prompt, 3, 1000);
         //transfer raw data to json
@@ -37,8 +40,12 @@ public class AIServiceImpl implements AIService {
                 .build();
     }
 
+    private String BuildPrompt(String prompt)  {
+        return prompt;
+    }
 
-    private Object parseAIResponse(String rawAiResponse) throws JsonProcessingException {
+
+    private Object parseAIResponse(String rawAiResponse) {
         String jsonText = extractJson(rawAiResponse);
         if (!StringUtils.hasText(jsonText)) {
             log.warn("[CREATE_VOICE_ORDER_V2] Empty JSON response from AI");
@@ -72,7 +79,7 @@ public class AIServiceImpl implements AIService {
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 log.debug("[AI_CALL] Attempt {} with primary model: {}", attempt + 1, geminiAIProperties.getPrimaryModel());
-                String response = geminiApiClient.generateText(geminiAIProperties.getPrimaryModel(), prompt, 1200);
+                String response = geminiApiClient.generateText(geminiAIProperties.getPrimaryModel(), prompt, 2048);
 
                 if (StringUtils.hasText(response)) {
                     log.info("[AI_CALL] Success with primary model on attempt {}", attempt + 1);
@@ -101,7 +108,7 @@ public class AIServiceImpl implements AIService {
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 log.debug("[AI_CALL] Attempt {} with fallback model: {}", attempt + 1, geminiAIProperties.getFallbackModel());
-                String response = geminiApiClient.generateText(geminiAIProperties.getFallbackModel(), prompt, 1200);
+                String response = geminiApiClient.generateText(geminiAIProperties.getFallbackModel(), prompt, 2048);
 
                 if (StringUtils.hasText(response)) {
                     log.info("[AI_CALL] Success with fallback model on attempt {}", attempt + 1);
