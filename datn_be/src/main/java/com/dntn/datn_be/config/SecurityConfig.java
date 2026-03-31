@@ -1,6 +1,7 @@
 package com.dntn.datn_be.config;
 
 import com.dntn.datn_be.constants.AuthConstants;
+import com.dntn.datn_be.constants.RoleConstants;
 import com.dntn.datn_be.exception.CustomSecurityExceptionHandler;
 import com.dntn.datn_be.intercepter.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +38,7 @@ public class SecurityConfig {
                 //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PUBLIC).permitAll()
+                        .requestMatchers("/api/user/search").hasRole(RoleConstants.RoleTypes.ROLE_ADMIN)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

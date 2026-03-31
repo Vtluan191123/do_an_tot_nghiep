@@ -43,15 +43,9 @@ public class Users  extends  BaseEntity
     private String imagesUrl;
 
     @Column(name = "vote_star")
-    private Integer voteStar;
+    private Long voteStar;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Roles> roles = new HashSet<>();
-
+    @Column(name = "role_id")
+    private Long roleId;
 
 }

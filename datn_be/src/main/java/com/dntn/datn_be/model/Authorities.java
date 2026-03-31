@@ -37,7 +37,4 @@ public class Authorities extends  BaseEntity{
     @Column(name = "parent_code")
     private String parentCode;
 
-    @ManyToMany(mappedBy = "authorities")
-    private Set<Roles> roles = new HashSet<>();
-
 }

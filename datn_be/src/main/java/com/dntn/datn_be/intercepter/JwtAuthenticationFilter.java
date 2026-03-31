@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String username;
+        String username = jwtService.getUsername(token);
 
         // 2️⃣ Validate token + lấy username
         if (!jwtService.validateToken(token)) {
@@ -47,21 +51,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        username = jwtService.getUsername(token);
+
+
+        // lấy authorities từ token
+        List<String> authoritiesFromToken = jwtService.getAuthorities(token);
+        String role = jwtService.getRole(token);
+
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        // role
+        authorities.add(new SimpleGrantedAuthority(role));
+
+        // permissions
+        if (authoritiesFromToken != null) {
+            authorities.addAll(
+                    authoritiesFromToken.stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList()
+            );
+        }
 
 
         // 3️⃣ Chưa có authentication thì mới set
         if (username != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(username);
-
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            userDetails,
+                            username,
                             null,
-                            userDetails.getAuthorities()
+                            authorities
                     );
 
             // set IP client and sessionId

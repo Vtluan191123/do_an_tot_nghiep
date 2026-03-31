@@ -14,5 +14,5 @@ public class ResponseGlobalDto<T>  {
     T data;
     String error;
     Integer status;
-    Integer count;
+    long count;
 }

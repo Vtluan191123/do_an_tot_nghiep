@@ -20,7 +20,7 @@ public class ComboSubjectServiceImpl implements ComboSubjectService {
     }
 
     @Override
-    public ResponseGlobalDto<Combo> get(List<Long> request) {
+    public ResponseGlobalDto<Combo> get(Long request) {
         return null;
     }
 

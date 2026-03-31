@@ -139,7 +139,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public ResponseGlobalDto<BaseMongoMessage> get(List<String> request) {
+    public ResponseGlobalDto<BaseMongoMessage> get(String request) {
         return null;
     }
 

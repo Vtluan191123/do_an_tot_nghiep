@@ -1,10 +1,14 @@
 package com.dntn.datn_be.repository.impl;
 
+import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
+import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.repository.UserRepositoryCustom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,5 +73,105 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             userDetailGroudDtos.add(dto);
         }
         return userDetailGroudDtos;
+    }
+
+    @Override
+    public Page<Users> filter(UserFilterRequest request) {
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT u.*
+        FROM users u
+        LEFT JOIN roles r ON u.role_id = r.id
+        WHERE 1=1
+    """);
+
+        StringBuilder countSql = new StringBuilder("""
+        SELECT COUNT(*)
+        FROM users u
+        LEFT JOIN roles r ON u.role_id = r.id
+        WHERE 1=1
+    """);
+
+        List<Object> params = new ArrayList<>();
+
+        // ===== filter roleId =====
+        if (request.getRoleId() != null) {
+            sql.append(" AND u.role_id = ? ");
+            countSql.append(" AND u.role_id = ? ");
+            params.add(request.getRoleId());
+        }
+
+        // ===== keyword =====
+        if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
+            sql.append("""
+            AND (
+                LOWER(u.username) LIKE ?
+                OR LOWER(u.email) LIKE ?
+            )
+        """);
+
+            countSql.append("""
+            AND (
+                LOWER(u.username) LIKE ?
+                OR LOWER(u.email) LIKE ?
+            )
+        """);
+
+            String keyword = "%" + request.getKeyword().toLowerCase() + "%";
+            params.add(keyword);
+            params.add(keyword);
+        }
+
+        // ===== fromDate =====
+        if (request.getFromDate() != null && !request.getFromDate().isBlank()) {
+            sql.append(" AND u.created_at >= ? ");
+            countSql.append(" AND u.created_at >= ? ");
+            params.add(java.sql.Timestamp.valueOf(request.getFromDate()));
+        }
+
+        // ===== toDate =====
+        if (request.getToDate() != null && !request.getToDate().isBlank()) {
+            sql.append(" AND u.created_at <= ? ");
+            countSql.append(" AND u.created_at <= ? ");
+            params.add(java.sql.Timestamp.valueOf(request.getToDate()));
+        }
+
+        // ===== sort (anti SQL injection) =====
+        List<String> allowedSortFields = List.of("id", "username", "email", "created_at");
+
+        String sortBy = allowedSortFields.contains(request.getSortBy())
+                ? request.getSortBy()
+                : "id";
+
+        String sortDir = "asc".equalsIgnoreCase(request.getSortDirection()) ? "ASC" : "DESC";
+
+        sql.append(" ORDER BY u.").append(sortBy).append(" ").append(sortDir);
+
+        // ===== create query =====
+        Query query = entityManager.createNativeQuery(sql.toString(), Users.class);
+        Query countQuery = entityManager.createNativeQuery(countSql.toString());
+
+        // set params
+        for (int i = 0; i < params.size(); i++) {
+            query.setParameter(i + 1, params.get(i));
+            countQuery.setParameter(i + 1, params.get(i));
+        }
+
+        // ===== paging =====
+        int page = request.getPage();
+        int size = request.getSize();
+
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+
+        List<Users> resultList = query.getResultList();
+
+        Number total = (Number) countQuery.getSingleResult();
+
+        return new PageImpl<>(
+                resultList,
+                request.toPageable(),
+                total.longValue()
+        );
     }
 }

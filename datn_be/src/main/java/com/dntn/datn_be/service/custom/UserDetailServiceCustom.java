@@ -2,6 +2,7 @@ package com.dntn.datn_be.service.custom;
 
 import com.dntn.datn_be.dto.common.UserDetailCustom;
 import com.dntn.datn_be.model.Users;
+import com.dntn.datn_be.repository.RoleRepository;
 import com.dntn.datn_be.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,10 +11,12 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,6 +24,7 @@ import java.util.Optional;
 public class UserDetailServiceCustom implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -43,8 +47,10 @@ public class UserDetailServiceCustom implements UserDetailsService {
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(Users user) {
-        return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getCode()))
+
+        List<String> authoritiesCode = roleRepository.getCodeAuthoritiesById(user.getRoleId());
+        return authoritiesCode.stream()
+                .map(SimpleGrantedAuthority::new)
                 .toList();
     }
 }

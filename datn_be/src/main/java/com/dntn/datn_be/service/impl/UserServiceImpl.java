@@ -3,6 +3,7 @@ package com.dntn.datn_be.service.impl;
 import com.dntn.datn_be.constants.MessageConstants;
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
+import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.model.GroudMessageUser;
@@ -18,6 +19,7 @@ import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
 import org.hibernate.ObjectNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.*;
@@ -44,34 +46,82 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ResponseGlobalDto<List<Users>> gets(Long request) {
-        Optional<Users> usersOptional = this.userRepository.findById(request);
+    public ResponseGlobalDto<List<Users>> gets(UserFilterRequest request) {
+        Page<Users> page = userRepository.filter(request);
         return ResponseGlobalDto.<List<Users>>builder()
                 .status(HttpStatus.OK.value())
-                .data(List.of(usersOptional.orElse(null)))
+                .data(page.getContent())
+                .count(page.getTotalElements())
+                .build();
+    }
+
+
+    @Override
+    public ResponseGlobalDto<Users> get(UserFilterRequest request) {
+        Optional<Users> usersOptional = this.userRepository.findById(request.getId());
+        return ResponseGlobalDto.<Users>builder()
+                .status(HttpStatus.OK.value())
+                .data(usersOptional.orElse(null))
                 .message("Get user ById Successfully").build();
     }
 
-
-    @Override
-    public ResponseGlobalDto<Users> get(List<Long> request) {
-        return null;
-    }
-
-
     @Override
     public ResponseGlobalDto<Users> update(UserUpdateRequest request) {
-        return null;
+        Users user = userRepository.findById(request.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // update từng field nếu != null
+        if (request.getUsername() != null) user.setUsername(request.getUsername());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getAge() != null) user.setAge(request.getAge());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getExp() != null) user.setExp(request.getExp());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getImagesUrl() != null) user.setImagesUrl(request.getImagesUrl());
+
+        if (request.getVoteStar() != null) {
+            user.setVoteStar(request.getVoteStar()); // convert Long -> Integer
+        }
+
+        if (request.getRoleId() != null) {
+            user.setRoleId(request.getRoleId());
+        }
+
+        userRepository.save(user);
+
+        return ResponseGlobalDto.<Users>builder()
+                .status(HttpStatus.OK.value())
+                .data(user)
+                .message("Update user Successfully").build();
     }
 
     @Override
     public ResponseGlobalDto<Boolean> delete(Long request) {
-        return null;
+        Users user = userRepository.findById(request)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userRepository.delete(user);
+
+        return ResponseGlobalDto.<Boolean>builder()
+                .status(HttpStatus.OK.value())
+                .data(true)
+                .message("delete user Successfully").build();
     }
 
     @Override
     public ResponseGlobalDto<Boolean> deletes(List<Long> request) {
-        return null;
+        List<Users> users = userRepository.findAllById(request);
+
+        if (users.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        userRepository.deleteAll(users);
+
+        return ResponseGlobalDto.<Boolean>builder()
+                .status(HttpStatus.OK.value())
+                .data(true)
+                .message("delete user Successfully").build();
     }
 
     @Override
@@ -169,4 +219,6 @@ public class UserServiceImpl implements UserService{
                 .count(userDetailGroudDtos.size())
                 .build();
     }
+
+
 }
