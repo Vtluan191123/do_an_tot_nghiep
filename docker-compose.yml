@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: datn_be/Dockerfile
-    container_name: datn-backend
+    container_name: datnbe
     ports:
       - "8080:8080"
     environment:
@@ -51,7 +51,7 @@ services:
     build:
       context: .
       dockerfile: datn_fe/Dockerfile
-    container_name: datn-frontend
+    container_name: datnfe
     ports:
       - "80:80"
     depends_on:
