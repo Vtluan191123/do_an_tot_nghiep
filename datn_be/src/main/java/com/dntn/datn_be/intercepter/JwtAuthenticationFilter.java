@@ -75,10 +75,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 3️⃣ Chưa có authentication thì mới set
         if (username != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails =
+                    userDetailsService.loadUserByUsername(username);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            username,
+                            userDetails,
                             null,
                             authorities
                     );

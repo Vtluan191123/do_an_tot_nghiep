@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: "Web integration Ai"
+  datasource:
+    url: jdbc:sqlserver://sqlserver:1433;databaseName=do_an_tot_nghiep;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: Vtluan123@
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/do_an_tot_nghiep
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  jwt:
+    secret: 51a5c78e0db0c819b085323288d53d39e3617b9c0181e14d2cc845557f034f36
+    expiration_access: 99999999
+    expiration_refresh: 3600000
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 25MB
+      max-request-size: 50MB
+  gemini:
+    api-key:
+    base-url: https://generativelanguage.googleapis.com/v1beta
+    primary-model: gemini-2.5-flash
+    fallback-model: gemini-2.5-pro
+
+  logging:
+  level:
+    root: INFO
+    com.dntn.datn_be.service.WebSocketService: DEBUG
+
+integration:
+  websocket:
+    domain: https://socket.easypos.vn
+    prefix_topic_fanout: '/topics/'
+    prefix_topic_direct: '/user/topics/'
+
+server:
+  port: 8080
+
+
