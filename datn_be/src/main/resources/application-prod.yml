@@ -38,6 +38,9 @@ spring:
     root: INFO
     com.dntn.datn_be.service.WebSocketService: DEBUG
 
+  file:
+    upload-dir: '/var/www/uploads/'
+
 integration:
   websocket:
     domain: https://socket.easypos.vn

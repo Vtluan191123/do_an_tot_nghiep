@@ -2,6 +2,7 @@ package com.dntn.datn_be.service.impl;
 
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.service.UploadFileService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +17,8 @@ import java.util.UUID;
 @Service
 public class UploadFileServiceImpl implements UploadFileService {
 
-    private final String uploadDir = "D:/uploads/";
+    @Value("${spring.file.upload-dir}")
+    private String uploadDir;
 
     @Override
     public List<String> uploads(List<MultipartFile> files) throws IOException {
