@@ -1,25 +1,7 @@
 version: '3.8'
 
 services:
-  # Database (nếu cần)
-  # db:
-  #   image: mysql:8.0
-  #   container_name: datn-mysql
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
-  #     MYSQL_DATABASE: datn_db
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - db_data:/var/lib/mysql
-  #   networks:
-  #     - datn-network
-  #   healthcheck:
-  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-  #     timeout: 20s
-  #     retries: 10
 
-  # Backend API
   backend:
     build:
       context: .
@@ -30,23 +12,10 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - JAVA_OPTS=-Xmx512m -Xms256m
-      # - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/datn_db
-      # - SPRING_DATASOURCE_USERNAME=root
-      # - SPRING_DATASOURCE_PASSWORD=root
-    # depends_on:
-    #   db:
-    #     condition: service_healthy
     networks:
-      - datn-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/api/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
+      - datn-net
     restart: unless-stopped
 
-  # Frontend Web Server
   frontend:
     build:
       context: .
@@ -54,23 +23,15 @@ services:
     container_name: datnfe
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
     networks:
-      - datn-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
+      - datn-net
+    volumes:
+      - /root/ssl:/etc/nginx/ssl
     restart: unless-stopped
 
 networks:
-  datn-network:
+  datn-net:
     driver: bridge
-
-# volumes:
-#   db_data:
-#     driver: local
-
