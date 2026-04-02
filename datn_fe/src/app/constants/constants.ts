@@ -40,7 +40,7 @@ export const MESSAGE_TYPE = {
   AUDIO: "audio"
 };
 
-export const BASE_URL_UPLOAD = 'http://localhost:8080/uploads/'
+export const BASE_URL_UPLOAD = 'https://159.223.56.71:8080/uploads/'
 
 export const BASE_TOPIC_SOCKET = '/topics/user/'
 export const BASE_TOPIC_SOCKET_FE = '/topics/'
