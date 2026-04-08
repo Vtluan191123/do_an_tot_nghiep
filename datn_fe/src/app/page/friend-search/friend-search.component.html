@@ -1,0 +1,122 @@
+<div class="friend-search-page">
+  <!-- Header -->
+  <app-nav></app-nav>
+
+  <!-- Breadcrumb Section Begin -->
+  <section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div class="breadcrumb-text">
+            <h2>Tìm Kiếm Bạn Bè</h2>
+            <div class="bt-option">
+              <a routerLink="/">Trang Chủ</a>
+              <a href="#">Trang</a>
+              <span>Tìm Kiếm Bạn Bè</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Breadcrumb Section End -->
+
+  <!-- Friend Search Section Begin -->
+  <section class="friend-search-section spad">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="section-title">
+            <span>Kết Nối</span>
+            <h2>Tìm Kiếm Bạn Bè</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="row mb-4">
+        <div class="col-lg-8 offset-lg-2">
+          <div class="search-wrapper">
+            <input
+              type="text"
+              class="search-input"
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange()"
+              placeholder="Nhập tên hoặc username bạn bè...">
+            <i class="fa fa-search search-icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      @if(isLoading) {
+        <div class="row">
+          <div class="col-lg-12">
+            <p class="text-center" style="padding: 40px 0; color: #ccc;">
+              <i class="fa fa-spinner fa-spin"></i> Đang tải...
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Friends List -->
+      @if(!isLoading) {
+        @if(filteredFriends.length === 0) {
+          <div class="row">
+            <div class="col-lg-12">
+              <p class="text-center" style="padding: 40px 0; color: #ccc; font-size: 16px;">
+                {{ searchQuery ? 'Không tìm thấy bạn bè nào' : 'Chưa có bạn bè' }}
+              </p>
+            </div>
+          </div>
+        } @else {
+          <div class="row">
+            @for(friend of filteredFriends; track friend.id) {
+              <div class="col-lg-6 mb-4">
+                <div class="friend-card" (click)="onFriendClick(friend)">
+                  <div class="friend-avatar">
+                    <img [src]="friend.avatar" [alt]="friend.name" class="img-fluid">
+                    @if(friend.isOnline) {
+                      <span class="online-badge"></span>
+                    }
+                  </div>
+                  <div class="friend-info">
+                    <h4>{{ friend.name }}</h4>
+                    <p class="username">{{ friend.username }}</p>
+                    @if(friend.bio) {
+                      <p class="bio">{{ friend.bio }}</p>
+                    }
+                  </div>
+                  @if(!friend.isFriend) {
+                    <div class="friend-action">
+                      <i class="fa fa-arrow-right"></i>
+                    </div>
+                  } @else {
+                    <div class="friend-action added">
+                      <i class="fa fa-check"></i>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </section>
+  <!-- Friend Search Section End -->
+
+  <!-- Friend Profile Modal -->
+  @if(showProfileModal && selectedFriend) {
+    <app-friend-profile-modal
+      [friend]="selectedFriend"
+      (close)="closeProfileModal()"
+      (addFriend)="onAddFriend($event)"
+      (message)="onMessage($event)">
+    </app-friend-profile-modal>
+  }
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>
+

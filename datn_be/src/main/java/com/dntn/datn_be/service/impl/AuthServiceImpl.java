@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -108,7 +107,7 @@ public class AuthServiceImpl implements AuthService {
 
             // Get username from refresh token
             String username = jwtService.getUsername(request.getRefreshToken());
-            
+
             // Get user from database
             Optional<Users> userOpt = userRepository.findUsersByUsername(username);
             if (userOpt.isEmpty()) {
@@ -119,15 +118,15 @@ public class AuthServiceImpl implements AuthService {
             }
 
             Users user = userOpt.get();
-            
+
             // Generate new access token
             String newAccessToken = jwtService.generateToken(user, expirationAccess);
-            
+
             return ResponseEntity.ok(LoginResponse.builder()
                     .accessToken(newAccessToken)
                     .refreshToken(request.getRefreshToken())
                     .build());
-                    
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(LoginResponse.builder()
@@ -137,11 +136,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseEntity<ResponseGlobalDto<Void>> logout() {
+    public ResponseEntity<ResponseGlobalDto<Object>> logout() {
         try {
             // Clear security context
             SecurityContextHolder.clearContext();
-            
+
             return ResponseEntity.ok(ResponseGlobalDto.builder()
                     .message("Logged out successfully")
                     .code(HttpStatus.OK.value())

@@ -13,5 +13,5 @@ public interface AuthService {
     ResponseEntity<Users> register(RegisterRequest request);
     Users getCurrentUser();
     ResponseEntity<LoginResponse> refreshToken(RefreshTokenRequest request);
-    ResponseEntity<ResponseGlobalDto<Void>> logout();
+    ResponseEntity<ResponseGlobalDto<Object>> logout();
 }

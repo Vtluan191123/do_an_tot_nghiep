@@ -11,15 +11,33 @@
       <div class="col-lg-6">
         <nav class="nav-menu">
           <ul>
-            <li class="active"><a routerLink="/">Home</a></li>
-            <li><a routerLink="/category">Classes</a></li>
-            <li><a href="./services.html">Services</a></li>
-            <li><a href="./team.html">Our Team</a></li>
+            <li class="active"><a routerLink="/">Trang Chủ</a></li>
+            <li><a routerLink="/class-timetable">Lớp Tập</a></li>
+            <li><a routerLink="/gym-room">Tạo Phòng Tập</a></li>
+            <li><a routerLink="/class-detail">Dịch Vụ</a></li>
+            <li><a routerLink="/team">Đội Ngũ</a></li>
           </ul>
         </nav>
       </div>
       <div class="col-lg-3">
         <div class="top-option">
+          <div class="to-search search-switch" (click)="goToFriendSearch()" title="Tìm kiếm bạn bè">
+            <i class="fa fa-search"></i>
+          </div>
+          <div class="to-search search-switch notification" (click)="showNotification()">
+            <span style="display: inline-block;
+    color: #ffffff;
+    font-size: 16px;
+    margin-left: 15px; position: relative;" [innerHTML]="ICON_BELL | safeHtml"></span>
+            @if(unreadCount > 0) {
+              <span class="notification-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+            }
+            @if(isShowNotification){
+              <div class="child-list-notification" (click)="$event.stopPropagation()">
+                <app-notification-list></app-notification-list>
+              </div>
+            }
+          </div>
           <div class="to-search search-switch message" (click)="showListMessage()">
             <span style="display: inline-block;
     color: #ffffff;

@@ -23,6 +23,8 @@ import {Title} from '@angular/platform-browser';
 import {Route, Router} from '@angular/router';
 import {VideoCallComponent} from '../../video-call/video-call.component';
 import {SocketData} from '../../../model/socket';
+import {FriendProfileModalComponent} from '../../friend-search/friend-profile-modal/friend-profile-modal.component';
+import {Friend, FriendSearchService} from '../../../service/friend/friend-search.service';
 
 @Component({
   selector: 'app-message-detail',
@@ -33,7 +35,8 @@ import {SocketData} from '../../../model/socket';
     NgForOf,
     NgStyle,
     FormsModule,
-    CommonModule
+    CommonModule,
+    FriendProfileModalComponent
   ],
   templateUrl: './message-detail.component.html',
   styleUrl: './message-detail.component.scss'
@@ -68,6 +71,10 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
   timeMicro:any
   currentTime:number = 0
 
+  //Profile modal
+  selectedFriend: Friend | null = null;
+  showProfileModal = false;
+
   mediaRecorder: MediaRecorder | null | undefined;
   audioChunks: Blob[] = [];
   audioUrl: string | null = null;
@@ -87,6 +94,7 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     private titleService: Title,
     private router:Router,
     private cdr: ChangeDetectorRef,
+    private friendSearchService: FriendSearchService,
   ) {
   }
 
@@ -358,6 +366,39 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
 
   handleCloseMessage() {
     this.transferData.sendMessage(undefined)
+  }
+
+  openProfileModal(): void {
+    if (!this.userDetailMessage) return;
+
+    // Create Friend object from userDetailMessage
+    const friend: Friend = {
+      id: this.userDetailMessage.id || '',
+      name: this.userDetailMessage.username || '',
+      username: this.userDetailMessage.username || '',
+      avatar: this.userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + this.userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png',
+      isOnline: true, // You can update this based on actual status
+    };
+
+    this.selectedFriend = friend;
+    this.showProfileModal = true;
+
+    // Load detailed profile information
+    this.friendSearchService.getFriendProfile(friend.id).subscribe(
+      (profile) => {
+        if (this.selectedFriend) {
+          this.selectedFriend = { ...this.selectedFriend, ...profile };
+        }
+      },
+      (error) => {
+        console.error('Lỗi tải thông tin bạn bè:', error);
+      }
+    );
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    this.selectedFriend = null;
   }
 
 

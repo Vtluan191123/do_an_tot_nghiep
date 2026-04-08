@@ -14,6 +14,37 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     margin-top: 8px !important;
   }
+
+  &.notification {
+    position: relative !important;
+
+    .child-list-notification {
+      position: absolute !important;
+      top: 100% !important;
+      right: 0 !important;
+      left: auto !important;
+      z-index: 1000 !important;
+      margin-top: 8px !important;
+    }
+
+    .notification-badge {
+      position: absolute !important;
+      top: -8px !important;
+      right: -8px !important;
+      background: #ff4444 !important;
+      color: white !important;
+      border-radius: 50% !important;
+      width: 20px !important;
+      height: 20px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 11px !important;
+      font-weight: bold !important;
+      border: 2px solid white !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+  }
 }
 
 // User Profile in Navbar

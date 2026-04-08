@@ -8,9 +8,6 @@ import {TransferDataService} from '../../service/tranfer-data/transfer-data.serv
 import {NavComponent} from '../share/nav/nav.component';
 import {FooterComponent} from '../share/footer/footer.component';
 
-
-declare var $: any;
-
 @Component({
   selector: 'app-dash-board',
   standalone: true,
@@ -48,65 +45,127 @@ export class DashBoardComponent implements AfterViewInit,OnInit {
   /* Preloader */
   initPreloader() {
     if (!isPlatformBrowser(this.platformId)) return;
-    $('.loader').fadeOut();
-    $('#preloder').delay(200).fadeOut('slow');
+
+    const loader = document.querySelector('.loader') as HTMLElement;
+    const preloder = document.getElementById('preloder') as HTMLElement;
+
+    if (loader) {
+      loader.style.transition = 'opacity 0.3s ease';
+      loader.style.opacity = '0';
+      loader.style.pointerEvents = 'none';
+    }
+
+    if (preloder) {
+      setTimeout(() => {
+        preloder.style.transition = 'opacity 0.5s ease';
+        preloder.style.opacity = '0';
+        preloder.style.pointerEvents = 'none';
+        setTimeout(() => {
+          preloder.style.display = 'none';
+        }, 500);
+      }, 200);
+    }
   }
 
   /* Background image set */
   initBackground() {
-    $('.set-bg').each(() => {
-      const bg = $(this).data('setbg');
-      $(this).css('background-image', 'url(' + bg + ')');
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const elements = document.querySelectorAll('.set-bg');
+    elements.forEach((el: any) => {
+      const bg = el.getAttribute('data-setbg');
+      if (bg) {
+        el.style.backgroundImage = 'url(' + bg + ')';
+      }
     });
   }
 
   /* Offcanvas menu */
   initMenu() {
-    $('.canvas-open').on('click', () => {
-      $('.offcanvas-menu-wrapper').addClass('show-offcanvas-menu-wrapper');
-      $('.offcanvas-menu-overlay').addClass('active');
-    });
+    if (!isPlatformBrowser(this.platformId)) return;
 
-    $('.canvas-close, .offcanvas-menu-overlay').on('click', () => {
-      $('.offcanvas-menu-wrapper').removeClass('show-offcanvas-menu-wrapper');
-      $('.offcanvas-menu-overlay').removeClass('active');
-    });
+    const canvasOpen = document.querySelector('.canvas-open') as HTMLElement;
+    const canvasClose = document.querySelector('.canvas-close') as HTMLElement;
+    const offcanvasWrapper = document.querySelector('.offcanvas-menu-wrapper') as HTMLElement;
+    const offcanvasOverlay = document.querySelector('.offcanvas-menu-overlay') as HTMLElement;
+
+    if (canvasOpen) {
+      canvasOpen.addEventListener('click', () => {
+        if (offcanvasWrapper) {
+          offcanvasWrapper.classList.add('show-offcanvas-menu-wrapper');
+        }
+        if (offcanvasOverlay) {
+          offcanvasOverlay.classList.add('active');
+        }
+      });
+    }
+
+    if (canvasClose) {
+      canvasClose.addEventListener('click', () => {
+        if (offcanvasWrapper) {
+          offcanvasWrapper.classList.remove('show-offcanvas-menu-wrapper');
+        }
+        if (offcanvasOverlay) {
+          offcanvasOverlay.classList.remove('active');
+        }
+      });
+    }
+
+    if (offcanvasOverlay) {
+      offcanvasOverlay.addEventListener('click', () => {
+        if (offcanvasWrapper) {
+          offcanvasWrapper.classList.remove('show-offcanvas-menu-wrapper');
+        }
+        offcanvasOverlay.classList.remove('active');
+      });
+    }
   }
   /* Owl Carousel */
   initCarousel() {
+    if (!isPlatformBrowser(this.platformId)) return;
 
-    $('.hs-slider').owlCarousel({
-      loop: true,
-      margin: 0,
-      nav: true,
-      items: 1,
-      dots: false,
-      animateOut: 'fadeOut',
-      animateIn: 'fadeIn',
-      navText: ['<i class="fa fa-angle-left"></i>', '<i class="fa fa-angle-right"></i>'],
-      smartSpeed: 1200,
-      autoplay: false
-    });
+    // Kiểm tra nếu jQuery và owlCarousel có sẵn
+    const $ = (window as any).$;
+    if (!$ || !$.fn || !$.fn.owlCarousel) {
+      console.warn('jQuery hoặc Owl Carousel chưa được load');
+      return;
+    }
 
-    $('.ts-slider').owlCarousel({
-      loop: true,
-      items: 3,
-      dots: true,
-      autoplay: true,
-      responsive: {
-        320: { items: 1 },
-        768: { items: 2 },
-        992: { items: 3 }
-      }
-    });
+    try {
+      $('.hs-slider').owlCarousel({
+        loop: true,
+        margin: 0,
+        nav: true,
+        items: 1,
+        dots: false,
+        animateOut: 'fadeOut',
+        animateIn: 'fadeIn',
+        navText: ['<i class="fa fa-angle-left"></i>', '<i class="fa fa-angle-right"></i>'],
+        smartSpeed: 1200,
+        autoplay: false
+      });
 
-    $('.ts_slider').owlCarousel({
-      loop: true,
-      items: 1,
-      nav: true,
-      autoplay: true
-    });
+      $('.ts-slider').owlCarousel({
+        loop: true,
+        items: 3,
+        dots: true,
+        autoplay: true,
+        responsive: {
+          320: { items: 1 },
+          768: { items: 2 },
+          992: { items: 3 }
+        }
+      });
 
+      $('.ts_slider').owlCarousel({
+        loop: true,
+        items: 1,
+        nav: true,
+        autoplay: true
+      });
+    } catch (error) {
+      console.warn('Lỗi khi khởi tạo Owl Carousel:', error);
+    }
   }
 
 

@@ -19,11 +19,17 @@ import {Subject, Subscription, takeUntil} from 'rxjs';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {NavComponent} from './page/share/nav/nav.component';
 import {FooterComponent} from './page/share/footer/footer.component';
+import { environment } from '../environments/environment';
+import { ClassDetailComponent } from './page/class-detail/class-detail.component';
+import { OutTeamComponent } from './page/out-team/out-team.component';
+import { ClassTimetableComponent } from './page/class-timetable/class-timetable.component';
+import { GymRoomComponent } from './page/gym-room/gym-room.component';
+import { FriendSearchComponent } from './page/friend-search/friend-search.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -48,6 +54,7 @@ export class AppComponent implements OnInit ,OnDestroy{
 
 
   ngOnInit() {
+    console.log(environment.production);
     // Check route to show/hide nav
     this.router.events.pipe(takeUntil(this.destroy$)).subscribe(() => {
       const currentUrl = this.router.url;

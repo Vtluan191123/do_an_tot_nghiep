@@ -46,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    ResponseEntity<ResponseGlobalDto<Void>> logout() {
+    ResponseEntity<ResponseGlobalDto<Object>> logout() {
         return authService.logout();
     }
 }

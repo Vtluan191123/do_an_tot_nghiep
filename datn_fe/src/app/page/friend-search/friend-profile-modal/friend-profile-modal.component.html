@@ -1,0 +1,104 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Close Button -->
+    <button class="close-btn" (click)="onClose()">
+      <i class="fa fa-times"></i>
+    </button>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- Left Side - Friend Info -->
+      <div class="modal-left">
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <img [src]="friend.avatar" [alt]="friend.name" class="profile-avatar">
+          <div class="profile-status">
+            @if(friend.isOnline) {
+              <span class="status-badge online">Đang hoạt động</span>
+            } @else {
+              <span class="status-badge offline">Ngoại tuyến</span>
+            }
+          </div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="profile-info">
+          <h2>{{ friend.name }}</h2>
+          <p class="username">{{ friend.username }}</p>
+          @if(friend.bio) {
+            <p class="bio">{{ friend.bio }}</p>
+          }
+        </div>
+
+        <!-- Profile Details -->
+        <div class="profile-details">
+          @if(friend.location) {
+            <div class="detail-item">
+              <i class="fa fa-map-marker"></i>
+              <span>{{ friend.location }}</span>
+            </div>
+          }
+          @if(friend.joinDate) {
+            <div class="detail-item">
+              <i class="fa fa-calendar"></i>
+              <span>Tham gia từ {{ friend.joinDate }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Stats -->
+        <div class="profile-stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ friend.friendCount || 0 }}</span>
+            <span class="stat-label">Bạn Bè</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ friend.postCount || 0 }}</span>
+            <span class="stat-label">Bài Viết</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          @if(!friend.isFriend) {
+            <button class="btn-primary" (click)="onAddFriend()">
+              <i class="fa fa-user-plus"></i> Kết Bạn
+            </button>
+          } @else {
+            <button class="btn-primary added" disabled>
+              <i class="fa fa-check"></i> Bạn Của Bạn
+            </button>
+          }
+          <button class="btn-secondary" (click)="onMessage()">
+            <i class="fa fa-envelope"></i> Nhắn Tin
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Side - Mutual Friends -->
+      <div class="modal-right">
+        <div class="mutual-friends-header">
+          <h3>Bạn Chung</h3>
+          <span class="mutual-count">{{ mutualFriends.length }}</span>
+        </div>
+
+        <div class="mutual-friends-list">
+          @if(mutualFriends.length === 0) {
+            <p class="no-mutual">Chưa có bạn chung</p>
+          } @else {
+            @for(mFriend of mutualFriends; track mFriend.id) {
+              <div class="mutual-friend-item">
+                <img [src]="mFriend.avatar" [alt]="mFriend.name">
+                <div class="mutual-friend-info">
+                  <p class="name">{{ mFriend.name }}</p>
+                  <p class="username">{{ mFriend.username }}</p>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

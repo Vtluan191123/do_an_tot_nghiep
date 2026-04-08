@@ -1,0 +1,259 @@
+<div class="gym-room-page">
+  <!-- Header -->
+  <app-nav></app-nav>
+
+  <!-- Breadcrumb Section Begin -->
+  <section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div class="breadcrumb-text">
+            <h2>Tạo Phòng Tập</h2>
+            <div class="bt-option">
+              <a routerLink="/">Trang Chủ</a>
+              <a href="#">Trang</a>
+              <span>Tạo Phòng Tập</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Breadcrumb Section End -->
+
+  <!-- Create Room Section -->
+  <section class="create-room-section spad">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="section-title">
+            <span>Quản Lý Phòng Tập</span>
+            <h2>Tạo Phòng Tập Mới</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Room Button -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <button
+            class="primary-btn"
+            (click)="toggleCreateForm()">
+            <i class="fa fa-plus"></i> {{ showCreateForm ? 'Đóng Form' : 'Tạo Phòng Tập Mới' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Create Room Form -->
+      @if(showCreateForm) {
+        <div class="row">
+          <div class="col-lg-8 offset-lg-2">
+            <div class="create-form-container">
+              <h3>Tạo Phòng Tập Mới</h3>
+              <form [formGroup]="createRoomForm" (ngSubmit)="onCreateRoom()">
+                <div class="form-group">
+                  <label for="name">Tên Phòng Tập</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    formControlName="name"
+                    placeholder="Nhập tên phòng tập">
+                  @if(createRoomForm.get('name')?.hasError('required') && createRoomForm.get('name')?.touched) {
+                    <small class="text-danger">Tên phòng tập là bắt buộc</small>
+                  }
+                  @if(createRoomForm.get('name')?.hasError('minlength') && createRoomForm.get('name')?.touched) {
+                    <small class="text-danger">Tên phải tối thiểu 3 ký tự</small>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="subject">Bộ Môn</label>
+                  <select class="form-control" id="subject" formControlName="subject">
+                    <option value="">-- Chọn Bộ Môn --</option>
+                    @for(subject of subjects; track subject) {
+                      <option [value]="subject">{{ subject }}</option>
+                    }
+                  </select>
+                  @if(createRoomForm.get('subject')?.hasError('required') && createRoomForm.get('subject')?.touched) {
+                    <small class="text-danger">Vui lòng chọn bộ môn</small>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="instructor">Huấn Luyện Viên</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="instructor"
+                    formControlName="instructor"
+                    placeholder="Nhập tên huấn luyện viên">
+                  @if(createRoomForm.get('instructor')?.hasError('required') && createRoomForm.get('instructor')?.touched) {
+                    <small class="text-danger">Tên huấn luyện viên là bắt buộc</small>
+                  }
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="startTime">Giờ Bắt Đầu</label>
+                    <input
+                      type="time"
+                      class="form-control"
+                      id="startTime"
+                      formControlName="startTime">
+                    @if(createRoomForm.get('startTime')?.hasError('required') && createRoomForm.get('startTime')?.touched) {
+                      <small class="text-danger">Giờ bắt đầu là bắt buộc</small>
+                    }
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="endTime">Giờ Kết Thúc</label>
+                    <input
+                      type="time"
+                      class="form-control"
+                      id="endTime"
+                      formControlName="endTime">
+                    @if(createRoomForm.get('endTime')?.hasError('required') && createRoomForm.get('endTime')?.touched) {
+                      <small class="text-danger">Giờ kết thúc là bắt buộc</small>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="capacity">Sức Chứa (Nhân Viên)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="capacity"
+                    formControlName="capacity"
+                    min="5"
+                    max="100">
+                  @if(createRoomForm.get('capacity')?.hasError('required') && createRoomForm.get('capacity')?.touched) {
+                    <small class="text-danger">Sức chứa là bắt buộc</small>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="description">Mô Tả</label>
+                  <textarea
+                    class="form-control"
+                    id="description"
+                    formControlName="description"
+                    rows="3"
+                    placeholder="Mô tả chi tiết về phòng tập..."></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  [disabled]="isLoading || createRoomForm.invalid">
+                  {{ isLoading ? 'Đang Tạo...' : 'Tạo Phòng Tập' }}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Rooms List Section -->
+  <section class="rooms-list-section spad">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="section-title">
+            <span>Danh Sách Phòng Tập</span>
+            <h2>Chọn Phòng & Tham Gia</h2>
+          </div>
+        </div>
+      </div>
+
+      @if(rooms.length === 0) {
+        <div class="row">
+          <div class="col-lg-12">
+            <p class="text-center" style="padding: 40px 0; font-size: 16px;">
+              Chưa có phòng tập nào. Hãy tạo phòng tập đầu tiên!
+            </p>
+          </div>
+        </div>
+      } @else {
+        <div class="row">
+          @for(room of rooms; track room.id) {
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="room-card">
+                <!-- Room Image -->
+                <div class="room-image">
+                  <img [src]="room.image" [alt]="room.name" class="img-fluid">
+                  <span class="subject-badge">{{ room.subject }}</span>
+                </div>
+
+                <!-- Room Info -->
+                <div class="room-info">
+                  <h4>{{ room.name }}</h4>
+
+                  <div class="room-detail">
+                    <p>
+                      <i class="fa fa-user"></i>
+                      <strong>Huấn Luyện Viên:</strong> {{ room.instructor }}
+                    </p>
+                  </div>
+
+                  <div class="room-detail">
+                    <p>
+                      <i class="fa fa-clock-o"></i>
+                      <strong>Thời Gian:</strong> {{ room.startTime }} - {{ room.endTime }}
+                    </p>
+                  </div>
+
+                  <div class="room-detail">
+                    <p>
+                      <i class="fa fa-users"></i>
+                      <strong>Sức Chứa:</strong> {{ room.currentMembers }}/{{ room.capacity }}
+                    </p>
+                  </div>
+
+                  @if(room.description) {
+                    <div class="room-detail">
+                      <p>
+                        <i class="fa fa-info-circle"></i>
+                        <strong>Mô Tả:</strong> {{ room.description }}
+                      </p>
+                    </div>
+                  }
+
+                  <!-- Capacity Progress Bar -->
+                  <div class="capacity-bar">
+                    <div class="progress">
+                      <div
+                        class="progress-bar"
+                        [ngClass]="room.currentMembers >= room.capacity ? 'bg-danger' : 'bg-success'"
+                        [style.width.%]="(room.currentMembers / room.capacity) * 100">
+                      </div>
+                    </div>
+                    <small>{{ room.currentMembers }}/{{ room.capacity }} Thành Viên</small>
+                  </div>
+
+                  <!-- Join Button -->
+                  <button
+                    class="primary-btn"
+                    (click)="onJoinRoom(room)"
+                    [disabled]="getButtonDisabled(room)"
+                    style="width: 100%; margin-top: 15px;">
+                    <i class="fa fa-play-circle"></i> {{ getButtonText(room) }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>
+
+
+
+

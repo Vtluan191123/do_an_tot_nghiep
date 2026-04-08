@@ -4,7 +4,7 @@
     <div class="d-flex justify-content-center align-items-center">
       <div class="avatar" [ngStyle]="{
         'background': 'url(' + (userDetailMessage.imagesUrl ? BASE_URL_UPLOAD + userDetailMessage.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/contain no-repeat'
-      }">
+      }" (click)="openProfileModal()" style="cursor: pointer;" title="Xem hồ sơ">
         <div class="dot-status-online"></div>
       </div>
     </div>
@@ -178,4 +178,13 @@
       <span [innerHTML]="ICON_SEND | safeHtml"></span>
     </div>
   </div>
+
+  <!-- Friend Profile Modal -->
+  @if(showProfileModal && selectedFriend) {
+    <app-friend-profile-modal
+      [friend]="selectedFriend"
+      (close)="closeProfileModal()">
+    </app-friend-profile-modal>
+  }
 </div>
+
