@@ -3,6 +3,7 @@ import {ListMessageComponent} from "../../message/list-message/list-message.comp
 import {SafeHtmlPipe} from "../pipe/pipe-html.pipe";
 import {ICON_MESSAGE} from '../other/icons/icons';
 import {RouterLink} from '@angular/router';
+import {UserProfileDropdownComponent} from "../../dash-board/user-profile-dropdown/user-profile-dropdown.component";
 
 @Component({
   selector: 'app-nav',
@@ -10,7 +11,8 @@ import {RouterLink} from '@angular/router';
   imports: [
     ListMessageComponent,
     SafeHtmlPipe,
-    RouterLink
+    RouterLink,
+    UserProfileDropdownComponent
   ],
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.scss'

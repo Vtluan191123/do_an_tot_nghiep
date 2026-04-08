@@ -14,7 +14,7 @@ import {NgForOf, NgIf} from '@angular/common';
   styleUrl: './widget.component.scss'
 })
 export class WidgetComponent {
-  position = { x: 20, y: 20 };
+  position = { x: 20, y: 20 };  // x = right offset, y = bottom offset
 
   isDragging = false;
   offsetX = 0;
@@ -35,14 +35,20 @@ export class WidgetComponent {
 
     this.isDragging = true;
 
-    this.offsetX = event.clientX - this.position.x;
-    this.offsetY = event.clientY - this.position.y;
+    // Calculate offset from right and bottom edges
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.offsetX = event.clientX - (window.innerWidth - rect.right);
+    this.offsetY = event.clientY - (window.innerHeight - rect.bottom);
 
     const move = (e: MouseEvent) => {
       if (!this.isDragging) return;
 
-      this.position.x = e.clientX - this.offsetX;
-      this.position.y = e.clientY - this.offsetY;
+      // Calculate new right and bottom positions
+      const newRight = window.innerWidth - e.clientX - this.offsetX;
+      const newBottom = window.innerHeight - e.clientY - this.offsetY;
+
+      this.position.x = Math.max(0, newRight);
+      this.position.y = Math.max(0, newBottom);
     };
 
     const stop = () => {

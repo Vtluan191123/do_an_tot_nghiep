@@ -1,0 +1,64 @@
+# Environment variables
+.env
+.env.local
+.env.dev
+.env.prod
+.env*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+.classpath
+.project
+.settings/
+
+# Build outputs
+/target/
+/dist/
+/build/
+/node_modules/
+*.jar
+*.war
+*.ear
+*.class
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.docker/
+.dockerignore
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Sensitive data
+*.pem
+*.crt
+*.key
+ssl/
+
+# Backend
+datn_be/target/
+datn_be/.mvn/wrapper/maven-wrapper.jar
+datn_be/.mvn/wrapper/maven-wrapper.properties
+
+# Frontend
+datn_fe/dist/
+datn_fe/node_modules/
+datn_fe/.angular/
+
+# Upload directories
+uploads/
+/var/www/uploads/
+

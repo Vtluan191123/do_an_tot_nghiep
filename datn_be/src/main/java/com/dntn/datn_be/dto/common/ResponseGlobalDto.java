@@ -15,4 +15,5 @@ public class ResponseGlobalDto<T>  {
     String error;
     Integer status;
     long count;
+    int code;
 }

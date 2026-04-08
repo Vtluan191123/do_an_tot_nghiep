@@ -1,0 +1,193 @@
+// Message search styling
+.to-search {
+  position: relative !important;
+
+  .child-list-message {
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 1000 !important;
+    min-width: 300px !important;
+    background: white !important;
+    border-radius: 4px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 8px !important;
+  }
+}
+
+// User Profile in Navbar
+.user-profile-nav {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 10px !important;
+  vertical-align: middle !important;
+  position: relative !important;
+
+  app-user-profile-dropdown {
+    ::ng-deep {
+      .user-profile-dropdown {
+        position: relative !important;
+      }
+
+      .user-btn {
+        background: transparent !important;
+        border: none !important;
+        padding: 8px 12px !important;
+        color: white !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        border-radius: 6px !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        &:active {
+          background: rgba(255, 255, 255, 0.25) !important;
+        }
+
+        .user-avatar {
+          width: 34px !important;
+          height: 34px !important;
+          border-radius: 50% !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255, 255, 255, 0.3) !important;
+          display: block !important;
+        }
+
+        .user-name {
+          color: white !important;
+          max-width: 120px !important;
+          font-size: 14px !important;
+          font-weight: 600 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+
+          @media (max-width: 1199px) {
+            display: none !important;
+          }
+        }
+
+        i {
+          color: rgba(255, 255, 255, 0.8) !important;
+          font-size: 11px !important;
+          margin-left: 4px !important;
+        }
+      }
+
+      .dropdown-menu {
+        position: absolute !important;
+        top: 100% !important;
+        right: 0 !important;
+        left: auto !important;
+        z-index: 1000 !important;
+        margin-top: 8px !important;
+        min-width: 280px !important;
+        max-width: 320px !important;
+      }
+    }
+  }
+}
+
+// Top option container layout fix
+.top-option {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 0 !important;
+  position: relative !important;
+
+  .to-search {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 15px !important;
+  }
+
+  .user-profile-nav {
+    position: relative !important;
+    z-index: 100 !important;
+  }
+
+  .to-social {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-left: 15px !important;
+
+    a {
+      color: white !important;
+      font-size: 16px !important;
+      transition: all 0.3s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+
+      &:hover {
+        color: #667eea !important;
+        transform: translateY(-2px) !important;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 991px) {
+  .user-profile-nav {
+    margin: 0 5px !important;
+
+    app-user-profile-dropdown {
+      ::ng-deep {
+        .user-btn {
+          padding: 6px 10px !important;
+
+          .user-avatar {
+            width: 32px !important;
+            height: 32px !important;
+          }
+        }
+      }
+    }
+  }
+
+  .to-social {
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .user-profile-nav {
+    margin: 0 3px !important;
+
+    app-user-profile-dropdown {
+      ::ng-deep {
+        .user-btn {
+          padding: 5px 8px !important;
+          font-size: 12px !important;
+
+          .user-avatar {
+            width: 30px !important;
+            height: 30px !important;
+          }
+
+          i {
+            font-size: 10px !important;
+            margin-left: 2px !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

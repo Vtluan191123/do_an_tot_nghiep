@@ -1,8 +1,10 @@
 package com.dntn.datn_be.controller;
 
+import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.common.UserDetailCustom;
 import com.dntn.datn_be.dto.request.LoginRequest;
 import com.dntn.datn_be.dto.request.RegisterRequest;
+import com.dntn.datn_be.dto.request.RefreshTokenRequest;
 import com.dntn.datn_be.dto.response.LoginResponse;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.service.AuthService;
@@ -33,8 +35,19 @@ public class AuthController {
         return authService.register(registerRequest);
     }
 
-    @GetMapping("get_info")
+    @GetMapping("/profile")
     ResponseEntity<Users> getInfo(@AuthenticationPrincipal UserDetailCustom user) {
         return ResponseEntity.ok(authService.getCurrentUser());
     }
+
+    @PostMapping("/refresh")
+    ResponseEntity<LoginResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
+        return authService.refreshToken(request);
+    }
+
+    @PostMapping("/logout")
+    ResponseEntity<ResponseGlobalDto<Void>> logout() {
+        return authService.logout();
+    }
 }
+

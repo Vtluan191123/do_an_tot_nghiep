@@ -1,8 +1,10 @@
 package com.dntn.datn_be.service.impl;
 
+import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.common.UserDetailCustom;
 import com.dntn.datn_be.dto.request.LoginRequest;
 import com.dntn.datn_be.dto.request.RegisterRequest;
+import com.dntn.datn_be.dto.request.RefreshTokenRequest;
 import com.dntn.datn_be.dto.response.LoginResponse;
 import com.dntn.datn_be.exception.BaseAuthenticationException;
 import com.dntn.datn_be.model.Users;
@@ -11,6 +13,7 @@ import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -78,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public  Users getCurrentUser() {
+    public Users getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long id = null;
         if(authentication.isAuthenticated()){
@@ -92,7 +95,65 @@ public class AuthServiceImpl implements AuthService {
         return userOtp.orElse(null);
     }
 
+    @Override
+    public ResponseEntity<LoginResponse> refreshToken(RefreshTokenRequest request) {
+        try {
+            // Validate refresh token
+            if (!jwtService.validateToken(request.getRefreshToken())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(LoginResponse.builder()
+                                .message("Invalid or expired refresh token")
+                                .build());
+            }
 
+            // Get username from refresh token
+            String username = jwtService.getUsername(request.getRefreshToken());
+            
+            // Get user from database
+            Optional<Users> userOpt = userRepository.findUsersByUsername(username);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(LoginResponse.builder()
+                                .message("User not found")
+                                .build());
+            }
 
+            Users user = userOpt.get();
+            
+            // Generate new access token
+            String newAccessToken = jwtService.generateToken(user, expirationAccess);
+            
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .accessToken(newAccessToken)
+                    .refreshToken(request.getRefreshToken())
+                    .build());
+                    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(LoginResponse.builder()
+                            .message("Token refresh failed: " + e.getMessage())
+                            .build());
+        }
+    }
 
+    @Override
+    public ResponseEntity<ResponseGlobalDto<Void>> logout() {
+        try {
+            // Clear security context
+            SecurityContextHolder.clearContext();
+            
+            return ResponseEntity.ok(ResponseGlobalDto.builder()
+                    .message("Logged out successfully")
+                    .code(HttpStatus.OK.value())
+                    .status(HttpStatus.OK.value())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseGlobalDto.builder()
+                            .message("Logout failed: " + e.getMessage())
+                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

@@ -7,9 +7,9 @@
 <div class="offcanvas-menu-overlay"></div>
 
 <div class="main">
-  <app-nav></app-nav>
+  <app-nav *ngIf="showNav"></app-nav>
   <router-outlet></router-outlet>
-  <app-footer></app-footer>
+  <app-footer *ngIf="showNav"></app-footer>
   <app-widget></app-widget>
   <div *ngIf="isShowMessageDetail" class="message-detail">
     <app-message-detail></app-message-detail>

@@ -1,4 +1,4 @@
-.login-container {
+.register-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -7,13 +7,13 @@
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-  .login-card {
+  .register-card {
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     padding: 40px;
     width: 100%;
-    max-width: 420px;
+    max-width: 500px;
     animation: slideInUp 0.5s ease-out;
 
     @media (max-width: 576px) {
@@ -23,7 +23,7 @@
   }
 }
 
-.login-header {
+.register-header {
   text-align: center;
   margin-bottom: 30px;
 
@@ -41,7 +41,7 @@
   }
 }
 
-.login-form {
+.register-form {
   .form-group {
     margin-bottom: 20px;
 
@@ -116,38 +116,52 @@
         }
       }
     }
-  }
 
-  .form-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0;
-    font-size: 14px;
+    .form-text {
+      display: block;
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
 
     .form-check {
       margin: 0;
+      padding: 12px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #ddd;
 
       .form-check-input {
         cursor: pointer;
-        margin-right: 6px;
+        margin-right: 8px;
+
+        &:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        &.is-invalid {
+          border-color: #dc3545;
+        }
       }
 
       .form-check-label {
         cursor: pointer;
         margin: 0;
         user-select: none;
-      }
-    }
+        font-size: 14px;
+        color: #333;
 
-    .forgot-password {
-      color: #667eea;
-      text-decoration: none;
-      transition: color 0.3s ease;
+        a {
+          color: #667eea;
+          text-decoration: none;
+          transition: color 0.3s ease;
 
-      &:hover {
-        color: #764ba2;
-        text-decoration: underline;
+          &:hover {
+            color: #764ba2;
+            text-decoration: underline;
+          }
+        }
       }
     }
   }
@@ -166,7 +180,13 @@
     color: #721c24;
   }
 
-  .login-btn {
+  .alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+  }
+
+  .register-btn {
     padding: 12px;
     font-size: 16px;
     font-weight: 600;
@@ -176,6 +196,7 @@
     transition: all 0.3s ease;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    margin-top: 10px;
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
@@ -197,9 +218,9 @@
   }
 }
 
-.login-footer {
+.register-footer {
   text-align: center;
-  margin: 25px 0;
+  margin-top: 25px;
   font-size: 14px;
   color: #666;
 
@@ -207,7 +228,7 @@
     margin: 0;
   }
 
-  .register-link {
+  .login-link {
     color: #667eea;
     font-weight: 600;
     cursor: pointer;
@@ -217,68 +238,6 @@
     &:hover {
       color: #764ba2;
       text-decoration: underline;
-    }
-  }
-}
-
-.social-login {
-  text-align: center;
-  padding-top: 25px;
-  border-top: 1px solid #eee;
-
-  p {
-    font-size: 13px;
-    color: #999;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .social-buttons {
-    display: flex;
-    gap: 12px;
-
-    .btn-social {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: white;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-
-      i {
-        font-size: 16px;
-      }
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      }
-
-      &.btn-google {
-        color: #ea4335;
-
-        &:hover {
-          background-color: #f8f8f8;
-          border-color: #ea4335;
-        }
-      }
-
-      &.btn-facebook {
-        color: #1877f2;
-
-        &:hover {
-          background-color: #f0f2f5;
-          border-color: #1877f2;
-        }
-      }
     }
   }
 }

@@ -1,5 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit, PLATFORM_ID} from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import {WebsocketService} from './service/socket/websocket.service';
 import {VideoCallComponent} from './page/video-call/video-call.component';
 import {DashBoardComponent} from './page/dash-board/dash-board.component';
@@ -9,6 +9,7 @@ import {MessageDetailComponent} from './page/message/message-detail/message-deta
 import {TransferDataService} from './service/tranfer-data/transfer-data.service';
 import {isPlatformBrowser, NgIf} from '@angular/common';
 import {AuthServiceService} from './service/auth/auth-service.service';
+import { AuthService } from './service/auth/auth.service';
 import {ToastrService} from 'ngx-toastr';
 import {UserDetailComponent} from './page/message/user-detail/user-detail.component';
 import {VideoConferenceClientComponent} from './page/video-conference-client/video-conference-client.component';
@@ -32,10 +33,13 @@ export class AppComponent implements OnInit ,OnDestroy{
   isShowMessageDetail:any
   infoCurrentUser:any
   destroy$ = new Subject<void>();
+  showNav = true;
 
   constructor(private websocketService:WebsocketService,
               private transferDataService:TransferDataService,
               private authServiceService:AuthServiceService,
+              private authService: AuthService,
+              private router: Router,
               @Inject(PLATFORM_ID) private platformId: Object,
               private toastService:ToastrService,
               private modalService:NgbModal,
@@ -44,6 +48,12 @@ export class AppComponent implements OnInit ,OnDestroy{
 
 
   ngOnInit() {
+    // Check route to show/hide nav
+    this.router.events.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      const currentUrl = this.router.url;
+      this.showNav = !currentUrl.includes('/login') && !currentUrl.includes('/register');
+    });
+
     this.init()
     this.handleShowMessageDetail();
     this.hidePreloder();
@@ -61,20 +71,32 @@ export class AppComponent implements OnInit ,OnDestroy{
       this.websocketService.connect()
     }
 
-    //get info user
-    this.authServiceService.getInfoUser().subscribe((res:any)=>{
-      console.log('getInfoUser',res)
-      this.infoCurrentUser = res
-      this.handleConnectTopic()
-      this.transferDataService.sendInfoUser(res)
-    })
+    // Get current user from auth service first
+    const currentUser = this.authService?.getCurrentUser();
 
-    this.transferDataService.receiverMess$.subscribe((res:any)=>{
-      if(res)
-      this.toastService.success(`${res} gửi cho bạn tin nhắn`,'Thông báo')
-    })
+    if (currentUser && currentUser.id) {
+      this.infoCurrentUser = currentUser;
+      this.handleConnectTopic();
+      this.transferDataService.sendInfoUser(currentUser);
+    } else {
+      // If no current user, fetch from API
+      this.authServiceService.getInfoUser().subscribe(
+        (res: any) => {
+          console.log('getInfoUser', res);
+          this.infoCurrentUser = res;
+          this.handleConnectTopic();
+          this.transferDataService.sendInfoUser(res);
+        },
+        (error) => {
+          console.error('Failed to get user info:', error);
+        }
+      );
+    }
 
-
+    this.transferDataService.receiverMess$.subscribe((res: any) => {
+      if (res)
+        this.toastService.success(`${res} gửi cho bạn tin nhắn`, 'Thông báo')
+    });
   }
 
   handleConnectTopic(){
