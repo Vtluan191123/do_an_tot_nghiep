@@ -196,63 +196,54 @@
         </div>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <div class="col-lg-4 col-md-8">
+
+    <!-- Loading State -->
+    <div *ngIf="loadingCombos" class="row text-center">
+      <div class="col-lg-12">
+        <p>Đang tải danh sách gói...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorCombos && !loadingCombos" class="row text-center">
+      <div class="col-lg-12">
+        <p class="error-message">{{ errorCombos }}</p>
+      </div>
+    </div>
+
+    <!-- Combos List -->
+    <div *ngIf="!loadingCombos && !errorCombos" class="row justify-content-center">
+      <div *ngFor="let combo of combos" class="col-lg-4 col-md-6 combo-card">
         <div class="ps-item">
-          <h3>Class drop-in</h3>
-          <div class="pi-price">
-            <h2>$ 39.0</h2>
-            <span>SINGLE CLASS</span>
+          <h3>{{ combo.name }}</h3>
+          <div class="combo-code">
+            <span class="badge">Mã: {{ combo.code }}</span>
           </div>
+          <div class="pi-price">
+            <h2>{{ formatPrice(combo.prices) }}</h2>
+            <span>/ GỐI TẬP</span>
+          </div>
+          <p class="combo-description">{{ combo.description }}</p>
           <ul>
-            <li>Free riding</li>
-            <li>Unlimited equipments</li>
-            <li>Personal trainer</li>
-            <li>Weight losing classes</li>
-            <li>Month to mouth</li>
-            <li>No time restriction</li>
+            <li>Truy cập không giới hạn</li>
+            <li>Huấn luyện viên cá nhân</li>
+            <li>Dinh dưỡng hoàn chỉnh</li>
+            <li>Hỗ trợ 24/7</li>
+            <li>Cơ sở vật chất hiện đại</li>
+            <li>Cộng đồng tập luyện</li>
           </ul>
-          <a href="#" class="primary-btn pricing-btn">Enroll now</a>
+          <button (click)="viewComboDetail(combo.id)" class="primary-btn pricing-btn">
+            Xem chi tiết
+          </button>
           <a href="#" class="thumb-icon"><i class="fa fa-picture-o"></i></a>
         </div>
       </div>
-      <div class="col-lg-4 col-md-8">
-        <div class="ps-item">
-          <h3>12 Month unlimited</h3>
-          <div class="pi-price">
-            <h2>$ 99.0</h2>
-            <span>SINGLE CLASS</span>
-          </div>
-          <ul>
-            <li>Free riding</li>
-            <li>Unlimited equipments</li>
-            <li>Personal trainer</li>
-            <li>Weight losing classes</li>
-            <li>Month to mouth</li>
-            <li>No time restriction</li>
-          </ul>
-          <a href="#" class="primary-btn pricing-btn">Enroll now</a>
-          <a href="#" class="thumb-icon"><i class="fa fa-picture-o"></i></a>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-8">
-        <div class="ps-item">
-          <h3>6 Month unlimited</h3>
-          <div class="pi-price">
-            <h2>$ 59.0</h2>
-            <span>SINGLE CLASS</span>
-          </div>
-          <ul>
-            <li>Free riding</li>
-            <li>Unlimited equipments</li>
-            <li>Personal trainer</li>
-            <li>Weight losing classes</li>
-            <li>Month to mouth</li>
-            <li>No time restriction</li>
-          </ul>
-          <a href="#" class="primary-btn pricing-btn">Enroll now</a>
-          <a href="#" class="thumb-icon"><i class="fa fa-picture-o"></i></a>
-        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loadingCombos && combos.length === 0 && !errorCombos" class="row text-center">
+      <div class="col-lg-12">
+        <p>Hiện chưa có gói khoá học nào</p>
       </div>
     </div>
   </div>

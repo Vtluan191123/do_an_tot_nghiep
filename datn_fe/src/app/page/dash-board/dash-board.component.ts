@@ -1,12 +1,15 @@
 import {Component, AfterViewInit, Inject, PLATFORM_ID, OnInit} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import {NgStyle} from '@angular/common';
+import {NgStyle, NgForOf, NgIf} from '@angular/common';
 import {AVATAR_DEFAULT, ICON_MESSAGE} from '../share/other/icons/icons';
 import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
 import {ListMessageComponent} from '../message/list-message/list-message.component';
 import {TransferDataService} from '../../service/tranfer-data/transfer-data.service';
 import {NavComponent} from '../share/nav/nav.component';
 import {FooterComponent} from '../share/footer/footer.component';
+import {ComboService} from '../../service/combo/combo.service';
+import {Router} from '@angular/router';
+import {Combo, ComboFilterRequest} from '../../model/combo.model';
 
 @Component({
   selector: 'app-dash-board',
@@ -14,6 +17,8 @@ import {FooterComponent} from '../share/footer/footer.component';
   templateUrl: './dash-board.component.html',
   imports: [
     NgStyle,
+    NgForOf,
+    NgIf,
     SafeHtmlPipe,
     ListMessageComponent,
     NavComponent,
@@ -23,18 +28,74 @@ import {FooterComponent} from '../share/footer/footer.component';
 })
 export class DashBoardComponent implements AfterViewInit,OnInit {
 
-
   countMessage:any
+  combos: Combo[] = [];
+  loadingCombos: boolean = true;
+  errorCombos: string = '';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
-              private transferDataService:TransferDataService) {}
+              private transferDataService:TransferDataService,
+              private comboService: ComboService,
+              private router: Router) {}
 
   ngOnInit(): void {
     //get count mess
     this.transferDataService.countMess$.subscribe((res)=>{
       this.countMessage = res
     })
+
+    // Load combos
+    this.loadCombos();
   }
+
+  /**
+   * Load combos from API
+   */
+  loadCombos(): void {
+    const filter: ComboFilterRequest = {
+      page: 0,
+      size: 3,
+      sortBy: 'id',
+      sortDirection: 'desc'
+    };
+
+    this.comboService.getAllCombos(filter).subscribe(
+      (response: any) => {
+        if (response.status === 200) {
+          this.combos = response.data;
+          this.loadingCombos = false;
+        } else {
+          this.errorCombos = 'Lỗi khi tải danh sách gói';
+          this.loadingCombos = false;
+        }
+      },
+      (error) => {
+        console.error('Error loading combos:', error);
+        this.errorCombos = 'Không thể tải danh sách gói';
+        this.loadingCombos = false;
+      }
+    );
+  }
+
+  /**
+   * Navigate to combo detail
+   */
+  viewComboDetail(id: number): void {
+    this.router.navigate(['/combo-detail', id]);
+  }
+
+  /**
+   * Format price
+   */
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
+  }
+
+  // ...existing code...
+
   ngAfterViewInit(): void {
     this.initPreloader();
     this.initBackground();

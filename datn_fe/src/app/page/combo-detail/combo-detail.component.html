@@ -1,0 +1,206 @@
+<div class="preloader" id="preloder">
+  <div class="loader"></div>
+</div>
+
+<!-- Navigation -->
+<app-nav></app-nav>
+
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" [ngStyle]="{'background-image': 'url(assets/img/breadcrumb-bg.jpg)'}">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="breadcrumb-text">
+          <h2>Gói khoá học</h2>
+          <div class="bt-option">
+            <a href="/dashboard">Trang chủ</a>
+            <span>Chi tiết gói khoá học</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Combo Detail Section Begin -->
+<section class="combo-detail-section spad">
+  <div class="container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center">
+      <div class="loader"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="alert alert-danger text-center">
+      <p>{{ error }}</p>
+      <a href="/dashboard" class="primary-btn">Quay lại</a>
+    </div>
+
+    <!-- Combo Detail Content -->
+    <div *ngIf="combo && !loading && !error" class="row">
+      <div class="col-lg-6">
+        <div class="combo-detail-image">
+          <img src="assets/img/classes/class-1.jpg" alt="{{ combo.name }}" class="img-fluid">
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="combo-detail-info">
+          <h2 class="combo-name">{{ combo.name }}</h2>
+
+          <div class="combo-code">
+            <span class="badge badge-info">Mã: {{ combo.code }}</span>
+          </div>
+
+          <div class="combo-price">
+            <h3 class="price">{{ formatPrice(combo.prices) }}</h3>
+            <span class="duration">/ Gói tập luyện</span>
+          </div>
+
+          <div class="combo-description">
+            <h4>Mô tả gói</h4>
+            <p>{{ combo.description }}</p>
+          </div>
+
+          <!-- Features List -->
+          <div class="combo-features">
+            <h4>Bao gồm trong gói:</h4>
+            <ul class="features-list">
+              <li><i class="fa fa-check"></i> Truy cập không giới hạn các lớp học</li>
+              <li><i class="fa fa-check"></i> Huấn luyện viên cá nhân</li>
+              <li><i class="fa fa-check"></i> Dinh dưỡng và kế hoạch ăn uống</li>
+              <li><i class="fa fa-check"></i> Hỗ trợ 24/7</li>
+              <li><i class="fa fa-check"></i> Cơ sở vật chất hiện đại</li>
+              <li><i class="fa fa-check"></i> Cộng đồng tập luyện</li>
+            </ul>
+          </div>
+
+          <!-- Quantity Selection -->
+          <div class="quantity-section">
+            <label for="quantity">Số lượng (tháng):</label>
+            <div class="quantity-control">
+              <button (click)="quantity = Math.max(1, quantity - 1)" class="btn-quantity">-</button>
+              <input type="number" [(ngModel)]="quantity" min="1" max="12" id="quantity">
+              <button (click)="quantity = Math.min(12, quantity + 1)" class="btn-quantity">+</button>
+            </div>
+          </div>
+
+          <!-- Total Price -->
+          <div class="total-price">
+            <h4>Tổng cộng: <span>{{ formatPrice(getTotalPrice()) }}</span></h4>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="combo-actions">
+            <button (click)="openPaymentModal()" class="primary-btn btn-enroll">
+              <i class="fa fa-credit-card"></i> Thanh toán ngay
+            </button>
+            <button (click)="goBack()" class="secondary-btn">
+              <i class="fa fa-arrow-left"></i> Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Combo Detail Section End -->
+
+<!-- Payment Modal Begin -->
+<div *ngIf="showPaymentModal" class="payment-modal-overlay" (click)="closePaymentModal()">
+  <div class="payment-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Thông tin thanh toán</h3>
+      <button class="close-btn" (click)="closePaymentModal()">×</button>
+    </div>
+
+    <form class="payment-form">
+      <!-- Personal Information -->
+      <div class="form-section">
+        <h4>Thông tin cá nhân</h4>
+        <div class="form-group">
+          <label for="fullName">Họ và tên</label>
+          <input type="text" id="fullName" [(ngModel)]="paymentForm.fullName"
+                 name="fullName" placeholder="Nhập họ và tên" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" [(ngModel)]="paymentForm.email"
+                   name="email" placeholder="Nhập email" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Số điện thoại</label>
+            <input type="tel" id="phone" [(ngModel)]="paymentForm.phone"
+                   name="phone" placeholder="Nhập số điện thoại" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Information -->
+      <div class="form-section">
+        <h4>Thông tin thẻ</h4>
+        <div class="form-group">
+          <label for="cardNumber">Số thẻ</label>
+          <input type="text" id="cardNumber" [(ngModel)]="paymentForm.cardNumber"
+                 name="cardNumber" placeholder="1234 5678 9012 3456"
+                 maxlength="16" required>
+        </div>
+        <div class="form-group">
+          <label for="cardHolder">Tên chủ thẻ</label>
+          <input type="text" id="cardHolder" [(ngModel)]="paymentForm.cardHolder"
+                 name="cardHolder" placeholder="Nhập tên chủ thẻ" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expiryDate">Hạn sử dụng</label>
+            <input type="text" id="expiryDate" [(ngModel)]="paymentForm.expiryDate"
+                   name="expiryDate" placeholder="MM/YY" maxlength="5" required>
+          </div>
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" [(ngModel)]="paymentForm.cvv"
+                   name="cvv" placeholder="123" maxlength="3" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <div class="summary-item">
+          <span>Gói:</span>
+          <span>{{ combo?.name }}</span>
+        </div>
+        <div class="summary-item">
+          <span>Số lượng:</span>
+          <span>{{ quantity }} tháng</span>
+        </div>
+        <div class="summary-item">
+          <span>Giá:</span>
+          <span>{{ formatPrice(combo?.prices || 0) }}</span>
+        </div>
+        <div class="summary-item total">
+          <span>Tổng:</span>
+          <span>{{ formatPrice(getTotalPrice()) }}</span>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" (click)="processPayment()" class="primary-btn btn-pay">
+          <i class="fa fa-lock"></i> Thanh toán
+        </button>
+        <button type="button" (click)="closePaymentModal()" class="secondary-btn">
+          Hủy
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Payment Modal End -->
+
+<!-- Footer -->
+<app-footer></app-footer>
+

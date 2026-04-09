@@ -10,6 +10,18 @@ import { AuthService } from '../../../service/auth/auth.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="user-profile-dropdown" #dropdownContainer>
+      <!-- Not Logged In: Show Login/Register Buttons -->
+      <div class="auth-buttons" *ngIf="!isLoggedIn">
+        <button class="btn-login" (click)="goToLogin()" title="Đăng nhập">
+          <i class="fas fa-sign-in-alt"></i>
+          Đăng Nhập
+        </button>
+        <button class="btn-register" (click)="goToRegister()" title="Đăng ký">
+          <i class="fas fa-user-plus"></i>
+          Đăng Ký
+        </button>
+      </div>
+
       <!-- User Avatar/Button -->
       <button class="user-btn" (click)="toggleDropdown()" *ngIf="currentUser">
         <img [src]="getAvatar()" [alt]="currentUser.username" class="user-avatar">
@@ -454,11 +466,69 @@ import { AuthService } from '../../../service/auth/auth.service';
     .btn-secondary:hover {
       background: #dee2e6;
     }
+
+    /* Auth Buttons Styles */
+    .auth-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-login, .btn-register {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-login {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-register {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-register:hover {
+      background: #f0f4ff;
+      transform: translateY(-2px);
+    }
+
+    .btn-login i, .btn-register i {
+      font-size: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .auth-buttons {
+        gap: 8px;
+      }
+
+      .btn-login, .btn-register {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
   `]
 })
 export class UserProfileDropdownComponent implements OnInit, OnDestroy {
   isDropdownOpen = false;
   currentUser: any = null;
+  isLoggedIn = false;
 
   showProfileModal = false;
   showEditModal = false;
@@ -478,6 +548,12 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Subscribe to authentication state
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isLoggedIn = isAuth;
+    });
+
+    // Subscribe to current user
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
@@ -583,6 +659,14 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  goToRegister(): void {
+    this.router.navigate(['/register']);
   }
 }
 
