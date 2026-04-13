@@ -39,7 +39,7 @@ spring:
     com.dntn.datn_be.service.WebSocketService: DEBUG
 
   file:
-    upload-dir: 'D:\uploads'
+    upload-dir: 'D:/uploads/'
 
 integration:
   websocket:
