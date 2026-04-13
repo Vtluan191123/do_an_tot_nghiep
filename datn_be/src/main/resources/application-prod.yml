@@ -38,8 +38,20 @@ spring:
     root: INFO
     com.dntn.datn_be.service.WebSocketService: DEBUG
 
+  digitalocean:
+    spaces:
+      access-key: ${DO_SPACES_ACCESS_KEY}
+      secret-key: ${DO_SPACES_SECRET_KEY}
+      region: sgp1
+      endpoint: ${DO_SPACES_ENDPOINT}
+      bucket: ${DO_SPACES_BUCKET}
+
   file:
     upload-dir: '/var/www/uploads/'
+
+# Storage type: 'local' or 'cloud'
+storage:
+  type: cloud
 
 integration:
   websocket:

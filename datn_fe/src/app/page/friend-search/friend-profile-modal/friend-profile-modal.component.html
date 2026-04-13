@@ -11,7 +11,7 @@
       <div class="modal-left">
         <!-- Profile Header -->
         <div class="profile-header">
-          <img [src]="  getAvatarUrl(friend)" [alt]="friend.name" class="profile-avatar">
+          <img [src]="getAvatarUrl(friend)" [alt]="friend.name" class="profile-avatar">
           <div class="profile-status">
             @if(friend.isOnline) {
               <span class="status-badge online">Đang hoạt động</span>
@@ -60,16 +60,42 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-          @if(!friend.isFriend) {
+          <!-- statusFriend = null/undefined: Không phải bạn bè -->
+          @if(!friend.statusFriend) {
             <button class="btn-primary" (click)="onAddFriend()">
               <i class="fa fa-user-plus"></i> Kết Bạn
             </button>
-          } @else {
+          }
+          <!-- statusFriend = 0: Pending request -->
+          @else if(friend.statusFriend == 0 || friend.statusFriend == '0') {
+            <!-- I sent the request: Show "Đã gửi lời kết bạn" -->
+            @if(friend.sentByMe) {
+              <button class="btn-primary pending" disabled>
+                <i class="fa fa-hourglass-half"></i> Đã gửi lời kết bạn
+              </button>
+            }
+            <!-- They sent the request to me: Show "Chấp Nhận" -->
+            @else {
+              <button class="btn-primary" (click)="onAcceptFriend()">
+                <i class="fa fa-check"></i> Chấp Nhận
+              </button>
+            }
+          }
+          <!-- statusFriend = 1: Đã kết bạn -->
+          @else if(friend.statusFriend == 1 || friend.statusFriend == '1') {
             <button class="btn-primary added" disabled>
               <i class="fa fa-check"></i> Bạn Của Bạn
             </button>
           }
-          <button class="btn-secondary" (click)="onMessage()">
+
+          <!-- Message Button -->
+          <button
+            class="btn-secondary"
+            (click)="onMessage()"
+            [disabled]="friend.statusFriend != 1 && friend.statusFriend != '1'"
+            [style.opacity]="(friend.statusFriend != 1 && friend.statusFriend != '1') ? '0.5' : '1'"
+            [style.cursor]="(friend.statusFriend != 1 && friend.statusFriend != '1') ? 'not-allowed' : 'pointer'"
+            [title]="(friend.statusFriend != 1 && friend.statusFriend != '1') ? 'Bạn phải là bạn bè để nhắn tin' : ''">
             <i class="fa fa-envelope"></i> Nhắn Tin
           </button>
         </div>

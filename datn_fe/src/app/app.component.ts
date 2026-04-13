@@ -25,6 +25,8 @@ import { OutTeamComponent } from './page/out-team/out-team.component';
 import { ClassTimetableComponent } from './page/class-timetable/class-timetable.component';
 import { GymRoomComponent } from './page/gym-room/gym-room.component';
 import { FriendSearchComponent } from './page/friend-search/friend-search.component';
+import { NotificationClientService } from './service/notification/notification-client.service';
+import { NotificationApiService } from './service/notification/notification-api.service';
 
 @Component({
   selector: 'app-root',
@@ -49,6 +51,8 @@ export class AppComponent implements OnInit ,OnDestroy{
               @Inject(PLATFORM_ID) private platformId: Object,
               private toastService:ToastrService,
               private modalService:NgbModal,
+              private notificationClientService: NotificationClientService,
+              private notificationApiService: NotificationApiService,
               ) {
   }
 
@@ -123,12 +127,39 @@ export class AppComponent implements OnInit ,OnDestroy{
             break;
           }
 
+          case 'notification': {
+            console.log('notification received', data.metadata);
+            this.handleNotification(data.metadata);
+            break;
+          }
+
           default: {
             console.warn('Unknown type:', res);
             break;
           }
         }
       });
+  }
+
+  /**
+   * Xử lý nhận thông báo từ WebSocket
+   */
+  handleNotification(notificationData: any) {
+    try {
+      // Add vào list notifications
+      this.notificationClientService.addNotification(notificationData);
+
+      // Show toast
+      this.toastService.info(
+        notificationData.content,
+        notificationData.title
+      );
+
+      // Log
+      console.log('Notification handled:', notificationData);
+    } catch (error) {
+      console.error('Error handling notification:', error);
+    }
   }
 
   handleShowModal(metadata:any){

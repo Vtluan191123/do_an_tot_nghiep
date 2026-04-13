@@ -1,14 +1,13 @@
-import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NavComponent } from '../share/nav/nav.component';
 import { FooterComponent } from '../share/footer/footer.component';
 import { FriendSearchService, Friend } from '../../service/friend/friend-search.service';
 import { FriendProfileModalComponent } from './friend-profile-modal/friend-profile-modal.component';
-import { Subject } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-friend-search',
@@ -24,7 +23,7 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
   templateUrl: './friend-search.component.html',
   styleUrls: ['./friend-search.component.scss']
 })
-export class FriendSearchComponent implements OnInit, OnDestroy {
+export class FriendSearchComponent implements OnInit {
   searchQuery: string = '';
   friends: Friend[] = [];
   filteredFriends: Friend[] = [];
@@ -40,13 +39,11 @@ export class FriendSearchComponent implements OnInit, OnDestroy {
   totalPages: number = 0;
   paginatedFriends: Friend[] = [];
 
-  // Search debounce
-  private searchSubject = new Subject<string>();
-  private destroy$ = new Subject<void>();
-
   constructor(
     private friendService: FriendSearchService,
     private modalService: NgbModal,
+    private router: Router,
+    private toastService: ToastrService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -56,83 +53,104 @@ export class FriendSearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Setup search debouncing (300ms delay)
-    this.searchSubject.pipe(
-      debounceTime(300),
-      takeUntil(this.destroy$)
-    ).subscribe((query) => {
-      this.performSearch(query);
-    });
-
     this.loadAllFriends();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
   // Paginate filtered friends
   updatePagination(): void {
-    this.totalItems = this.filteredFriends.length;
+    // If no items, set totalPages to 0 (don't show pagination)
+    if (this.totalItems === 0) {
+      this.totalPages = 0;
+      this.paginatedFriends = [];
+      return;
+    }
+
+    // Calculate total pages: ceil(totalItems / pageSize)
+    // Example: 25 items, size 10 → ceil(25/10) = ceil(2.5) = 3 pages ✓
+    // Example: 20 items, size 10 → ceil(20/10) = ceil(2) = 2 pages ✓
+    // Example: 21 items, size 10 → ceil(21/10) = ceil(2.1) = 3 pages ✓
     this.totalPages = Math.ceil(this.totalItems / this.pageSize);
 
-    // Reset to page 1 if current page exceeds total pages
+    // Validate current page
     if (this.currentPage > this.totalPages && this.totalPages > 0) {
       this.currentPage = 1;
     }
 
-    this.applyPagination();
+    // Since API already returns paginated data, use it directly
+    this.paginatedFriends = this.filteredFriends;
   }
 
   applyPagination(): void {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedFriends = this.filteredFriends.slice(startIndex, endIndex);
+    // No longer needed - API handles pagination
+    // Keeping for backward compatibility
+    this.paginatedFriends = this.filteredFriends;
   }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.applyPagination();
+      // Call API directly when changing page
+      this.performSearch(this.searchQuery);
     }
   }
 
   changePageSize(newSize: number): void {
     this.pageSize = newSize;
     this.currentPage = 1;
-    // Call search API directly when page size changes
-    debugger
+    // Call API directly when page size changes
     this.performSearch(this.searchQuery);
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
-      this.goToPage(this.currentPage + 1);
+      this.currentPage = this.currentPage + 1;
+      // Call API directly when going to next page
+      this.performSearch(this.searchQuery);
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
+      this.currentPage = this.currentPage - 1;
+      // Call API directly when going to previous page
+      this.performSearch(this.searchQuery);
     }
   }
 
   getPageNumbers(): number[] {
+    // Guard: if totalPages is 0 or 1, don't show pagination
+    if (this.totalPages <= 1) {
+      return [];
+    }
+
     const pages: number[] = [];
-    for (let i = 1; i <= this.totalPages; i++) {
+
+    // Limit pages to show (e.g., show max 5 pages at a time)
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+    // Adjust startPage if endPage is at the end
+    if (endPage === this.totalPages) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+
     return pages;
   }
 
   loadAllFriends(): void {
     this.isLoading = true;
-    this.friendService.getAllFriends().subscribe(
-      (friends) => {
-        this.friends = friends;
-        this.filteredFriends = friends;
-        this.currentPage = 1;
+    // Load friends with pagination parameters
+    this.friendService.getAllFriends(this.currentPage, this.pageSize).subscribe(
+      (result) => {
+        this.friends = result.data;
+        this.filteredFriends = result.data;
+        this.totalItems = result.count;  // Get total from API response
         this.updatePagination();
         this.isLoading = false;
       },
@@ -144,20 +162,36 @@ export class FriendSearchComponent implements OnInit, OnDestroy {
   }
 
   performSearch(query: string): void {
-    // Reset to page 1 when searching
-    this.currentPage = 1;
+    // Reset to page 1 when searching with new query
+    if (this.searchQuery !== query) {
+      this.currentPage = 1;
+    }
 
-    // If search query is empty, load all friends
+    // If search query is empty, load all friends with pagination
     if (!query.trim()) {
-      this.filteredFriends = this.friends;
-      this.updatePagination();
+      this.isLoading = true;
+      // Call API with pagination parameters
+      this.friendService.getAllFriends(this.currentPage, this.pageSize).subscribe(
+        (result) => {
+          this.filteredFriends = result.data;
+          this.totalItems = result.count;  // Get total from API response
+          this.updatePagination();
+          this.isLoading = false;
+        },
+        (error) => {
+          console.error('Lỗi tải danh sách bạn bè:', error);
+          this.isLoading = false;
+        }
+      );
       return;
     }
 
     this.isLoading = true;
-    this.friendService.searchFriends(query).subscribe(
-      (friends) => {
-        this.filteredFriends = friends;
+    // Call API with search query and pagination parameters
+    this.friendService.searchFriends(query, this.currentPage, this.pageSize).subscribe(
+      (result) => {
+        this.filteredFriends = result.data;
+        this.totalItems = result.count;  // Get total from API response
         this.updatePagination();
         this.isLoading = false;
       },
@@ -169,14 +203,14 @@ export class FriendSearchComponent implements OnInit, OnDestroy {
   }
 
   onSearchEnter(): void {
-    // Trigger the search subject with current query
-    this.searchSubject.next(this.searchQuery);
+    // Call API directly
+    this.performSearch(this.searchQuery);
   }
 
   onSearchInput(query: string): void {
     this.searchQuery = query;
-    // Trigger the search subject with debounce
-    this.searchSubject.next(query);
+    // Call API directly (no debounce)
+    this.performSearch(query);
   }
 
   onClearSearch(): void {
@@ -220,24 +254,36 @@ export class FriendSearchComponent implements OnInit, OnDestroy {
   onAddFriend(friendId: string): void {
     this.friendService.addFriend(friendId).subscribe(
       (response) => {
-        alert('Đã gửi lời mời kết bạn');
+        this.toastService.success('Đã gửi lời mời kết bạn', 'Thành công');
+        // Update statusFriend = 0 (pending) and sentByMe = true
         if (this.selectedFriend) {
-          this.selectedFriend.isFriend = true;
+          this.selectedFriend.statusFriend = 0;
+          this.selectedFriend.sentByMe = true;  // I sent this request
         }
         // Update friend in paginated list
         const friend = this.paginatedFriends.find(f => f.id === friendId);
         if (friend) {
-          friend.isFriend = true;
+          friend.statusFriend = 0;
+          friend.sentByMe = true;  // I sent this request
         }
       },
       (error) => {
         console.error('Lỗi khi kết bạn:', error);
+        this.toastService.error('Lỗi khi gửi lời mời', 'Lỗi');
       }
     );
   }
 
   onMessage(friendId: string): void {
-    alert('Chức năng nhắn tin sẽ sớm có');
+    // Navigaite to messages page or show message detail
+    // Option 1: Navigate to messages
+    this.router.navigate(['/message']);
+
+    // Option 2: You can also pass the friend ID via router state if needed
+    // this.router.navigate(['/message'], { state: { friendId: friendId } });
+
+    // Close modal
+    this.closeProfileModal();
   }
 }
 

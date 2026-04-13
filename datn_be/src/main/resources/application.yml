@@ -41,6 +41,10 @@ spring:
     root: INFO
     com.dntn.datn_be.service.WebSocketService: DEBUG
 
+# Storage type: 'local' or 'cloud'
+storage:
+  type: local
+
 integration:
   websocket:
     domain: https://socket.easypos.vn

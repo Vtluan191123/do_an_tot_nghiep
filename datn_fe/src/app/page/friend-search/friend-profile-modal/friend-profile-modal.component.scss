@@ -213,6 +213,18 @@
         transform: none;
       }
     }
+
+    &.pending {
+      background: #ffc107;
+      color: #151515;
+      cursor: default;
+      animation: pulse 1.5s infinite;
+
+      &:hover {
+        background: #ffc107;
+        transform: none;
+      }
+    }
   }
 
   .btn-secondary {
@@ -337,6 +349,15 @@
 }
 
 /* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -348,12 +369,12 @@
 
 @keyframes slideUp {
   from {
+    transform: translateY(20px);
     opacity: 0;
-    transform: translateY(30px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -380,4 +401,3 @@
     background: #666;
   }
 }
-

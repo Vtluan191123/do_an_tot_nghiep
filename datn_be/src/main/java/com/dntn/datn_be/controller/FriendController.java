@@ -5,6 +5,7 @@ import com.dntn.datn_be.dto.request.MessageRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.mongo.BaseMongoMessage;
+import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.MessageService;
 import com.dntn.datn_be.service.UserService;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendController {
     private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("add")
     ResponseGlobalDto<Boolean> add(@RequestParam("userAddId") Integer userAddId,
@@ -30,6 +32,28 @@ public class FriendController {
     ResponseGlobalDto<Boolean> accept(@RequestParam("userAddId") Integer userAddId,
                                      @RequestParam("userReceiverId") Integer userReceiverId){
         return userService.acceptAddFiend(userAddId,userReceiverId);
+    }
+
+    /**
+     * Accept friend request - simpler version that accepts friendId
+     * friendId = người gửi lời mời (userAddId)
+     * userReceiverId = người hiện tại (lấy từ auth)
+     */
+    @PostMapping("accept-request")
+    ResponseGlobalDto<Boolean> acceptRequest(@RequestParam("friendId") String friendId) {
+        try {
+            Users currentUser = authService.getCurrentUser();
+            Integer userAddId = Integer.parseInt(friendId);
+            Integer userReceiverId = currentUser.getId().intValue();
+            
+            return userService.acceptAddFiend(userAddId, userReceiverId);
+        } catch (Exception e) {
+            return ResponseGlobalDto.<Boolean>builder()
+                    .status(400)
+                    .data(false)
+                    .error("Lỗi chấp nhận lời mời kết bạn: " + e.getMessage())
+                    .build();
+        }
     }
 
     @PostMapping("cancel")

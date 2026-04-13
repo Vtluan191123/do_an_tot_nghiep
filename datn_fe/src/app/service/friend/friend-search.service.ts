@@ -16,7 +16,13 @@ export interface Friend {
   friendCount?: number;
   postCount?: number;
   isOnline?: boolean;
-  isFriend?: boolean;
+  statusFriend?: number | string | null;  // null = no request, 0 = pending, 1 = accepted
+  sentByMe?: boolean;  // true = I sent the request, false = they sent it to me
+}
+
+export interface SearchResult {
+  data: Friend[];
+  count: number;  // Total count from backend
 }
 
 export interface FriendProfile extends Friend {
@@ -37,7 +43,7 @@ export interface ApiUserResponse {
   age?: string;
   phoneNumber?: string;
   voteStar?: number;
-  friend: boolean;
+  statusFriend?: number | string | null;  // Allow both number and string from API
   createdAt?: string;
 }
 
@@ -58,14 +64,14 @@ export class FriendSearchService {
   private mapApiUserToFriend(user: ApiUserResponse): Friend {
     return {
       id: user.id.toString(),
-      name: user.username, // Use username as name if description is not available
+      name: user.username,
       username: user.username,
       avatar: user.imagesUrl ? BASE_URL_UPLOAD + user.imagesUrl : this.getAvatar(user.email || user.username),
       bio: user.description,
       location: user.address,
       joinDate: user.createdAt ? this.formatDate(user.createdAt) : undefined,
-      isOnline: false, // Default to false, can be updated from another endpoint if needed
-      isFriend: user.friend
+      isOnline: false,
+      statusFriend: user.statusFriend  // null = no request, 0 = pending, 1 = accepted
     };
   }
 
@@ -111,11 +117,11 @@ export class FriendSearchService {
   /**
    * Lấy tất cả bạn bè từ API
    */
-  getAllFriends(): Observable<Friend[]> {
-    // ✅ Create UserFilterRequest with pagination defaults
+  getAllFriends(page: number = 1, size: number = 10): Observable<SearchResult> {
+    // Create UserFilterRequest with pagination (1-based page from frontend)
     const request = {
-      page: 0,                    // Default page
-      size: 10,                   // Default size
+      page: page,                 // Use provided page (1-based)
+      size: size,                 // Use provided size
       sortBy: 'id',               // Default sort field
       sortDirection: 'desc',      // Default sort direction
       keyword: null,              // No keyword for getting all
@@ -123,15 +129,21 @@ export class FriendSearchService {
 
     return this.http.post<any>(`${this.apiUrl}/search`, request).pipe(
       map(response => {
-        // Map API response to Friend[] interface
-        if (response?.data && Array.isArray(response.data)) {
-          return response.data.map((user: ApiUserResponse) => this.mapApiUserToFriend(user));
-        }
-        return [];
+        // Extract data and count from API response
+        const friends = response?.data && Array.isArray(response.data)
+          ? response.data.map((user: ApiUserResponse) => this.mapApiUserToFriend(user))
+          : [];
+
+        const count = response?.count || 0;
+
+        return {
+          data: friends,
+          count: count
+        };
       }),
       catchError(error => {
         console.error('Error fetching friends:', error);
-        return of([]); // Return empty array on error
+        return of({ data: [], count: 0 });
       })
     );
   }
@@ -139,26 +151,33 @@ export class FriendSearchService {
   /**
    * Tìm kiếm bạn bè với UserFilterRequest
    */
-  searchFriends(query: string): Observable<Friend[]> {
-    // ✅ Tạo UserFilterRequest object với pagination defaults (FIXED)
+  searchFriends(query: string, page: number = 1, size: number = 10): Observable<SearchResult> {
+    // Create UserFilterRequest object with pagination (1-based page from frontend)
     const filterRequest = {
-      keyword: query,             // Trường tìm kiếm (backend sẽ tìm kiếm trong username, email)
-      page: 0,                    // Default page
-      size: 10,                   // Default size
+      keyword: query,             // Search keyword (backend searches in username, email)
+      page: page,                 // Use provided page (1-based)
+      size: size,                 // Use provided size
       sortBy: 'id',               // Default sort by id
       sortDirection: 'desc',      // Default sort direction
     };
 
     return this.http.post<any>(`${this.apiUrl}/search`, filterRequest).pipe(
       map(response => {
-        if (response?.data && Array.isArray(response.data)) {
-          return response.data.map((user: ApiUserResponse) => this.mapApiUserToFriend(user));
-        }
-        return [];
+        // Extract data and count from API response
+        const friends = response?.data && Array.isArray(response.data)
+          ? response.data.map((user: ApiUserResponse) => this.mapApiUserToFriend(user))
+          : [];
+
+        const count = response?.count || 0;
+
+        return {
+          data: friends,
+          count: count
+        };
       }),
       catchError(error => {
         console.error('Error searching friends:', error);
-        return of([]);
+        return of({ data: [], count: 0 });
       })
     );
   }
@@ -246,6 +265,19 @@ export class FriendSearchService {
       catchError(error => {
         console.error('Error removing friend:', error);
         return of({ success: false, message: 'Lỗi khi hủy kết bạn' });
+      })
+    );
+  }
+
+  /**
+   * Chấp nhận lời mời kết bạn
+   */
+  acceptFriendRequest(friendId: string): Observable<any> {
+    const params = { friendId };
+    return this.http.post(`/api/friend/accept-request`, null, { params }).pipe(
+      catchError(error => {
+        console.error('Error accepting friend request:', error);
+        return of({ success: false, message: 'Lỗi khi chấp nhận lời mời' });
       })
     );
   }

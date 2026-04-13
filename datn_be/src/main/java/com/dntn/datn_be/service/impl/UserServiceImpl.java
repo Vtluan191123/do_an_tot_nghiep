@@ -55,33 +55,55 @@ public class UserServiceImpl implements UserService{
         Page<Users> page = userRepository.filter(request);
         List<Users> usersList = page.getContent();
 
-        // Get all accepted friends (status == 1) from DB
-        List<BaseMongoAddFriend> acceptedFriends = this.baseMongoAddFriendRepository
-                .findByUserAddOrUserReceiver(currentUserId, currentUserId).stream()
-                .filter(friend -> friend.getStatus() == 1)
-                .toList();
+        // Get all friend requests
+        List<BaseMongoAddFriend> allFriendRequests = this.baseMongoAddFriendRepository
+                .findByUserAddOrUserReceiver(currentUserId, currentUserId);
 
-        // Extract friend IDs for quick lookup
-        Set<Long> friendUserIds = acceptedFriends.stream()
-                .map(baseMongoAddFriend -> {
-                    if (currentUserId.equals(baseMongoAddFriend.getUserAdd().longValue())) {
-                        return baseMongoAddFriend.getUserReceiver().longValue();
-                    } else if (currentUserId.equals(baseMongoAddFriend.getUserReceiver().longValue())) {
-                        return baseMongoAddFriend.getUserAdd().longValue();
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        // Create map of userId -> statusFriend for quick lookup
+        // Also track who sent the request
+        Map<Long, Integer> userStatusMap = new HashMap<>();
+        Map<Long, Boolean> userSentByMeMap = new HashMap<>();  // true = I sent it, false = they sent it
+        
+        for (BaseMongoAddFriend friendRequest : allFriendRequests) {
+            Long otherUserId;
+            Integer status = friendRequest.getStatus();
+            Boolean sentByMe;
+            
+            // Determine other user ID and who sent the request
+            if (currentUserId.equals(friendRequest.getUserAdd().longValue())) {
+                // I sent the request
+                otherUserId = friendRequest.getUserReceiver().longValue();
+                sentByMe = true;
+            } else if (currentUserId.equals(friendRequest.getUserReceiver().longValue())) {
+                // They sent the request to me
+                otherUserId = friendRequest.getUserAdd().longValue();
+                sentByMe = false;
+            } else {
+                continue;
+            }
+            
+            // Map status: 1 = accepted friends, 0 = pending requests
+            if (status == 1) {
+                userStatusMap.put(otherUserId, 1);  // Accepted friend
+                userSentByMeMap.put(otherUserId, sentByMe);
+            } else if (status == 0) {
+                userStatusMap.put(otherUserId, 0);  // Pending request
+                userSentByMeMap.put(otherUserId, sentByMe);  // Track who sent it
+            }
+        }
 
-        // Convert all users to UserResponse with friend flag, excluding current user
+        // Convert all users to UserResponse with statusFriend and sentByMe, excluding current user
         List<UserResponse> userResponses = usersList.stream()
                 .filter(user -> !user.getId().equals(currentUserId))
                 .map(user -> {
                     UserResponse userResponse = new UserResponse();
                     BeanUtils.copyProperties(user, userResponse);
-                    // Check if this user is a friend
-                    userResponse.setFriend(friendUserIds.contains(user.getId()));
+                    // Set statusFriend: null/0/1
+                    userResponse.setStatusFriend(userStatusMap.get(user.getId()));
+                    // Set sentByMe if there's a pending request
+                    if (userStatusMap.containsKey(user.getId())) {
+                        userResponse.setSentByMe(userSentByMeMap.get(user.getId()));
+                    }
                     return userResponse;
                 })
                 .collect(Collectors.toList());
@@ -89,7 +111,7 @@ public class UserServiceImpl implements UserService{
         return ResponseGlobalDto.<List<UserResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .data(userResponses)
-                .count(userResponses.size())
+                .count(page.getTotalElements())
                 .build();
     }
 

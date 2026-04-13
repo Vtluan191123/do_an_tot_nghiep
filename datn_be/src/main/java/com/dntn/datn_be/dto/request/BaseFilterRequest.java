@@ -20,12 +20,17 @@ public class BaseFilterRequest {
     private String keyword;
 
     public Pageable toPageable() {
+        // Convert 1-based page from frontend to 0-based for Spring PageRequest
+        // Frontend sends page = 1, 2, 3, ...
+        // Spring PageRequest expects 0, 1, 2, ...
+        int pageZeroBased = page > 0 ? page - 1 : 0;
+        
         Sort sort = Sort.by(
                 sortDirection.equalsIgnoreCase("asc")
                         ? Sort.Direction.ASC
                         : Sort.Direction.DESC,
                 sortBy
         );
-        return PageRequest.of(page, size, sort);
+        return PageRequest.of(pageZeroBased, size, sort);
     }
 }

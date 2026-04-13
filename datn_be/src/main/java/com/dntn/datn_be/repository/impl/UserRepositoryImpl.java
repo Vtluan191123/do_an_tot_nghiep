@@ -9,6 +9,7 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -165,20 +166,27 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         }
 
         // ===== paging =====
-        int page = request.getPage();
-        int size = request.getSize();
+        // Get total count first
+        Number totalCount = (Number) countQuery.getSingleResult();
+        long total = totalCount.longValue();
 
-        query.setFirstResult(page * size);
+        // Get pageable from request (already handles 1-based to 0-based conversion)
+        Pageable pageable = request.toPageable();
+        int page = pageable.getPageNumber();  // Already 0-based from toPageable()
+        int size = pageable.getPageSize();
+
+        // Calculate offset
+        int offset = page * size;
+
+        query.setFirstResult(offset);
         query.setMaxResults(size);
 
         List<Users> resultList = query.getResultList();
 
-        Number total = (Number) countQuery.getSingleResult();
-
         return new PageImpl<>(
                 resultList,
-                request.toPageable(),
-                total.longValue()
+                pageable,
+                total
         );
     }
 }
