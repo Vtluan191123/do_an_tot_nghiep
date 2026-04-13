@@ -11,7 +11,7 @@
       <div class="modal-left">
         <!-- Profile Header -->
         <div class="profile-header">
-          <img [src]="friend.avatar" [alt]="friend.name" class="profile-avatar">
+          <img [src]="  getAvatarUrl(friend)" [alt]="friend.name" class="profile-avatar">
           <div class="profile-status">
             @if(friend.isOnline) {
               <span class="status-badge online">Đang hoạt động</span>
@@ -88,7 +88,7 @@
           } @else {
             @for(mFriend of mutualFriends; track mFriend.id) {
               <div class="mutual-friend-item">
-                <img [src]="mFriend.avatar" [alt]="mFriend.name">
+                <img [src]="getAvatarUrl(mFriend)" [alt]="mFriend.name">
                 <div class="mutual-friend-info">
                   <p class="name">{{ mFriend.name }}</p>
                   <p class="username">{{ mFriend.username }}</p>

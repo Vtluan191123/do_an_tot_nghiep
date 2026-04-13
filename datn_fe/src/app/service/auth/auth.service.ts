@@ -229,15 +229,31 @@ export class AuthService {
   }
 
   /**
-   * Update user profile
+   * Update user profile using UserController API
    */
   updateProfile(profileData: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/profile`, profileData)
+    // Get current user ID from stored user
+    const currentUser = this.getUserFromStorage();
+    if (!currentUser || !currentUser.id) {
+      return throwError(() => new Error('User ID not found'));
+    }
+
+    // Add the user ID to the profile data for the API request
+    const updateRequest = {
+      ...profileData,
+      id: currentUser.id
+    };
+
+    // Call UserController PUT endpoint at /api/user/
+    return this.http.put('/api/user/', updateRequest)
       .pipe(
-        tap((response:any) => {
-          if (response.user) {
-            this.setUserInStorage(response.user);
-            this.currentUserSubject.next(response.user);
+        tap((response: any) => {
+          // Handle both wrapped and direct responses
+          const updatedUser = response.data || response.user || response;
+          
+          if (updatedUser && updatedUser.id) {
+            this.setUserInStorage(updatedUser);
+            this.currentUserSubject.next(updatedUser);
           }
         }),
         catchError(error => {
@@ -246,7 +262,6 @@ export class AuthService {
         })
       );
   }
-
   /**
    * Get user profile
    */

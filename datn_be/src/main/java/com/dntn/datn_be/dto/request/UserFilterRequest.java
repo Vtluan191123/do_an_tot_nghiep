@@ -13,4 +13,10 @@ public class UserFilterRequest extends BaseFilterRequest {
     // filter theo khoảng thời gian
     private String fromDate;
     private String toDate;
+
+    // Tìm kiếm theo keyword (kế thừa từ BaseFilterRequest)
+    // Backend sẽ tìm kiếm trong username, email, v.v
+    // Sử dụng: keyword = "search_term" từ frontend
 }
+
+

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../service/auth/auth.service';
-
+import {BASE_URL_UPLOAD} from '../../../constants/constants';
 @Component({
   selector: 'app-user-profile-dropdown',
   standalone: true,
@@ -21,51 +21,42 @@ import { AuthService } from '../../../service/auth/auth.service';
           Đăng Ký
         </button>
       </div>
-
       <!-- User Avatar/Button -->
       <button class="user-btn" (click)="toggleDropdown()" *ngIf="currentUser">
-        <img [src]="getAvatar()" [alt]="currentUser.username" class="user-avatar">
+        <img [src]="currentUser?.imagesUrl ? BASE_URL_UPLOAD + currentUser?.imagesUrl : getAvatar()" [alt]="currentUser.username" class="user-avatar">
         <span class="user-name">{{ currentUser.username }}</span>
         <i class="fas fa-chevron-down"></i>
       </button>
-
       <!-- Dropdown Menu -->
       <div class="dropdown-menu" *ngIf="isDropdownOpen" (click)="$event.stopPropagation()">
         <!-- User Info -->
         <div class="dropdown-header">
-          <img [src]="getAvatar()" [alt]="currentUser.username" class="dropdown-avatar">
+          <img [src]="currentUser.imagesUrl ? BASE_URL_UPLOAD + currentUser.imagesUrl : getAvatar()" [alt]="currentUser.username" class="dropdown-avatar">
           <div class="user-info">
             <h4>{{ currentUser.username }}</h4>
             <p>{{ currentUser.email }}</p>
           </div>
         </div>
-
         <hr>
-
         <!-- Menu Items -->
         <a class="dropdown-item" (click)="viewProfile()">
           <i class="fas fa-user"></i>
           <span>View Profile</span>
         </a>
-
         <a class="dropdown-item" (click)="editProfile()">
           <i class="fas fa-edit"></i>
           <span>Edit Profile</span>
         </a>
-
         <a class="dropdown-item" (click)="changePassword()">
           <i class="fas fa-lock"></i>
           <span>Change Password</span>
         </a>
-
         <hr>
-
         <a class="dropdown-item logout-item" (click)="onLogout()">
           <i class="fas fa-sign-out-alt"></i>
           <span>Logout</span>
         </a>
       </div>
-
       <!-- View Profile Modal -->
       <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
@@ -75,10 +66,9 @@ import { AuthService } from '../../../service/auth/auth.service';
               <i class="fas fa-times"></i>
             </button>
           </div>
-
           <div class="modal-body">
             <div class="profile-info">
-              <img [src]="getAvatar()" [alt]="currentUser.username" class="profile-avatar">
+              <img [src]="currentUser.imagesUrl ? BASE_URL_UPLOAD + currentUser.imagesUrl : getAvatar()" [alt]="currentUser.username" class="profile-avatar">
               <div class="info-group">
                 <label>Username:</label>
                 <p>{{ currentUser.username }}</p>
@@ -87,20 +77,39 @@ import { AuthService } from '../../../service/auth/auth.service';
                 <label>Email:</label>
                 <p>{{ currentUser.email }}</p>
               </div>
-              <div class="info-group">
-                <label>User ID:</label>
-                <p>{{ currentUser.id }}</p>
+              <div class="info-group" *ngIf="currentUser.age">
+                <label>Age:</label>
+                <p>{{ currentUser.age }}</p>
               </div>
+              <div class="info-group" *ngIf="currentUser.phoneNumber">
+                <label>Phone Number:</label>
+                <p>{{ currentUser.phoneNumber }}</p>
+              </div>
+              <div class="info-group" *ngIf="currentUser.address">
+                <label>Address:</label>
+                <p>{{ currentUser.address }}</p>
+              </div>
+              <!-- Role = 3: Show Experience and Star Rating -->
+              <ng-container *ngIf="currentUser.roleId === 3">
+                <div class="info-group" *ngIf="currentUser.exp">
+                  <label>Experience:</label>
+                  <p>{{ currentUser.exp }}</p>
+                </div>
+                <div class="info-group" *ngIf="currentUser.voteStar !== null && currentUser.voteStar !== undefined">
+                  <label>Rating:</label>
+                  <div class="star-rating">
+                    <i *ngFor="let star of getStarArray(currentUser.voteStar)" class="fas fa-star"></i>
+                  </div>
+                </div>
+              </ng-container>
             </div>
           </div>
-
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="closeProfileModal()">Close</button>
             <button class="btn btn-primary" (click)="closeProfileModal(); editProfile()">Edit</button>
           </div>
         </div>
       </div>
-
       <!-- Edit Profile Modal -->
       <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
@@ -110,24 +119,52 @@ import { AuthService } from '../../../service/auth/auth.service';
               <i class="fas fa-times"></i>
             </button>
           </div>
-
           <form (ngSubmit)="submitEditProfile()">
             <div class="modal-body">
               <div class="form-group">
                 <label>Username</label>
                 <input type="text" class="form-control" [(ngModel)]="editFormData.username" name="username">
               </div>
-
               <div class="form-group">
                 <label>Email</label>
                 <input type="email" class="form-control" [(ngModel)]="editFormData.email" name="email">
               </div>
-
+              <div class="form-group">
+                <label>Age</label>
+                <input type="text" class="form-control" [(ngModel)]="editFormData.age" name="age">
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" class="form-control" [(ngModel)]="editFormData.phoneNumber" name="phoneNumber">
+              </div>
+              <div class="form-group">
+                <label>Address</label>
+                <textarea class="form-control" [(ngModel)]="editFormData.address" name="address" rows="3"></textarea>
+              </div>
+              <!-- Role = 3: Show Experience and Star Rating -->
+              <ng-container *ngIf="currentUser.roleId === 3">
+                <div class="form-group">
+                  <label>Experience</label>
+                  <input type="text" class="form-control" [(ngModel)]="editFormData.exp" name="exp">
+                </div>
+                <div class="form-group">
+                  <label>Star Rating (0-5)</label>
+                  <div class="star-input">
+                    <button type="button" *ngFor="let i of [1,2,3,4,5]"
+                            class="star-btn"
+                            [class.active]="editFormData.voteStar >= i"
+                            (click)="editFormData.voteStar = i"
+                            title="Rate {{ i }} star">
+                      <i class="fas fa-star"></i>
+                    </button>
+                  </div>
+                  <small>Current rating: {{ editFormData.voteStar || 0 }} / 5</small>
+                </div>
+              </ng-container>
               <div *ngIf="editMessage" class="alert" [ngClass]="editMessageType">
                 {{ editMessage }}
               </div>
             </div>
-
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
               <button type="submit" class="btn btn-primary" [disabled]="isEditLoading">
@@ -146,7 +183,6 @@ import { AuthService } from '../../../service/auth/auth.service';
       display: inline-block;
       z-index: 100;
     }
-
     .user-btn {
       display: inline-flex;
       align-items: center;
@@ -160,19 +196,16 @@ import { AuthService } from '../../../service/auth/auth.service';
       font-size: 14px;
       color: #333;
     }
-
     .user-btn:hover {
       background: #e9ecef;
       border-color: #667eea;
     }
-
     .user-avatar {
       width: 32px;
       height: 32px;
       border-radius: 50%;
       object-fit: cover;
     }
-
     .user-name {
       font-weight: 600;
       max-width: 120px;
@@ -180,7 +213,6 @@ import { AuthService } from '../../../service/auth/auth.service';
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
     .dropdown-menu {
       position: absolute;
       top: 100%;
@@ -199,7 +231,6 @@ import { AuthService } from '../../../service/auth/auth.service';
       opacity: 1 !important;
       pointer-events: auto !important;
     }
-
     @keyframes slideDown {
       from {
         opacity: 0;
@@ -210,40 +241,34 @@ import { AuthService } from '../../../service/auth/auth.service';
         transform: translateY(0);
       }
     }
-
     .dropdown-header {
       padding: 16px;
       display: flex;
       gap: 12px;
       align-items: center;
     }
-
     .dropdown-avatar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
       object-fit: cover;
     }
-
     .user-info h4 {
       margin: 0;
       font-size: 16px;
       font-weight: 600;
       color: #333;
     }
-
     .user-info p {
       margin: 4px 0 0 0;
       font-size: 12px;
       color: #666;
     }
-
     .dropdown-menu hr {
       margin: 8px 0;
       border: none;
       border-top: 1px solid #eee;
     }
-
     .dropdown-item {
       display: flex;
       align-items: center;
@@ -258,27 +283,22 @@ import { AuthService } from '../../../service/auth/auth.service';
       width: 100%;
       text-align: left;
     }
-
     .dropdown-item:hover {
       background: #f8f9fa;
       color: #667eea;
       padding-left: 20px;
     }
-
     .dropdown-item i {
       width: 20px;
       text-align: center;
     }
-
     .dropdown-item.logout-item {
       color: #dc3545;
     }
-
     .dropdown-item.logout-item:hover {
       background: #fff5f5;
       color: #dc3545;
     }
-
     /* Modal Styles */
     .modal-overlay {
       position: fixed;
@@ -292,7 +312,6 @@ import { AuthService } from '../../../service/auth/auth.service';
       justify-content: center;
       z-index: 2000;
     }
-
     .modal-content {
       background: white;
       border-radius: 12px;
@@ -303,7 +322,6 @@ import { AuthService } from '../../../service/auth/auth.service';
       overflow-y: auto;
       animation: modalSlideIn 0.3s ease;
     }
-
     @keyframes modalSlideIn {
       from {
         opacity: 0;
@@ -314,7 +332,6 @@ import { AuthService } from '../../../service/auth/auth.service';
         transform: scale(1);
       }
     }
-
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -322,13 +339,11 @@ import { AuthService } from '../../../service/auth/auth.service';
       padding: 20px;
       border-bottom: 1px solid #eee;
     }
-
     .modal-header h3 {
       margin: 0;
       font-size: 20px;
       color: #333;
     }
-
     .close-btn {
       background: none;
       border: none;
@@ -337,22 +352,18 @@ import { AuthService } from '../../../service/auth/auth.service';
       color: #666;
       transition: color 0.3s ease;
     }
-
     .close-btn:hover {
       color: #333;
     }
-
     .modal-body {
       padding: 20px;
     }
-
     .profile-info {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       gap: 20px;
     }
-
     .profile-avatar {
       width: 100px;
       height: 100px;
@@ -360,37 +371,37 @@ import { AuthService } from '../../../service/auth/auth.service';
       object-fit: cover;
       border: 3px solid #667eea;
     }
-
     .info-group {
       width: 100%;
       padding: 12px;
       background: #f8f9fa;
       border-radius: 8px;
     }
-
     .info-group label {
       font-weight: 600;
       color: #333;
       display: block;
       margin-bottom: 4px;
     }
-
     .info-group p {
       margin: 0;
       color: #666;
     }
-
+    .star-rating {
+      display: flex;
+      gap: 8px;
+      color: #ffc107;
+      font-size: 20px;
+    }
     .form-group {
       margin-bottom: 16px;
     }
-
     .form-group label {
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
       color: #333;
     }
-
     .form-control {
       width: 100%;
       padding: 10px 12px;
@@ -398,33 +409,50 @@ import { AuthService } from '../../../service/auth/auth.service';
       border-radius: 6px;
       font-size: 14px;
       transition: border-color 0.3s ease;
+      box-sizing: border-box;
     }
-
     .form-control:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
-
+    .star-input {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      color: #ddd;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 4px;
+    }
+    .star-btn:hover {
+      color: #ffc107;
+      transform: scale(1.2);
+    }
+    .star-btn.active {
+      color: #ffc107;
+    }
     .alert {
       padding: 12px;
       border-radius: 6px;
       margin-bottom: 16px;
       font-size: 14px;
     }
-
     .alert.alert-success {
       background: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
-
     .alert.alert-error {
       background: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
-
     .modal-footer {
       display: flex;
       gap: 12px;
@@ -432,7 +460,6 @@ import { AuthService } from '../../../service/auth/auth.service';
       padding: 20px;
       border-top: 1px solid #eee;
     }
-
     .btn {
       padding: 10px 20px;
       border: none;
@@ -442,38 +469,31 @@ import { AuthService } from '../../../service/auth/auth.service';
       transition: all 0.3s ease;
       font-size: 14px;
     }
-
     .btn-primary {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
-
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
     }
-
     .btn-primary:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
-
     .btn-secondary {
       background: #e9ecef;
       color: #333;
     }
-
     .btn-secondary:hover {
       background: #dee2e6;
     }
-
     /* Auth Buttons Styles */
     .auth-buttons {
       display: flex;
       gap: 12px;
       align-items: center;
     }
-
     .btn-login, .btn-register {
       display: flex;
       align-items: center;
@@ -487,37 +507,30 @@ import { AuthService } from '../../../service/auth/auth.service';
       transition: all 0.3s ease;
       white-space: nowrap;
     }
-
     .btn-login {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
-
     .btn-login:hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
     }
-
     .btn-register {
       background: white;
       color: #667eea;
       border: 2px solid #667eea;
     }
-
     .btn-register:hover {
       background: #f0f4ff;
       transform: translateY(-2px);
     }
-
     .btn-login i, .btn-register i {
       font-size: 16px;
     }
-
     @media (max-width: 768px) {
       .auth-buttons {
         gap: 8px;
       }
-
       .btn-login, .btn-register {
         padding: 8px 12px;
         font-size: 12px;
@@ -529,61 +542,61 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
   isDropdownOpen = false;
   currentUser: any = null;
   isLoggedIn = false;
-
   showProfileModal = false;
   showEditModal = false;
   isEditLoading = false;
   editMessage = '';
   editMessageType = '';
-
   editFormData = {
     username: '',
-    email: ''
+    email: '',
+    age: '',
+    phoneNumber: '',
+    address: '',
+    exp: '',
+    voteStar: 0
   };
-
   constructor(
     private authService: AuthService,
     private router: Router,
     private elementRef: ElementRef
   ) {}
-
   ngOnInit(): void {
     // Subscribe to authentication state
     this.authService.isAuthenticated$.subscribe(isAuth => {
       this.isLoggedIn = isAuth;
     });
-
     // Subscribe to current user
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
         this.editFormData = {
           username: user.username || '',
-          email: user.email || ''
+          email: user.email || '',
+          age: user.age || '',
+          phoneNumber: user.phoneNumber || '',
+          address: user.address || '',
+          exp: user.exp || '',
+          voteStar: user.voteStar || 0
         };
       }
     });
   }
-
   ngOnDestroy(): void {
     this.isDropdownOpen = false;
   }
-
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isDropdownOpen = false;
     }
   }
-
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
-
   closeDropdown(): void {
     this.isDropdownOpen = false;
   }
-
   getAvatar(): string {
     if (this.currentUser?.email) {
       const email = this.currentUser.email.toLowerCase().trim();
@@ -592,7 +605,6 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
     }
     return 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff';
   }
-
   private simpleHash(str: string): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -602,30 +614,32 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
     }
     return Math.abs(hash).toString(16);
   }
-
+  getStarArray(count: number | null | undefined): number[] {
+    if (!count) return [];
+    const stars = [];
+    for (let i = 0; i < (count || 0); i++) {
+      stars.push(i);
+    }
+    return stars;
+  }
   viewProfile(): void {
     this.closeDropdown();
     this.showProfileModal = true;
   }
-
   closeProfileModal(): void {
     this.showProfileModal = false;
   }
-
   editProfile(): void {
     this.closeDropdown();
     this.showEditModal = true;
     this.editMessage = '';
   }
-
   closeEditModal(): void {
     this.showEditModal = false;
     this.editMessage = '';
   }
-
   submitEditProfile(): void {
     this.isEditLoading = true;
-
     this.authService.updateProfile(this.editFormData).subscribe({
       next: (response) => {
         this.isEditLoading = false;
@@ -642,12 +656,10 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   changePassword(): void {
     this.closeDropdown();
     console.log('Change password clicked');
   }
-
   onLogout(): void {
     this.closeDropdown();
     this.authService.logout().subscribe({
@@ -660,13 +672,14 @@ export class UserProfileDropdownComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
-
   goToRegister(): void {
     this.router.navigate(['/register']);
   }
+
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
 }
+
 

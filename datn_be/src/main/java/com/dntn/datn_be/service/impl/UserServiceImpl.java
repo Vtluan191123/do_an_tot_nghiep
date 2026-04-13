@@ -6,6 +6,7 @@ import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
+import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.model.GroudMessageUser;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.mongo.BaseMongoAddFriend;
@@ -14,11 +15,13 @@ import com.dntn.datn_be.repository.GroudMessageUserRepository;
 import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoAddFriendRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoGroudRepository;
+import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.UserService;
 import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
 import org.hibernate.ObjectNotFoundException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,9 +29,8 @@ import jakarta.persistence.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -37,36 +39,74 @@ public class UserServiceImpl implements UserService{
     private final BaseMongoGroudRepository baseMongoGroudRepository;
     private final GroudMessageUserRepository groudMessageUserRepository;
     private final UserRepository userRepository;
+    private final AuthService authService;
     private final String ENTITY = "UserServiceImpl";
 
 
     @Override
-    public ResponseGlobalDto<Users> create(UserCreateRequest request) {
+    public ResponseGlobalDto<UserResponse> create(UserCreateRequest request) {
         return null;
     }
 
     @Override
-    public ResponseGlobalDto<List<Users>> gets(UserFilterRequest request) {
+    public ResponseGlobalDto<List<UserResponse>> gets(UserFilterRequest request) {
+        Users currentUser = authService.getCurrentUser();
+        Long currentUserId = currentUser.getId();
         Page<Users> page = userRepository.filter(request);
-        return ResponseGlobalDto.<List<Users>>builder()
+        List<Users> usersList = page.getContent();
+
+        // Get all accepted friends (status == 1) from DB
+        List<BaseMongoAddFriend> acceptedFriends = this.baseMongoAddFriendRepository
+                .findByUserAddOrUserReceiver(currentUserId, currentUserId).stream()
+                .filter(friend -> friend.getStatus() == 1)
+                .toList();
+
+        // Extract friend IDs for quick lookup
+        Set<Long> friendUserIds = acceptedFriends.stream()
+                .map(baseMongoAddFriend -> {
+                    if (currentUserId.equals(baseMongoAddFriend.getUserAdd().longValue())) {
+                        return baseMongoAddFriend.getUserReceiver().longValue();
+                    } else if (currentUserId.equals(baseMongoAddFriend.getUserReceiver().longValue())) {
+                        return baseMongoAddFriend.getUserAdd().longValue();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // Convert all users to UserResponse with friend flag, excluding current user
+        List<UserResponse> userResponses = usersList.stream()
+                .filter(user -> !user.getId().equals(currentUserId))
+                .map(user -> {
+                    UserResponse userResponse = new UserResponse();
+                    BeanUtils.copyProperties(user, userResponse);
+                    // Check if this user is a friend
+                    userResponse.setFriend(friendUserIds.contains(user.getId()));
+                    return userResponse;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseGlobalDto.<List<UserResponse>>builder()
                 .status(HttpStatus.OK.value())
-                .data(page.getContent())
-                .count(page.getTotalElements())
+                .data(userResponses)
+                .count(userResponses.size())
                 .build();
     }
 
 
     @Override
-    public ResponseGlobalDto<Users> get(UserFilterRequest request) {
+    public ResponseGlobalDto<UserResponse> get(UserFilterRequest request) {
         Optional<Users> usersOptional = this.userRepository.findById(request.getId());
-        return ResponseGlobalDto.<Users>builder()
+        UserResponse userResponse = new UserResponse();
+        BeanUtils.copyProperties(usersOptional.get(), userResponse);
+        return ResponseGlobalDto.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
-                .data(usersOptional.orElse(null))
+                .data(userResponse)
                 .message("Get user ById Successfully").build();
     }
 
     @Override
-    public ResponseGlobalDto<Users> update(UserUpdateRequest request) {
+    public ResponseGlobalDto<UserResponse> update(UserUpdateRequest request) {
         Users user = userRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -88,10 +128,11 @@ public class UserServiceImpl implements UserService{
         }
 
         userRepository.save(user);
-
-        return ResponseGlobalDto.<Users>builder()
+        UserResponse userResponse = new UserResponse();
+        BeanUtils.copyProperties(user, userResponse);
+        return ResponseGlobalDto.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
-                .data(user)
+                .data(userResponse)
                 .message("Update user Successfully").build();
     }
 

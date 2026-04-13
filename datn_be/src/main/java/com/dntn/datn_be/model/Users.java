@@ -30,6 +30,9 @@ public class Users  extends  BaseEntity
     @Column(name = "age")
     private String age;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "address",length = 1000)
     private String address;
 

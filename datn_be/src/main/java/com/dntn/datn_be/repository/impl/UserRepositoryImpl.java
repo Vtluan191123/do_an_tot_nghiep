@@ -42,7 +42,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 FROM groud_message_user
                 WHERE user_id = :userId
             )
-            AND u.id <> :userId order by gmu.updated_at desc 
+            AND u.id <> :userId order by gmu.updated_at desc
         """;
 
         Query query = entityManager.createNativeQuery(queryString);
@@ -93,6 +93,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     """);
 
         List<Object> params = new ArrayList<>();
+
+        // ===== filter by id =====
+        if (request.getId() != null) {
+            sql.append(" AND u.id = ? ");
+            countSql.append(" AND u.id = ? ");
+            params.add(request.getId());
+        }
 
         // ===== filter roleId =====
         if (request.getRoleId() != null) {

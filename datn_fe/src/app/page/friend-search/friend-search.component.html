@@ -41,9 +41,29 @@
               type="text"
               class="search-input"
               [(ngModel)]="searchQuery"
-              (input)="onSearchChange()"
-              placeholder="Nhập tên hoặc username bạn bè...">
+              (keyup.enter)="onSearchEnter()"
+              placeholder="Nhập tên hoặc username bạn bè..."
+              [disabled]="isLoading">
             <i class="fa fa-search search-icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Size Dropdown -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+            <label for="pageSize" style="margin: 0; font-weight: 500; color: #666;">Hiển thị:</label>
+            <select
+              id="pageSize"
+              [(ngModel)]="pageSize"
+              (change)="changePageSize(pageSize)"
+              class="form-select"
+              style="width: auto; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+              @for(size of pageSizeOptions; track size) {
+                <option [value]="size">{{ size }} mục/trang</option>
+              }
+            </select>
           </div>
         </div>
       </div>
@@ -61,7 +81,7 @@
 
       <!-- Friends List -->
       @if(!isLoading) {
-        @if(filteredFriends.length === 0) {
+        @if(paginatedFriends.length === 0) {
           <div class="row">
             <div class="col-lg-12">
               <p class="text-center" style="padding: 40px 0; color: #ccc; font-size: 16px;">
@@ -71,11 +91,11 @@
           </div>
         } @else {
           <div class="row">
-            @for(friend of filteredFriends; track friend.id) {
+            @for(friend of paginatedFriends; let i = $index; track i) {
               <div class="col-lg-6 mb-4">
-                <div class="friend-card" (click)="onFriendClick(friend)">
+                <div class="friend-card" (click)="onFriendClick(friend); $event.stopPropagation()">
                   <div class="friend-avatar">
-                    <img [src]="friend.avatar" [alt]="friend.name" class="img-fluid">
+                    <img [src]="friend.avatar" [alt]="friend.name" class="img-fluid" (error)="friend.avatar = friendServiceAccess.getAvatar(friend.username)">
                     @if(friend.isOnline) {
                       <span class="online-badge"></span>
                     }
@@ -100,6 +120,60 @@
               </div>
             }
           </div>
+
+          <!-- Pagination Controls -->
+          @if(totalPages > 1) {
+            <div class="row mt-4">
+              <div class="col-lg-12">
+                <nav aria-label="Page navigation">
+                  <ul class="pagination justify-content-center" style="gap: 5px;">
+                    <!-- Previous Button -->
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <button
+                        class="page-link"
+                        (click)="previousPage()"
+                        [disabled]="currentPage === 1"
+                        style="cursor: pointer;">
+                        <i class="fa fa-chevron-left"></i> Trước
+                      </button>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    @for(page of getPageNumbers(); track page) {
+                      <li class="page-item" [class.active]="currentPage === page">
+                        <button
+                          class="page-link"
+                          (click)="goToPage(page)"
+                          [class.active]="currentPage === page"
+                          style="cursor: pointer; min-width: 40px;">
+                          {{ page }}
+                        </button>
+                      </li>
+                    }
+
+                    <!-- Next Button -->
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                      <button
+                        class="page-link"
+                        (click)="nextPage()"
+                        [disabled]="currentPage === totalPages"
+                        style="cursor: pointer;">
+                        Sau <i class="fa fa-chevron-right"></i>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+
+                <!-- Pagination Info -->
+                <div class="text-center" style="margin-top: 15px; color: #666; font-size: 14px;">
+                  <p>
+                    Trang {{ currentPage }} / {{ totalPages }}
+                    ({{ totalItems }} người)
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
         }
       }
     </div>
@@ -116,7 +190,5 @@
     </app-friend-profile-modal>
   }
 
-  <!-- Footer -->
-  <app-footer></app-footer>
 </div>
 

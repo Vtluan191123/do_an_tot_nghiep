@@ -4,6 +4,7 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
+import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.mongo.BaseMongoMessage;
 import com.dntn.datn_be.service.UserService;
@@ -22,19 +23,19 @@ public class UserController {
 
     // ================== CREATE ==================
     @PostMapping
-    public ResponseGlobalDto<Users> create(@RequestBody UserCreateRequest request) throws IOException {
+    public ResponseGlobalDto<UserResponse> create(@RequestBody UserCreateRequest request) throws IOException {
         return userService.create(request);
     }
 
     // ================== GET LIST ==================
     @PostMapping("/search")
-    public ResponseGlobalDto<List<Users>> gets(@RequestBody UserFilterRequest request) throws IOException {
+    public ResponseGlobalDto<List<UserResponse>> gets(@RequestBody UserFilterRequest request) throws IOException {
         return userService.gets(request);
     }
 
     // ================== GET BY ID ==================
     @GetMapping("/{id}")
-    public ResponseGlobalDto<Users> get(@PathVariable Long id) {
+    public ResponseGlobalDto<UserResponse> get(@PathVariable Long id) {
         UserFilterRequest request = new UserFilterRequest();
         request.setId(id);
         return userService.get(request);
@@ -42,7 +43,7 @@ public class UserController {
 
     // ================== UPDATE ==================
     @PutMapping
-    public ResponseGlobalDto<Users> update(@RequestBody UserUpdateRequest request) {
+    public ResponseGlobalDto<UserResponse> update(@RequestBody UserUpdateRequest request) {
         return userService.update(request);
     }
 

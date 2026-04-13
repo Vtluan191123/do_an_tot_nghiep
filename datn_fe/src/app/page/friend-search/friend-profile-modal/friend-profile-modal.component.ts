@@ -51,5 +51,15 @@ export class FriendProfileModalComponent implements OnInit {
   onMessage(): void {
     this.message.emit(this.friend.id);
   }
+
+  /**
+   * Get avatar URL if image is not available
+   */
+  getAvatarUrl(friend: Friend): string {
+    if (friend.avatar && !friend.avatar.includes('ui-avatars.com')) {
+      return friend.avatar;
+    }
+    return this.friendService.getAvatar(friend.username);
+  }
 }
 
