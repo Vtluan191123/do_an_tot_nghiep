@@ -4,10 +4,14 @@ import com.dntn.datn_be.dto.request.SubjectFilterRequest;
 import com.dntn.datn_be.model.Subject;
 import com.dntn.datn_be.repository.SubjectRepositoryCustom;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,72 +24,69 @@ public class SubjectRepositoryImpl implements SubjectRepositoryCustom {
     private final EntityManager entityManager;
 
     @Override
-    public Page<Subject> filter(SubjectFilterRequest request) {
-
-        StringBuilder sql = new StringBuilder("""
-        SELECT s.*
-        FROM subject s
-        WHERE 1=1
-    """);
-
-        StringBuilder countSql = new StringBuilder("""
-        SELECT COUNT(*)
-        FROM subject s
-        WHERE 1=1
-    """);
-
-        List<Object> params = new ArrayList<>();
-
-        // ===== filter by id =====
+    public Page<Subject> filter(SubjectFilterRequest request, Pageable pageable) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        
+        // ===== Build count query =====
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<Subject> countRoot = countQuery.from(Subject.class);
+        countQuery.select(cb.count(countRoot));
+        
+        List<Predicate> predicates = buildPredicates(cb, countRoot, request);
+        if (!predicates.isEmpty()) {
+            countQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+        }
+        
+        Long total = entityManager.createQuery(countQuery).getSingleResult();
+        
+        // ===== Build data query =====
+        CriteriaQuery<Subject> dataQuery = cb.createQuery(Subject.class);
+        Root<Subject> dataRoot = dataQuery.from(Subject.class);
+        dataQuery.select(dataRoot);
+        
+        predicates = buildPredicates(cb, dataRoot, request);
+        if (!predicates.isEmpty()) {
+            dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+        }
+        
+        // Apply sorting from Pageable
+        dataQuery.orderBy(pageable.getSort().stream()
+                .map(order -> order.isAscending() 
+                    ? cb.asc(dataRoot.get(order.getProperty()))
+                    : cb.desc(dataRoot.get(order.getProperty())))
+                .toList());
+        
+        List<Subject> content = entityManager.createQuery(dataQuery)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+        
+        return new PageImpl<>(content, pageable, total);
+    }
+    
+    private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Subject> root, SubjectFilterRequest request) {
+        List<Predicate> predicates = new ArrayList<>();
+        
+        // Filter by id
         if (request.getId() != null) {
-            sql.append(" AND s.id = ? ");
-            countSql.append(" AND s.id = ? ");
-            params.add(request.getId());
+            predicates.add(cb.equal(root.get("id"), request.getId()));
         }
-
-        // ===== filter by status =====
+        
+        // Filter by status
         if (request.getStatus() != null && !request.getStatus().isEmpty()) {
-            sql.append(" AND s.status = ? ");
-            countSql.append(" AND s.status = ? ");
-            params.add(request.getStatus());
+            predicates.add(cb.equal(root.get("status"), request.getStatus()));
         }
-
-        // ===== filter by keyword (search in name and description) =====
+        
+        // Filter by keyword
         if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
-            sql.append(" AND (s.name LIKE ? OR s.description LIKE ?) ");
-            countSql.append(" AND (s.name LIKE ? OR s.description LIKE ?) ");
             String keyword = "%" + request.getKeyword() + "%";
-            params.add(keyword);
-            params.add(keyword);
+            predicates.add(cb.or(
+                cb.like(root.get("name"), keyword),
+                cb.like(root.get("description"), keyword)
+            ));
         }
-
-        // ===== add sorting =====
-        sql.append(" ORDER BY s.").append(request.getSortBy())
-                .append(" ").append(request.getSortDirection());
-
-        // ===== add pagination =====
-        sql.append(" LIMIT ? OFFSET ? ");
-
-        // Create count query
-        Query countQuery = entityManager.createNativeQuery(countSql.toString());
-        for (int i = 0; i < params.size(); i++) {
-            countQuery.setParameter(i + 1, params.get(i));
-        }
-        Long total = ((Number) countQuery.getSingleResult()).longValue();
-
-        // Add pagination parameters
-        params.add(request.getSize());
-        params.add((long) request.getPage() * request.getSize());
-
-        // Create main query
-        Query query = entityManager.createNativeQuery(sql.toString(), Subject.class);
-        for (int i = 0; i < params.size(); i++) {
-            query.setParameter(i + 1, params.get(i));
-        }
-
-        List<Subject> content = query.getResultList();
-
-        return new PageImpl<>(content, request.toPageable(), total);
+        
+        return predicates;
     }
 }
 

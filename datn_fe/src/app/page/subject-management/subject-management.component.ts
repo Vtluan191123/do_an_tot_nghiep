@@ -5,13 +5,15 @@ import { SubjectService } from '../../service/subject/subject.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import {BASE_URL_UPLOAD} from '../../constants/constants';
 
 interface SubjectModel {
   id?: number;
-  code: string;
   name: string;
-  description: string;
-  price: number;
+  description?: string;
+  size: number;
+  status: string;
+  images?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,10 +33,11 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
   selectedSubject: SubjectModel | null = null;
 
   formData: SubjectModel = {
-    code: '',
     name: '',
     description: '',
-    price: 0
+    size: 0,
+    status: 'active',
+    images: ''
   };
 
   private destroy$ = new Subject<void>();
@@ -42,7 +45,8 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
   constructor(
     private subjectService: SubjectService,
     private toastr: ToastrService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadSubjects();
@@ -84,11 +88,11 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
     if (subject) {
       this.isEditing = true;
       this.selectedSubject = subject;
-      this.formData = { ...subject };
+      this.formData = {...subject};
     } else {
       this.isEditing = false;
       this.selectedSubject = null;
-      this.formData = { code: '', name: '', description: '', price: 0 };
+      this.formData = {name: '', description: '', size: 0, status: 'active', images: ''};
     }
   }
 
@@ -96,12 +100,22 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
     this.showForm = false;
     this.isEditing = false;
     this.selectedSubject = null;
-    this.formData = { code: '', name: '', description: '', price: 0 };
+    this.formData = {name: '', description: '', size: 0, status: 'active', images: ''};
   }
 
   saveSubject(): void {
-    if (!this.formData.code || !this.formData.name) {
-      this.toastr.warning('Vui lòng điền đủ các trường bắt buộc');
+    if (!this.formData.name) {
+      this.toastr.warning('Vui lòng điền tên môn học');
+      return;
+    }
+
+    if (this.formData.size <= 0) {
+      this.toastr.warning('Vui lòng nhập số lượng > 0');
+      return;
+    }
+
+    if (!this.formData.status) {
+      this.toastr.warning('Vui lòng chọn trạng thái');
       return;
     }
 
@@ -156,5 +170,17 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
         });
     }
   }
-}
 
+  onImageSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.formData.images = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
+}

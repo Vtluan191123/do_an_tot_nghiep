@@ -264,3 +264,29 @@
   }
 }
 
+/* Image Preview */
+.img-thumbnail {
+  border: 1px solid #ddd;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+
+  &:hover {
+    box-shadow: 0 0 8px rgba(108, 99, 255, 0.3);
+  }
+}
+
+/* Badge styles */
+.badge-secondary {
+  background-color: #6c63ff;
+  color: white;
+}
+
+.badge-success {
+  background-color: #28a745;
+}
+
+.badge-warning {
+  background-color: #ffc107;
+  color: #000;
+}

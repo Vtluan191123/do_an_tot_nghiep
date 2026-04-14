@@ -9,6 +9,12 @@ spring:
   data:
     mongodb:
       uri: mongodb://159.223.56.71:27017/do_an_tot_nghiep
+      # MongoDB connection pool and timeout configuration
+      connectTimeoutMS: 10000
+      socketTimeoutMS: 30000
+      serverSelectionTimeoutMS: 5000
+      maxPoolSize: 50
+      minPoolSize: 10
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     show-sql: true
@@ -34,9 +40,10 @@ spring:
     fallback-model: gemini-2.5-pro
 
   logging:
-  level:
-    root: INFO
-    com.dntn.datn_be.service.WebSocketService: DEBUG
+    level:
+      root: INFO
+      com.dntn.datn_be.service.WebSocketService: DEBUG
+      org.springframework.data.mongodb: DEBUG
 
   digitalocean:
     spaces:

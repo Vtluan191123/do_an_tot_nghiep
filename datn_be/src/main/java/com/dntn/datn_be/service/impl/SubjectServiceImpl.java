@@ -43,7 +43,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public ResponseGlobalDto<List<Subject>> gets(SubjectFilterRequest request) {
-        Page<Subject> page = subjectRepository.filter(request);
+        Page<Subject> page = subjectRepository.filter(request, request.toPageable());
 
         return ResponseGlobalDto.<List<Subject>>builder()
                 .status(HttpStatus.OK.value())
@@ -54,7 +54,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public ResponseGlobalDto<Subject> get(SubjectFilterRequest request) {
-        Page<Subject> page = subjectRepository.filter(request);
+        Page<Subject> page = subjectRepository.filter(request, request.toPageable());
 
         if (page.isEmpty()) {
             return ResponseGlobalDto.<Subject>builder()
