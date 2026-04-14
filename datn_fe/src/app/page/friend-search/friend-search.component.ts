@@ -7,6 +7,9 @@ import { NavComponent } from '../share/nav/nav.component';
 import { FooterComponent } from '../share/footer/footer.component';
 import { FriendSearchService, Friend } from '../../service/friend/friend-search.service';
 import { FriendProfileModalComponent } from './friend-profile-modal/friend-profile-modal.component';
+import { AuthService } from '../../service/auth/auth.service';
+import { TransferDataService } from '../../service/tranfer-data/transfer-data.service';
+import { UserService } from '../../service/user/user.service';
 import {ToastrService} from 'ngx-toastr';
 
 @Component({
@@ -43,6 +46,9 @@ export class FriendSearchComponent implements OnInit {
     private friendService: FriendSearchService,
     private modalService: NgbModal,
     private router: Router,
+    private authService: AuthService,
+    private userService: UserService,
+    private transferDataService: TransferDataService,
     private toastService: ToastrService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
@@ -252,38 +258,50 @@ export class FriendSearchComponent implements OnInit {
   }
 
   onAddFriend(friendId: string): void {
-    this.friendService.addFriend(friendId).subscribe(
-      (response) => {
-        this.toastService.success('Đã gửi lời mời kết bạn', 'Thành công');
-        // Update statusFriend = 0 (pending) and sentByMe = true
-        if (this.selectedFriend) {
-          this.selectedFriend.statusFriend = 0;
-          this.selectedFriend.sentByMe = true;  // I sent this request
-        }
-        // Update friend in paginated list
-        const friend = this.paginatedFriends.find(f => f.id === friendId);
-        if (friend) {
-          friend.statusFriend = 0;
-          friend.sentByMe = true;  // I sent this request
-        }
-      },
-      (error) => {
-        console.error('Lỗi khi kết bạn:', error);
-        this.toastService.error('Lỗi khi gửi lời mời', 'Lỗi');
-      }
-    );
+    // Update friend in paginated list - API call is already done in modal component
+    const friend = this.paginatedFriends.find(f => f.id === friendId);
+    if (friend) {
+      friend.statusFriend = 0;
+      friend.sentByMe = true;  // I sent this request
+    }
   }
 
   onMessage(friendId: string): void {
-    // Navigaite to messages page or show message detail
-    // Option 1: Navigate to messages
-    this.router.navigate(['/message']);
+    // Get current user ID
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || !currentUser.id) {
+      this.toastService.error('Không thể lấy thông tin user hiện tại', 'Lỗi');
+      return;
+    }
 
-    // Option 2: You can also pass the friend ID via router state if needed
-    // this.router.navigate(['/message'], { state: { friendId: friendId } });
+    // Fetch list of groups for current user and find the one with this friend
+    this.userService.getListGroup(currentUser.id).subscribe(
+      (response: any) => {
+        if (response && response.data && response.data.userDetailGroudDto) {
+          // Find the group with this friend
+          const friendGroup = response.data.userDetailGroudDto.find(
+            (group: any) => group.id.toString() === friendId.toString()
+          );
 
-    // Close modal
-    this.closeProfileModal();
+          if (friendGroup && friendGroup.groudId) {
+            console.log('Found groudId:', friendGroup.groudId);
+
+            // Emit event + FULL groud data to app.component via TransferDataService
+            // Send entire friendGroup object with all fields (id, username, email, groudId, etc)
+            this.transferDataService.sendMessage(friendGroup);
+            console.log('Sending friend group data:', friendGroup);
+
+            this.closeProfileModal();
+          } else {
+            this.toastService.error('Không tìm thấy cuộc trò chuyện với bạn này', 'Lỗi');
+          }
+        }
+      },
+      (error) => {
+        console.error('Error fetching groups:', error);
+        this.toastService.error('Lỗi khi tải danh sách cuộc trò chuyện', 'Lỗi');
+      }
+    );
   }
 }
 

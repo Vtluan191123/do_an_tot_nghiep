@@ -11,6 +11,11 @@ import { ClassTimetableComponent } from './page/class-timetable/class-timetable.
 import { GymRoomComponent } from './page/gym-room/gym-room.component';
 import { FriendSearchComponent } from './page/friend-search/friend-search.component';
 import { ComboDetailComponent } from './page/combo-detail/combo-detail.component';
+import { ComboManagementComponent } from './page/combo-management/combo-management.component';
+import { SubjectManagementComponent } from './page/subject-management/subject-management.component';
+import { BookingManagementComponent } from './page/booking-management/booking-management.component';
+import { UserManagementComponent } from './page/user-management/user-management.component';
+import { StatisticsComponent } from './page/statistics/statistics.component';
 
 export const routes: Routes = [
   { path: '', component: DashBoardComponent },
@@ -25,6 +30,11 @@ export const routes: Routes = [
   { path: 'class-timetable', component: ClassTimetableComponent },
   { path: 'class-detail', component: ClassDetailComponent },
   { path: 'combo-detail/:id', component: ComboDetailComponent },
+  { path: 'combo-management', component: ComboManagementComponent },
+  { path: 'subject-management', component: SubjectManagementComponent },
+  { path: 'booking-management', component: BookingManagementComponent },
+  { path: 'user-management', component: UserManagementComponent },
+  { path: 'statistics', component: StatisticsComponent },
   { path: 'team', component: OutTeamComponent },
   // Catch-all route: nếu sai path sẽ forward về ''
   { path: '**', redirectTo: '', pathMatch: 'full' }

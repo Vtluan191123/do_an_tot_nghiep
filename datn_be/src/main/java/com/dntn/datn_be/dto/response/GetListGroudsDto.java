@@ -43,6 +43,10 @@ public class GetListGroudsDto {
         private LocalDateTime lateMessageTime;
 
         private boolean isRead;
+
+        private String latestMessageContent; // Nội dung tin nhắn cuối cùng
+
+        private String latestMessageType; // Loại tin nhắn: TEXT, IMAGE, VIDEO, AUDIO, EMOTE
     }
 
 }

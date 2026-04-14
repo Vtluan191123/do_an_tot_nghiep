@@ -1,7 +1,11 @@
 <div class="notification-container">
   <!-- Header -->
   <div class="notification-header">
-    <h3>Thông báo</h3>
+    <h3>Thông báo
+      @if(notifications.length > 0) {
+        <span class="count-badge">{{ notifications.length }}</span>
+      }
+    </h3>
     <div class="notification-actions">
       <button *ngIf="notifications.length > 0" class="action-btn" (click)="markAllAsRead()" title="Đánh dấu tất cả đã đọc">
         ✓
@@ -14,7 +18,11 @@
 
   <!-- Notifications List -->
   <div class="notification-list">
-    @if(notifications.length === 0) {
+    @if(isLoading) {
+      <div class="loading-state">
+        <p>Đang tải thông báo...</p>
+      </div>
+    } @else if(notifications.length === 0) {
       <div class="empty-state">
         <p>Không có thông báo mới</p>
       </div>
@@ -25,8 +33,12 @@
            (click)="onNotificationClick(notification)">
 
         <!-- Avatar -->
-        <div class="notification-avatar" *ngIf="notification.avatar">
-          <img [src]="notification.avatar" [alt]="notification.title" />
+        <div class="notification-avatar">
+          @if(notification.userSendAvatar && notification.userSendAvatar.trim() !== '') {
+            <img [src]="BASE_URL_UPLOAD + notification.userSendAvatar" [alt]="notification.userSendName" (error)="onImageError($event)" />
+          } @else {
+            <div class="avatar-fallback">{{ notification.userSendName?.charAt(0)?.toUpperCase() || '👤' }}</div>
+          }
           <span class="notification-badge" [attr.data-type]="notification.type">
             {{ getNotificationIcon(notification.type) }}
           </span>
@@ -36,12 +48,16 @@
         <div class="notification-content">
           <div class="notification-title">
             <strong>{{ notification.title }}</strong>
+            @if(!notification.isRead) {
+              <span class="unread-dot"></span>
+            }
           </div>
           <div class="notification-description">
-            {{ notification.description }}
+            <span class="sender-name">{{ notification.userSendName }}</span>:
+            {{ notification.content }}
           </div>
           <div class="notification-time">
-            {{ getTimeAgo(notification.timestamp) }}
+            {{ getTimeAgo(notification.createdAt) }}
           </div>
         </div>
 
@@ -52,5 +68,14 @@
       </div>
     }
   </div>
+
+  <!-- Friend Profile Modal -->
+  <app-friend-profile-modal
+    *ngIf="showProfileModal && selectedUserProfile"
+    [friend]="selectedUserProfile"
+    (close)="closeProfileModal()"
+    (addFriend)="onAddFriendFromModal($event)"
+    (message)="onMessageFromModal($event)">
+  </app-friend-profile-modal>
 </div>
 

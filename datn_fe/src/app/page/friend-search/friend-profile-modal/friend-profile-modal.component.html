@@ -61,32 +61,36 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
           <!-- statusFriend = null/undefined: Không phải bạn bè -->
-          @if(!friend.statusFriend) {
+          <ng-container *ngIf="friend.statusFriend == null || friend.statusFriend === undefined">
             <button class="btn-primary" (click)="onAddFriend()">
-              <i class="fa fa-user-plus"></i> Kết Bạn
+              <i class="fa fa-user-plus"></i> {{ 'Kết Bạn' }}
             </button>
-          }
-          <!-- statusFriend = 0: Pending request -->
-          @else if(friend.statusFriend == 0 || friend.statusFriend == '0') {
-            <!-- I sent the request: Show "Đã gửi lời kết bạn" -->
-            @if(friend.sentByMe) {
-              <button class="btn-primary pending" disabled>
-                <i class="fa fa-hourglass-half"></i> Đã gửi lời kết bạn
-              </button>
-            }
-            <!-- They sent the request to me: Show "Chấp Nhận" -->
-            @else {
-              <button class="btn-primary" (click)="onAcceptFriend()">
-                <i class="fa fa-check"></i> Chấp Nhận
-              </button>
-            }
-          }
+          </ng-container>
+          <ng-container *ngIf="friend.statusFriend == 0 || friend.statusFriend == '0'">
+
+            <!-- Đã gửi -->
+            <button *ngIf="friend.sentByMe"
+                    class="btn-primary pending"
+                    disabled>
+              <i class="fa fa-hourglass-half"></i> Đã gửi lời kết bạn
+            </button>
+
+            <!-- Nhận được -->
+            <button *ngIf="!friend.sentByMe"
+                    class="btn-primary"
+                    (click)="onAcceptFriend()"
+                    [disabled]="isSubmitting">
+              <i class="fa fa-check"></i>
+              {{ isSubmitting ? 'Đang xử lý...' : 'Chấp Nhận' }}
+            </button>
+
+          </ng-container>
           <!-- statusFriend = 1: Đã kết bạn -->
-          @else if(friend.statusFriend == 1 || friend.statusFriend == '1') {
-            <button class="btn-primary added" disabled>
-              <i class="fa fa-check"></i> Bạn Của Bạn
-            </button>
-          }
+          <button *ngIf="friend.statusFriend == 1 || friend.statusFriend == '1'"
+                  class="btn-primary added"
+                  disabled>
+            <i class="fa fa-check"></i> Bạn Của Bạn
+          </button>
 
           <!-- Message Button -->
           <button

@@ -1,0 +1,274 @@
+/* User Management Styles - Red/Dark Red theme */
+
+.management-section {
+  padding: 60px 0;
+  background-color: #f9f9f9;
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #d63031;
+}
+
+.management-header h3 {
+  margin: 0;
+  font-size: 28px;
+  color: #000;
+  font-weight: 600;
+}
+
+.management-header .btn-primary {
+  background-color: #d63031;
+  border-color: #d63031;
+  padding: 8px 20px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.management-header .btn-primary:hover {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
+  transform: translateY(-2px);
+}
+
+/* Table Styles */
+.table {
+  background-color: white;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-header {
+  background: linear-gradient(135deg, #d63031 0%, #e74c3c 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.table thead th {
+  border: none;
+  padding: 15px;
+  text-align: left;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.table tbody td {
+  padding: 15px;
+  vertical-align: middle;
+}
+
+.badge-primary {
+  background-color: #d63031;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.badge-success {
+  background-color: #27ae60;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.badge-danger {
+  background-color: #e74c3c;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Button Styles */
+.btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+  margin-right: 5px;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.modal-dialog {
+  width: 90%;
+  max-width: 550px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #d63031 0%, #e74c3c 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+}
+
+.modal-header .modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modal-header .btn-close {
+  opacity: 0.8;
+  filter: brightness(0) invert(1);
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #d63031;
+  box-shadow: 0 0 0 0.2rem rgba(214, 48, 49, 0.25);
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.modal-footer {
+  padding: 15px 25px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.modal-footer .btn-primary {
+  background-color: #d63031;
+  border-color: #d63031;
+}
+
+/* Loading State */
+.spinner-border {
+  color: #d63031;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Empty State */
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.alert-info a {
+  color: #d63031;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.alert-info a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .management-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .table-responsive {
+    font-size: 14px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 10px;
+  }
+
+  .btn-warning, .btn-danger {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  .modal-dialog {
+    width: 95%;
+  }
+}
+

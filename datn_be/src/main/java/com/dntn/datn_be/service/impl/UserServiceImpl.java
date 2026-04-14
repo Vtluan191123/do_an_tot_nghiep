@@ -2,12 +2,14 @@ package com.dntn.datn_be.service.impl;
 
 import com.dntn.datn_be.constants.MessageConstants;
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
+import com.dntn.datn_be.dto.common.SocketDataGlobal;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.model.GroudMessageUser;
+import com.dntn.datn_be.model.NotificationType;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.mongo.BaseMongoAddFriend;
 import com.dntn.datn_be.model.mongo.BaseMongoGroud;
@@ -16,7 +18,9 @@ import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoAddFriendRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoGroudRepository;
 import com.dntn.datn_be.service.AuthService;
+import com.dntn.datn_be.service.NotificationService;
 import com.dntn.datn_be.service.UserService;
+import com.dntn.datn_be.service.WebSocketService;
 import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
@@ -40,6 +44,8 @@ public class UserServiceImpl implements UserService{
     private final GroudMessageUserRepository groudMessageUserRepository;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final NotificationService notificationService;
+    private final WebSocketService webSocketService;
     private final String ENTITY = "UserServiceImpl";
 
 
@@ -194,6 +200,41 @@ public class UserServiceImpl implements UserService{
         baseMongoAddFriend.setUserReceiver(userReceiverId);
         baseMongoAddFriend.setStatus(0);
         this.baseMongoAddFriendRepository.save(baseMongoAddFriend);
+        
+        // Create notification
+        Users userSend = userRepository.findById(Long.valueOf(userAddId)).orElse(null);
+        Users userReceiver = userRepository.findById(Long.valueOf(userReceiverId)).orElse(null);
+        
+        if (userSend != null && userReceiver != null) {
+            try {
+                ResponseGlobalDto notificationResponse = notificationService.createNotification(
+                        userSend,
+                        userReceiver,
+                        NotificationType.FRIEND_REQUEST,
+                        "Lời mời kết bạn",
+                        userSend.getUsername() + " đã gửi cho bạn một lời mời kết bạn",
+                        null  // relatedEntityId - không cần lưu
+                );
+                
+                // Send socket message
+                Map<String, Object> map = new HashMap<>();
+                map.put("userSend", userSend);
+                map.put("userReceiver", userReceiver);
+                
+                SocketDataGlobal data = SocketDataGlobal.builder()
+                        .type("friend_request")
+                        .metadata(map)
+                        .notify((com.dntn.datn_be.dto.response.NotificationResponse) notificationResponse.getData())
+                        .build();
+                
+                String topicGlobal = String.format("global/%s", userReceiver.getId());
+                this.webSocketService.sendMessage(topicGlobal, data, null);
+            } catch (Exception e) {
+                // Log error but don't fail the operation
+                e.printStackTrace();
+            }
+        }
+        
         return ResponseGlobalDto.<Boolean>builder()
                 .status(HttpStatus.OK.value())
                 .data(true)
@@ -233,6 +274,41 @@ public class UserServiceImpl implements UserService{
                 .userId(userReceiverId)
                 .build();
         this.groudMessageUserRepository.save(groudMessageUserReceiver);
+        
+        // Create notification for friend accept
+        Users userReceive = userRepository.findById(Long.valueOf(userReceiverId)).orElse(null);
+        Users userAdder = userRepository.findById(Long.valueOf(userAddId)).orElse(null);
+        
+        if (userReceive != null && userAdder != null) {
+            try {
+                ResponseGlobalDto notificationResponse = notificationService.createNotification(
+                        userReceive,
+                        userAdder,
+                        NotificationType.FRIEND_ACCEPTED,
+                        "Đã chấp nhận lời mời kết bạn",
+                        userReceive.getUsername() + " đã chấp nhận lời mời kết bạn của bạn",
+                        null  // relatedEntityId - không cần lưu
+                );
+                
+                // Send socket message
+                Map<String, Object> map = new HashMap<>();
+                map.put("userReceive", userReceive);
+                map.put("userAdder", userAdder);
+                map.put("groudId", baseMongoGroud.getId());
+                
+                SocketDataGlobal data = SocketDataGlobal.builder()
+                        .type("friend_accepted")
+                        .metadata(map)
+                        .notify((com.dntn.datn_be.dto.response.NotificationResponse) notificationResponse.getData())
+                        .build();
+                
+                String topicGlobal = String.format("global/%s", userAdder.getId());
+                this.webSocketService.sendMessage(topicGlobal, data, null);
+            } catch (Exception e) {
+                // Log error but don't fail the operation
+                e.printStackTrace();
+            }
+        }
 
         return ResponseGlobalDto.<Boolean>builder()
                 .status(HttpStatus.OK.value())

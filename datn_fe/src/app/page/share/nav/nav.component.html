@@ -16,6 +16,11 @@
             <li><a routerLink="/gym-room">Tạo Phòng Tập</a></li>
             <li><a routerLink="/class-detail">Dịch Vụ</a></li>
             <li><a routerLink="/team">Đội Ngũ</a></li>
+            <li><a routerLink="/combo-management">Quản Lý Combo</a></li>
+            <li><a routerLink="/subject-management">Quản Lý Môn Học</a></li>
+            <li><a routerLink="/booking-management">Quản Lý Đặt Lịch</a></li>
+            <li><a routerLink="/user-management">Quản Lý User</a></li>
+            <li><a routerLink="/statistics">Thống Kê & Báo Cáo</a></li>
           </ul>
         </nav>
       </div>
@@ -34,7 +39,7 @@
             }
             @if(isShowNotification){
               <div class="child-list-notification" (click)="$event.stopPropagation()">
-                <app-notification-list></app-notification-list>
+                <app-notification-list [notifications]="notifications"></app-notification-list>
               </div>
             }
           </div>
@@ -42,7 +47,10 @@
             <span style="display: inline-block;
     color: #ffffff;
     font-size: 16px;
-    margin-left: 15px;" [innerHTML]="ICON_MESSAGE | safeHtml"></span>
+    margin-left: 15px; position: relative;" [innerHTML]="ICON_MESSAGE | safeHtml"></span>
+            @if(unreadMessageCount > 0) {
+              <span class="message-badge">{{ unreadMessageCount > 9 ? '9+' : unreadMessageCount }}</span>
+            }
             @if(isShowListMessage){
               <div class="child-list-message" (click)="$event.stopPropagation()">
                 <app-list-message></app-list-message>

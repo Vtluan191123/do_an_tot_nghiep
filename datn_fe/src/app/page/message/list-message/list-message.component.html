@@ -27,7 +27,7 @@
       <div
         class="avatar-user"
         [ngStyle]="{
-          'background': 'url(' + (groud.imagesUrl ? BASE_URL_UPLOAD + groud.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/cover no-repeat'
+          'background': 'url(' + (groud.imagesUrl ? BASE_URL_UPLOAD + groud.imagesUrl : getAvatar(groud.username)) + ') center/cover no-repeat'
         }"
         [attr.aria-label]="'Avatar của ' + groud.username"
       >
@@ -37,7 +37,7 @@
       <!-- Message User Info -->
       <div class="message-user" [class.hide-before]="groud.read">
         <p class="name-user">{{ groud.username }}</p>
-        <p class="late-message-user">Hôm nay tôi làm gì....</p>
+        <p class="late-message-user">{{ getLatestMessageDisplay(groud) }}</p>
       </div>
     </div>
   </div>

@@ -3,18 +3,20 @@ package com.dntn.datn_be.service.impl;
 import com.dntn.datn_be.constants.MessageConstants;
 import com.dntn.datn_be.dto.common.MessageDetailDto;
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
+import com.dntn.datn_be.dto.common.SocketDataGlobal;
 import com.dntn.datn_be.dto.request.MessageDetailRequest;
 import com.dntn.datn_be.dto.request.MessageRequest;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
+import com.dntn.datn_be.dto.response.NotificationResponse;
 import com.dntn.datn_be.model.GroudMessageUser;
+import com.dntn.datn_be.model.NotificationType;
+import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.mongo.BaseMongoMessage;
 import com.dntn.datn_be.repository.GroudMessageUserRepository;
+import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoMessageRepository;
-import com.dntn.datn_be.service.AuthService;
-import com.dntn.datn_be.service.MessageService;
-import com.dntn.datn_be.service.UploadFileService;
-import com.dntn.datn_be.service.WebSocketService;
+import com.dntn.datn_be.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.lang.Strings;
 import io.micrometer.common.util.StringUtils;
@@ -41,6 +43,8 @@ public class MessageServiceImpl implements MessageService {
     private final WebSocketService webSocketService;
     private final GroudMessageUserRepository groudMessageUserRepository;
     private final AuthService authService;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -59,7 +63,7 @@ public class MessageServiceImpl implements MessageService {
             Long currentUserId = this.authService.getCurrentUser().getId();
 
             groudMessageUsers.forEach(user -> {
-                if (user.getId().equals(currentUserId)) {
+                if (!Long.valueOf(user.getId()).equals(currentUserId)) {
                     user.setRead(false);
                 }else  {
                     user.setRead(true);
@@ -69,12 +73,79 @@ public class MessageServiceImpl implements MessageService {
             this.groudMessageUserRepository.saveAll(groudMessageUsers);
 
 
-            //send socket
-            String topic = String.format(
+            //send socket message detail
+            String topicDetailMess = String.format(
                     "groudId:%s",
                     request.getGroudId()
             );
-            this.webSocketService.sendMessage(topic,message,null);
+            this.webSocketService.sendMessage(topicDetailMess,message,null);
+
+            //get Id user receiver;
+            Integer userReceiverId = groudMessageUsers.stream()
+                    .filter(groudMessageUser -> !groudMessageUser.getUserId().equals(Math.toIntExact(currentUserId)))
+                    .findFirst()
+                    .map(GroudMessageUser::getUserId)
+                    .orElse(null);
+
+            Users usersReceiver = null;
+            Users usersSend = null;
+            
+            // Try to get users for notification
+            if (userReceiverId != null) {
+                try {
+                    usersReceiver = userRepository.findById(Long.valueOf(userReceiverId)).orElse(null);
+                } catch (NumberFormatException e) {
+                    System.out.println("⚠️  userReceiverId is not a valid number: " + userReceiverId);
+                    usersReceiver = null;
+                }
+            }
+            usersSend = userRepository.findById(currentUserId).orElse(null);
+
+            //create notification if users are valid
+            if (usersReceiver != null && usersSend != null) {
+                try {
+                    // Lưu groudId vào relatedEntityId để frontend có thể navigate
+                    Long groudIdAsLong = null;
+                    try {
+                        // Nếu groudId là numeric string, convert thành Long
+                        groudIdAsLong = Long.parseLong(request.getGroudId());
+                    } catch (NumberFormatException e) {
+                        // Nếu groudId là MongoDB ObjectId, không convert, để null
+                        System.out.println("⚠️  groudId không phải numeric: " + request.getGroudId());
+                    }
+
+                    ResponseGlobalDto<NotificationResponse> notificationResponse = notificationService.createNotification(
+                            usersSend,
+                            usersReceiver,
+                            NotificationType.MESSAGE,
+                            "Tin nhắn mới",
+                            "Bạn có một tin nhắn mới",
+                            groudIdAsLong  // Lưu groudId để frontend navigate
+                    );
+
+                    if (notificationResponse != null && notificationResponse.getData() != null) {
+                        //send socket message global
+                        Map<String,Object> map = new HashMap<>();
+                        map.put("userReceiver",usersSend);
+                        map.put("groudId", request.getGroudId());
+                        SocketDataGlobal data = SocketDataGlobal.builder()
+                                .type("message")
+                                .metadata(map)
+                                .notify(notificationResponse.getData())
+                                .build();
+
+                        //bắn socket
+                        String topicGlobal = String.format(
+                                "global/%s",
+                                usersReceiver.getId()
+                        );
+                        this.webSocketService.sendMessage(topicGlobal,data,null);
+                    }
+                } catch (Exception e) {
+                    System.out.println("⚠️  Error creating notification: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
         }catch (Exception e){
             return ResponseGlobalDto.<BaseMongoMessage>builder()
                     .status(HttpStatus.BAD_REQUEST.value())

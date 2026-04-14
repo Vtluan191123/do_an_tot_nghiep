@@ -44,6 +44,7 @@ export interface ApiUserResponse {
   phoneNumber?: string;
   voteStar?: number;
   statusFriend?: number | string | null;  // Allow both number and string from API
+  sentByMe?: boolean;  // true = I sent the request, false = they sent it to me
   createdAt?: string;
 }
 
@@ -71,7 +72,8 @@ export class FriendSearchService {
       location: user.address,
       joinDate: user.createdAt ? this.formatDate(user.createdAt) : undefined,
       isOnline: false,
-      statusFriend: user.statusFriend  // null = no request, 0 = pending, 1 = accepted
+      statusFriend: user.statusFriend,  // null = no request, 0 = pending, 1 = accepted
+      sentByMe: user.sentByMe  // true = I sent the request, false = they sent it to me
     };
   }
 

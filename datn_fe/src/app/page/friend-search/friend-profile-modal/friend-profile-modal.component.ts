@@ -20,11 +20,13 @@ export class FriendProfileModalComponent implements OnInit {
   mutualFriends: Friend[] = [];
   profile: FriendProfile | null = null;
   isLoading = false;
+  isSubmitting = false;  // Flag để ngăn spam
 
   constructor(private friendService: FriendSearchService,
               private toastService: ToastrService) {}
 
   ngOnInit(): void {
+    console.log(this.friend)
     this.loadMutualFriends();
   }
 
@@ -47,13 +49,46 @@ export class FriendProfileModalComponent implements OnInit {
   }
 
   onAddFriend(): void {
-    this.addFriend.emit(this.friend.id);
+    if (this.isSubmitting) return;  // Ngăn spam
+    this.isSubmitting = true;
+
+    this.friendService.addFriend(this.friend.id).subscribe(
+      (_response: any) => {
+        // Emit event để component cha cập nhật list
+        this.addFriend.emit(this.friend.id);
+        // Cập nhật statusFriend = 0 (pending)
+        this.friend.statusFriend = 0;
+        // Refetch profile để lấy sentByMe từ API (persistent)
+        this.friendService.getFriendProfile(this.friend.id).subscribe(
+          (profile: any) => {
+            if (profile && profile.sentByMe !== undefined) {
+              this.friend.sentByMe = profile.sentByMe;
+            }
+            this.isSubmitting = false;
+          },
+          () => {
+            // If refetch fails, just set sentByMe = true (I sent it)
+            this.friend.sentByMe = true;
+            this.isSubmitting = false;
+          }
+        );
+        this.toastService.success('Đã gửi lời mời kết bạn', 'Thành công');
+      },
+      (error: any) => {
+        console.error('Lỗi khi kết bạn:', error);
+        this.toastService.error('Lỗi khi gửi lời mời', 'Lỗi');
+        this.isSubmitting = false;
+      }
+    );
   }
 
   /**
    * Chấp nhận lời mời kết bạn
    */
   onAcceptFriend(): void {
+    if (this.isSubmitting) return;  // Ngăn spam
+    this.isSubmitting = true;
+
     this.friendService.acceptFriendRequest(this.friend.id).subscribe(
       (response: any) => {
         // Cập nhật lại statusFriend = 1 (accepted)
@@ -65,10 +100,12 @@ export class FriendProfileModalComponent implements OnInit {
           `Bạn đã chấp nhận lời mời kết bạn từ ${this.friend.username}`,
           'Thành công'
         );
+        this.isSubmitting = false;
       },
       (error) => {
         console.error('Lỗi chấp nhận lời mời:', error);
         this.toastService.error('Lỗi chấp nhận lời mời', 'Lỗi');
+        this.isSubmitting = false;
       }
     );
   }

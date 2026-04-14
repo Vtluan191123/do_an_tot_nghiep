@@ -20,7 +20,7 @@ import {WebsocketService} from '../../../service/socket/websocket.service';
 import {ToastrService} from 'ngx-toastr';
 import {Subject, takeUntil} from 'rxjs';
 import {Title} from '@angular/platform-browser';
-import {Route, Router} from '@angular/router';
+import {ActivatedRoute, Route, Router} from '@angular/router';
 import {VideoCallComponent} from '../../video-call/video-call.component';
 import {SocketData} from '../../../model/socket';
 import {FriendProfileModalComponent} from '../../friend-search/friend-profile-modal/friend-profile-modal.component';
@@ -93,6 +93,7 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     private transferDataService:TransferDataService,
     private titleService: Title,
     private router:Router,
+    private activatedRoute: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private friendSearchService: FriendSearchService,
   ) {
@@ -104,6 +105,7 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     this.getInfoUser()
     this.getGroudDetail()
     this.handleWebsocketListen();
+    console.log(this.userDetailMessage)
   }
 
   ngAfterViewInit(): void {
@@ -118,6 +120,24 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
       this.scrollToBottom();
       this.cdr.detectChanges();
     }
+  }
+
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16);
+  }
+  getAvatar(emailOrUsername: string): string {
+    if (emailOrUsername) {
+      const email = emailOrUsername.toLowerCase().trim();
+      const hash = this.simpleHash(email);
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(emailOrUsername)}&background=${hash.substring(0, 6)}&color=fff`;
+    }
+    return 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff';
   }
 
   // Hàm scroll đến cuối cùng của container
@@ -167,11 +187,17 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     }
   }
 
+
   getGroudDetail(){
     this.transferData.userDetailGroud$
       .pipe(takeUntil(this.destroy$))
       .subscribe((res:any)=>{
       this.userDetailMessage = res
+      // Giảm count tin nhắn chưa đọc khi mở tin nhắn của groud này
+      if (this.userDetailMessage?.groudId) {
+        console.log('Giảm count cho groudId:', this.userDetailMessage.groudId);
+        this.transferData.decreaseUnreadMessageCount(this.userDetailMessage.groudId);
+      }
       this.getListMessage(this.userDetailMessage?.groudId);
     })
   }
@@ -234,6 +260,8 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     this.messageService.delete(idMess).subscribe((res:any)=>{
       if(res.status === 200){
         this.toartService.success(res.message,'Thành công');
+        // Decrease unread count khi xóa message
+        this.transferDataService.decreaseUnreadMessageCount(this.userDetailMessage.groudId);
       }else {
         this.toartService.error(res.message,'Có lỗi');
       }
@@ -396,10 +424,6 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     );
   }
 
-  closeProfileModal(): void {
-    this.showProfileModal = false;
-    this.selectedFriend = null;
-  }
 
 
 
@@ -426,7 +450,6 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
   handleWebsocketListen(){
     this.webSocketService.subscribeToTopic(`/topics/groudId:${this.userDetailMessage?.groudId}`).subscribe((res:any)=>{
       console.log('result websocket',res)
-      this.titleService.setTitle("Vtluan abc")
       let result: any = res.body;
       // kiểm tra nếu là string thì parse
       if (typeof result === 'string') {
@@ -439,9 +462,11 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
             this.infoMessageDetail[index] = result;
           }else{
             this.infoMessageDetail.push(result);
+            // Increase unread count khi nhận tin nhắn mới từ người khác
             if(this.infoCurrentUser.id !== result.senderId){
-              this.transferDataService.sendToastMessage(this.userDetailMessage.username)
-              this.playMessageSound()
+              this.transferDataService.increaseUnreadMessageCount(this.userDetailMessage.groudId);
+              // this.transferDataService.sendToastMessage(this.userDetailMessage.username)
+              // this.playMessageSound()
             }
           }
           // Scroll to bottom khi có tin nhắn mới
@@ -452,6 +477,8 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
             (m:any) => m.id === result
           );
           this.infoMessageDetail.splice(index,1)
+          // Decrease unread count khi xóa tin nhắn
+          this.transferDataService.decreaseUnreadMessageCount(this.userDetailMessage.groudId);
         }
       }
     })
@@ -612,7 +639,34 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     );
   }
 
+  /**
+   * Close profile modal
+   */
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    this.selectedFriend = null;
+  }
 
+  /**
+   * Handle addFriend event from modal
+   */
+  onAddFriendFromModal(friendId: string): void {
+    console.log('Friend request sent from modal to:', friendId);
+    // Update the friend profile in modal to show pending state
+    if (this.selectedFriend) {
+      this.selectedFriend.statusFriend = 0;
+      this.selectedFriend.sentByMe = true;
+    }
+  }
+
+  /**
+   * Handle message event from modal
+   */
+  onMessageFromModal(friendId: string): void {
+    console.log('Message clicked from modal for friendId:', friendId);
+    // Already in message detail view, just close modal
+    this.closeProfileModal();
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

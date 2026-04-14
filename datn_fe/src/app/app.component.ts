@@ -13,8 +13,6 @@ import { AuthService } from './service/auth/auth.service';
 import {ToastrService} from 'ngx-toastr';
 import {UserDetailComponent} from './page/message/user-detail/user-detail.component';
 import {VideoConferenceClientComponent} from './page/video-conference-client/video-conference-client.component';
-import {BASE_TOPIC_SOCKET, BASE_TOPIC_SOCKET_FE} from './constants/constants';
-import {SocketData} from './model/socket';
 import {Subject, Subscription, takeUntil} from 'rxjs';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {NavComponent} from './page/share/nav/nav.component';
@@ -27,11 +25,17 @@ import { GymRoomComponent } from './page/gym-room/gym-room.component';
 import { FriendSearchComponent } from './page/friend-search/friend-search.component';
 import { NotificationClientService } from './service/notification/notification-client.service';
 import { NotificationApiService } from './service/notification/notification-api.service';
+import {BASE_TOPIC_SOCKET, BASE_TOPIC_SOCKET_FE} from './constants/constants';
+import { ComboManagementComponent } from './page/combo-management/combo-management.component';
+import { SubjectManagementComponent } from './page/subject-management/subject-management.component';
+import { BookingManagementComponent } from './page/booking-management/booking-management.component';
+import { UserManagementComponent } from './page/user-management/user-management.component';
+import { StatisticsComponent } from './page/statistics/statistics.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent, ComboManagementComponent, SubjectManagementComponent, BookingManagementComponent, UserManagementComponent, StatisticsComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -103,14 +107,10 @@ export class AppComponent implements OnInit ,OnDestroy{
         }
       );
     }
-
-    this.transferDataService.receiverMess$.subscribe((res: any) => {
-      if (res)
-        this.toastService.success(`${res} gửi cho bạn tin nhắn`, 'Thông báo')
-    });
   }
 
   handleConnectTopic(){
+    console.log('Connecting to WebSocket topics for user:', this.infoCurrentUser.id);
     this.websocketService
       .subscribeToTopic(`${BASE_TOPIC_SOCKET_FE}global/${this.infoCurrentUser.id}`)
       .subscribe((res: any) => {
@@ -121,9 +121,12 @@ export class AppComponent implements OnInit ,OnDestroy{
             this.handleShowModal(data.metadata)
             break;
           }
-
           case 'message': {
             console.log('message', data.metadata);
+            if (data.metadata) {
+              this.toastService.success(`${data.metadata.userReceiver.username} gửi cho bạn tin nhắn`, 'Thông báo')
+              this.transferDataService.increaseUnreadMessageCount(data.metadata.groudId);
+            }
             break;
           }
 

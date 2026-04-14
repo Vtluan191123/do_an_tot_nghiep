@@ -215,13 +215,12 @@
     }
 
     &.pending {
-      background: #ffc107;
-      color: #151515;
+      background: #666;
+      color: #ccc;
       cursor: default;
-      animation: pulse 1.5s infinite;
 
       &:hover {
-        background: #ffc107;
+        background: #666;
         transform: none;
       }
     }

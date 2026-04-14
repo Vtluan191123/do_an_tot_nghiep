@@ -3,6 +3,8 @@ package com.dntn.datn_be.repository.impl;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.model.Users;
+import com.dntn.datn_be.model.mongo.BaseMongoMessage;
+import com.dntn.datn_be.repository.mongo.BaseMongoMessageRepository;
 import com.dntn.datn_be.repository.UserRepositoryCustom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -18,6 +20,7 @@ import java.util.List;
 public class UserRepositoryImpl implements UserRepositoryCustom {
 
     private final EntityManager entityManager;
+    private final BaseMongoMessageRepository baseMongoMessageRepository;
     @Override
     public List<GetListGroudsDto.UserDetailGroudDto> userDetailGroudDtos(Long userId) {
         String queryString = """
@@ -54,6 +57,60 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         List<GetListGroudsDto.UserDetailGroudDto> userDetailGroudDtos = new ArrayList<>();
 
         for (Object[] row : results) {
+            String groudId = (String) row[10];
+            
+            // Lấy thông tin tin nhắn cuối cùng từ MongoDB
+            String latestMessageContent = null;
+            String latestMessageType = null;
+            
+            // Lấy tin nhắn mới nhất được sort theo date
+            List<BaseMongoMessage> latestMessages = baseMongoMessageRepository.findByGroudIdOrderByCreateTimeDesc(groudId);
+            
+            if (!latestMessages.isEmpty()) {
+                BaseMongoMessage latestMsg = latestMessages.get(0);
+                if (latestMsg.getMessageDetail() != null) {
+                    Object messageDetail = latestMsg.getMessageDetail();
+                    
+                    try {
+                        // Lấy type từ messageDetail - hỗ trợ cả Map (LinkedHashMap từ MongoDB) và MessageDetailDto
+                        if (messageDetail instanceof java.util.Map) {
+                            // Trường hợp MongoDB trả về LinkedHashMap
+                            java.util.Map<String, Object> detailMap = (java.util.Map<String, Object>) messageDetail;
+                            latestMessageType = (String) detailMap.get("type");
+                            Object contentObj = detailMap.get("content");
+                            // Chỉ lấy content nếu nó là string ngắn hoặc không phải SVG/URL dài
+                            if (contentObj != null) {
+                                String contentStr = contentObj.toString();
+                                // Nếu là SVG hoặc URL dài, không lấy content
+                                if (contentStr.startsWith("<") || contentStr.startsWith("http") || contentStr.length() > 200) {
+                                    latestMessageContent = null; // Sẽ hiển thị "đã gửi 1 icon" ở frontend
+                                } else {
+                                    latestMessageContent = contentStr;
+                                }
+                            }
+                        } else if (messageDetail instanceof com.dntn.datn_be.dto.common.MessageDetailDto) {
+                            // Trường hợp là MessageDetailDto object
+                            com.dntn.datn_be.dto.common.MessageDetailDto dto = 
+                                    (com.dntn.datn_be.dto.common.MessageDetailDto) messageDetail;
+                            latestMessageType = dto.getType();
+                            Object contentObj = dto.getContent();
+                            if (contentObj != null) {
+                                String contentStr = contentObj.toString();
+                                // Nếu là SVG hoặc URL dài, không lấy content
+                                if (contentStr.startsWith("<") || contentStr.startsWith("http") || contentStr.length() > 200) {
+                                    latestMessageContent = null;
+                                } else {
+                                    latestMessageContent = contentStr;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Log hoặc handle error nếu cần
+                        latestMessageType = null;
+                        latestMessageContent = null;
+                    }
+                }
+            }
 
             GetListGroudsDto.UserDetailGroudDto dto =
                     GetListGroudsDto.UserDetailGroudDto.builder()
@@ -67,9 +124,11 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                             .imagesUrl((String) row[7])
                             .voteStar(row[8] != null ? ((Number) row[8]).intValue() : null)
                             .createdAt(row[9] != null ? ((java.sql.Timestamp) row[9]).toLocalDateTime() : null)
-                            .groudId((String) row[10])
+                            .groudId(groudId)
                             .isRead((boolean) row[11])
                             .lateMessageTime(row[12] != null ? ((java.sql.Timestamp) row[12]).toLocalDateTime() : null)
+                            .latestMessageContent(latestMessageContent)
+                            .latestMessageType(latestMessageType)
                             .build();
             userDetailGroudDtos.add(dto);
         }

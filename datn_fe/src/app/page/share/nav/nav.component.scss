@@ -45,6 +45,29 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     }
   }
+
+  &.message {
+    position: relative !important;
+
+    .message-badge {
+      position: absolute !important;
+      top: -8px !important;
+      right: -8px !important;
+      background: linear-gradient(135deg, #ff4757, #ee5a6f) !important;
+      color: white !important;
+      border-radius: 50% !important;
+      width: 20px !important;
+      height: 20px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 11px !important;
+      font-weight: bold !important;
+      border: 2px solid white !important;
+      box-shadow: 0 0 8px rgba(255, 71, 87, 0.6) !important;
+      animation: messageBadgePulse 2s infinite !important;
+    }
+  }
 }
 
 // User Profile in Navbar
@@ -217,6 +240,21 @@
         }
       }
     }
+  }
+}
+
+@keyframes messageBadgePulse {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 71, 87, 0.6) !important;
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 71, 87, 0.8) !important;
+    transform: scale(1.1);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(255, 71, 87, 0.6) !important;
+    transform: scale(1);
   }
 }
 

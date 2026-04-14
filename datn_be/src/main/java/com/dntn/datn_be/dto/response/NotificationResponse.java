@@ -1,7 +1,6 @@
 package com.dntn.datn_be.dto.response;
 
 import com.dntn.datn_be.model.NotificationType;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -66,13 +65,11 @@ public class NotificationResponse {
     /**
      * Thời gian tạo thông báo
      */
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime createdAt;
 
     /**
      * Thời gian đã đọc
      */
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime readAt;
 }
 

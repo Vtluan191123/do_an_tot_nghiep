@@ -1,0 +1,175 @@
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="breadcrumb-text">
+          <h2>Thống Kê & Báo Cáo</h2>
+          <div class="bt-option">
+            <a href="/">Home</a>
+            <span>Statistics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Statistics Section Begin -->
+<section class="statistics-section spad">
+  <div class="container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <!-- Summary Cards -->
+      <div class="row mb-5">
+        <h3 class="section-title mb-4">Tóm Tắt</h3>
+
+        <div class="col-lg-3 col-md-6 mb-4" *ngIf="summary">
+          <div class="stat-card stat-card-primary">
+            <div class="stat-icon">
+              <i class="fa fa-money"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Tổng Doanh Thu</h4>
+              <p class="stat-value">{{ formatCurrency(summary.totalRevenue) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4" *ngIf="summary">
+          <div class="stat-card stat-card-success">
+            <div class="stat-icon">
+              <i class="fa fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Tổng Đặt Lịch</h4>
+              <p class="stat-value">{{ formatNumber(summary.totalBookings) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4" *ngIf="summary">
+          <div class="stat-card stat-card-info">
+            <div class="stat-icon">
+              <i class="fa fa-users"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Tổng User</h4>
+              <p class="stat-value">{{ formatNumber(summary.totalUsers) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4" *ngIf="summary">
+          <div class="stat-card stat-card-warning">
+            <div class="stat-icon">
+              <i class="fa fa-book"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Môn Học & Combo</h4>
+              <p class="stat-value">{{ summary.totalSubjects + summary.totalCombos }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-5">
+
+      <!-- Top Items -->
+      <div class="row">
+        <!-- Top Combos -->
+        <div class="col-lg-6 mb-5">
+          <h3 class="section-title mb-4">Top Combo Mua Nhiều</h3>
+
+          <div *ngIf="topCombos.length > 0" class="top-items-table">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Tên Combo</th>
+                    <th>Giá</th>
+                    <th>Lượt Mua</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let combo of topCombos; let i = index">
+                    <td>
+                      <span class="badge badge-rank" [ngClass]="'rank-' + (i + 1)">
+                        {{ i + 1 }}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>{{ combo.name }}</strong>
+                      <br>
+                      <small class="text-muted">{{ combo.code }}</small>
+                    </td>
+                    <td>{{ formatCurrency(combo.price) }}</td>
+                    <td>
+                      <span class="badge badge-success">{{ combo.purchaseCount }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="topCombos.length === 0" class="alert alert-info">
+            <p>Không có dữ liệu combo</p>
+          </div>
+        </div>
+
+        <!-- Top Subjects -->
+        <div class="col-lg-6 mb-5">
+          <h3 class="section-title mb-4">Top Môn Học Mua Nhiều</h3>
+
+          <div *ngIf="topSubjects.length > 0" class="top-items-table">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Tên Môn Học</th>
+                    <th>Giá</th>
+                    <th>Lượt Mua</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let subject of topSubjects; let i = index">
+                    <td>
+                      <span class="badge badge-rank" [ngClass]="'rank-' + (i + 1)">
+                        {{ i + 1 }}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>{{ subject.name }}</strong>
+                      <br>
+                      <small class="text-muted">{{ subject.code }}</small>
+                    </td>
+                    <td>{{ formatCurrency(subject.price) }}</td>
+                    <td>
+                      <span class="badge badge-info">{{ subject.purchaseCount }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="topSubjects.length === 0" class="alert alert-info">
+            <p>Không có dữ liệu môn học</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Statistics Section End -->
+

@@ -1,0 +1,155 @@
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="breadcrumb-text">
+          <h2>Quản Lý Combo</h2>
+          <div class="bt-option">
+            <a href="/">Home</a>
+            <span>Combo Management</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Management Section Begin -->
+<section class="management-section spad">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Header with Add Button -->
+        <div class="management-header">
+          <h3>Danh Sách Combo</h3>
+          <button class="btn btn-primary" (click)="openForm()">
+            <i class="fa fa-plus"></i> Thêm Combo
+          </button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Combos Table -->
+        <div *ngIf="!isLoading && combos.length > 0" class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-header">
+              <tr>
+                <th>ID</th>
+                <th>Code</th>
+                <th>Tên Combo</th>
+                <th>Mô Tả</th>
+                <th>Giá</th>
+                <th>Ngày Tạo</th>
+                <th>Hành Động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let combo of combos">
+                <td>{{ combo.id }}</td>
+                <td><span class="badge badge-primary">{{ combo.code }}</span></td>
+                <td><strong>{{ combo.name }}</strong></td>
+                <td>{{ combo.description | slice:0:50 }}...</td>
+                <td><span class="price">{{ combo.prices | currency }}</span></td>
+                <td>{{ combo.createdAt | date:'short' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning" (click)="openForm(combo)" title="Edit">
+                    <i class="fa fa-edit"></i> Sửa
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteCombo(combo.id!)" title="Delete">
+                    <i class="fa fa-trash"></i> Xóa
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && combos.length === 0" class="alert alert-info text-center">
+          <p>Không có combo nào. <a href="#" (click)="openForm()">Thêm combo mới</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Management Section End -->
+
+<!-- Form Modal -->
+<div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ isEditing ? 'Chỉnh Sửa' : 'Thêm' }} Combo</h5>
+        <button type="button" class="btn-close" (click)="closeForm()"></button>
+      </div>
+      <form (ngSubmit)="saveCombo()">
+        <div class="modal-body">
+          <!-- Code -->
+          <div class="form-group mb-3">
+            <label for="code" class="form-label">Code <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="code"
+              [(ngModel)]="formData.code"
+              name="code"
+              placeholder="Nhập code combo"
+              required>
+          </div>
+
+          <!-- Name -->
+          <div class="form-group mb-3">
+            <label for="name" class="form-label">Tên Combo <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              [(ngModel)]="formData.name"
+              name="name"
+              placeholder="Nhập tên combo"
+              required>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group mb-3">
+            <label for="description" class="form-label">Mô Tả</label>
+            <textarea
+              class="form-control"
+              id="description"
+              [(ngModel)]="formData.description"
+              name="description"
+              placeholder="Nhập mô tả combo"
+              rows="3"></textarea>
+          </div>
+
+          <!-- Price -->
+          <div class="form-group mb-3">
+            <label for="prices" class="form-label">Giá <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              class="form-control"
+              id="prices"
+              [(ngModel)]="formData.prices"
+              name="prices"
+              placeholder="Nhập giá combo"
+              step="0.01"
+              required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Hủy</button>
+          <button type="submit" class="btn btn-primary">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
