@@ -42,6 +42,7 @@
             <thead class="table-header">
               <tr>
                 <th>ID</th>
+                <th>Image</th>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Tên Đầy Đủ</th>
@@ -54,6 +55,15 @@
             <tbody>
               <tr *ngFor="let user of users">
                 <td>{{ user.id }}</td>
+                <td>
+                  <img
+                    *ngIf=" user.image || user.imagesUrl"
+                    [src]="BASE_URL_UPLOAD + (user.image || user.imagesUrl)"
+                    alt="User Avatar"
+                    class="img-thumbnail"
+                    style="width: 50px; height: 50px; object-fit: cover;">
+                  <span *ngIf="!user.image && !user.imagesUrl" class="text-muted">No Image</span>
+                </td>
                 <td><span class="badge badge-primary">{{ user.username }}</span></td>
                 <td>{{ user.email }}</td>
                 <td><strong>{{ user.fullName }}</strong></td>
@@ -75,6 +85,96 @@
               </tr>
             </tbody>
           </table>
+
+          <!-- Pagination Section -->
+          <div class="row mt-4">
+            <div class="col-lg-6">
+              <div class="pagination-info">
+                <span>Tổng cộng: {{ totalUsers }} user | Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="pagination-controls d-flex justify-content-end align-items-center gap-2">
+                <!-- Page Size Selector -->
+                <label class="me-2">Kích thước:</label>
+                <select
+                  class="form-select form-select-sm"
+                  style="width: auto;"
+                  [(ngModel)]="pageSize"
+                  (change)="changePageSize(pageSize)">
+                  <option *ngFor="let size of pageSizeOptions" [value]="size">
+                    {{ size }} mục/trang
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination Buttons -->
+          <div *ngIf="totalPages > 1" class="row mt-3">
+            <div class="col-lg-12">
+              <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center" style="gap: 5px;">
+                  <!-- First Page -->
+                  <li class="page-item" [class.disabled]="currentPage === 0">
+                    <button
+                      class="page-link"
+                      (click)="firstPage()"
+                      [disabled]="currentPage === 0"
+                      title="Trang đầu tiên">
+                      <i class="fa fa-step-backward"></i>
+                    </button>
+                  </li>
+
+                  <!-- Previous Page -->
+                  <li class="page-item" [class.disabled]="currentPage === 0">
+                    <button
+                      class="page-link"
+                      (click)="previousPage()"
+                      [disabled]="currentPage === 0"
+                      title="Trang trước">
+                      <i class="fa fa-chevron-left"></i> Trước
+                    </button>
+                  </li>
+
+                  <!-- Page Numbers -->
+                  <li
+                    *ngFor="let page of ([] | slice: 0: (totalPages <= 5 ? totalPages : 5)); let i = index"
+                    class="page-item"
+                    [class.active]="currentPage === (totalPages <= 5 ? i : currentPage)">
+                    <button
+                      class="page-link"
+                      (click)="goToPage(totalPages <= 5 ? i : currentPage)"
+                      [class.active]="currentPage === (totalPages <= 5 ? i : currentPage)">
+                      {{ totalPages <= 5 ? i + 1 : currentPage + 1 }}
+                    </button>
+                  </li>
+
+                  <!-- Next Page -->
+                  <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                    <button
+                      class="page-link"
+                      (click)="nextPage()"
+                      [disabled]="currentPage >= totalPages - 1"
+                      title="Trang tiếp theo">
+                      Tiếp <i class="fa fa-chevron-right"></i>
+                    </button>
+                  </li>
+
+                  <!-- Last Page -->
+                  <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                    <button
+                      class="page-link"
+                      (click)="lastPage()"
+                      [disabled]="currentPage >= totalPages - 1"
+                      title="Trang cuối cùng">
+                      <i class="fa fa-step-forward"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
         </div>
 
         <!-- Empty State -->
@@ -134,6 +234,66 @@
               name="fullName"
               placeholder="Nhập tên đầy đủ"
               required>
+          </div>
+
+          <!-- Image -->
+          <div class="form-group mb-3">
+            <label for="image" class="form-label">Hình Ảnh</label>
+            <div class="input-group">
+              <input
+                type="file"
+                class="form-control"
+                id="imageFile"
+                accept="image/*"
+                (change)="onImageSelected($event)"
+                [disabled]="isUploadingImage"
+                #fileInput>
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                (click)="fileInput.click()"
+                [disabled]="isUploadingImage">
+                <i class="fa fa-upload"></i> Chọn Ảnh
+              </button>
+              <button
+                class="btn btn-outline-danger"
+                type="button"
+                (click)="clearImage()"
+                [disabled]="!formData.image">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+            <small class="form-text text-muted d-block mt-2">
+              <strong>Định dạng:</strong> JPG, PNG, GIF, WebP (Max 5MB)
+            </small>
+
+            <!-- Upload Status -->
+            <div *ngIf="isUploadingImage" class="mt-2">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Uploading...</span>
+              </div>
+              <span class="ms-2">Đang upload ảnh...</span>
+            </div>
+
+            <!-- Image Preview -->
+            <div *ngIf="formData.image && !isUploadingImage" class="mt-3">
+              <img
+                [src]="formData.image.startsWith('http') || formData.image.startsWith('data:') ? formData.image : BASE_URL_UPLOAD + formData.image"
+                alt="Preview"
+                style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+            </div>
+          </div>
+
+          <!-- Hidden Image URL Input (for manual URL entry) -->
+          <div class="form-group mb-3">
+            <label for="imageUrl" class="form-label">Hoặc nhập URL hình ảnh</label>
+            <input
+              type="text"
+              class="form-control"
+              id="imageUrl"
+              [(ngModel)]="formData.image"
+              name="imageUrl"
+              placeholder="https://example.com/image.jpg">
           </div>
 
           <!-- Phone Number -->

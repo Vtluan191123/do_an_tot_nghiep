@@ -8,8 +8,10 @@ import {BASE_URL_UPLOAD} from '../../constants/constants';
 export interface Friend {
   id: string;
   name: string;
+  fullName?: string;
   username: string;
   avatar: string;
+  image?: string;
   bio?: string;
   location?: string;
   joinDate?: string;
@@ -36,10 +38,12 @@ export interface FriendProfile extends Friend {
 export interface ApiUserResponse {
   id: number;
   username: string;
+  fullName?: string;
   email: string;
   description?: string;
   address?: string;
   imagesUrl?: string;
+  image?: string;
   age?: string;
   phoneNumber?: string;
   voteStar?: number;
@@ -66,8 +70,10 @@ export class FriendSearchService {
     return {
       id: user.id.toString(),
       name: user.username,
+      fullName: user.fullName,
       username: user.username,
       avatar: user.imagesUrl ? BASE_URL_UPLOAD + user.imagesUrl : this.getAvatar(user.email || user.username),
+      image: user.image || (user.imagesUrl ? BASE_URL_UPLOAD + user.imagesUrl : this.getAvatar(user.email || user.username)),
       bio: user.description,
       location: user.address,
       joinDate: user.createdAt ? this.formatDate(user.createdAt) : undefined,

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import {ListMessageComponent} from "../../message/list-message/list-message.component";
 import {SafeHtmlPipe} from "../pipe/pipe-html.pipe";
 import {ICON_MESSAGE, ICON_BELL} from '../other/icons/icons';
-import {RouterLink, Router} from '@angular/router';
+import {RouterLink, Router, NavigationEnd} from '@angular/router';
 import {UserProfileDropdownComponent} from "../../dash-board/user-profile-dropdown/user-profile-dropdown.component";
 import {NotificationListComponent} from "../notification-list/notification-list.component";
 import {NotificationService} from "../../../service/notification/notification.service";
@@ -12,7 +12,7 @@ import {WebsocketService} from "../../../service/socket/websocket.service";
 import {AuthService} from "../../../service/auth/auth.service";
 import {NotificationApiService} from "../../../service/notification/notification-api.service";
 import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import {takeUntil, filter} from "rxjs/operators";
 import {IMessage} from "@stomp/stompjs";
 
 export interface Notification {
@@ -50,8 +50,23 @@ export class NavComponent implements OnInit, OnDestroy {
   unreadCount: number = 0
   unreadMessageCount: number = 0
   notifications: Notification[] = [];
+  currentRoute: string = '';
 
   private destroy$ = new Subject<void>();
+
+  // Menu items configuration
+  menuItems = [
+    { label: 'Trang Chủ', route: '/' },
+    { label: 'Lớp Tập', route: '/class-timetable' },
+    { label: 'Tạo Phòng Tập', route: '/gym-room' },
+    { label: 'Dịch Vụ', route: '/class-detail' },
+    { label: 'Đội Ngũ', route: '/team' },
+    { label: 'Quản Lý Combo', route: '/combo-management' },
+    { label: 'Quản Lý Môn Học', route: '/subject-management' },
+    { label: 'Quản Lý Đặt Lịch', route: '/booking-management' },
+    { label: 'Quản Lý User', route: '/user-management' },
+    { label: 'Thống Kê & Báo Cáo', route: '/statistics' }
+  ];
 
   constructor(
     private router: Router,
@@ -63,6 +78,19 @@ export class NavComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Track current route
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: any) => {
+        this.currentRoute = event.urlAfterRedirects || event.url;
+      });
+
+    // Set initial route
+    this.currentRoute = this.router.url;
+
     // Get unread message count
     this.transferDataService.unreadMessageCount$.subscribe((count: number) => {
       this.unreadMessageCount = count;
@@ -78,6 +106,22 @@ export class NavComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Check if menu item is active
+   */
+  isMenuItemActive(route: string): boolean {
+    // Exact match for root path
+    if (route === '/' && this.currentRoute === '/') {
+      return true;
+    }
+    // Don't match root for other routes
+    if (route === '/') {
+      return false;
+    }
+    // Check if current route starts with the menu item route
+    return this.currentRoute.startsWith(route);
   }
 
   /**

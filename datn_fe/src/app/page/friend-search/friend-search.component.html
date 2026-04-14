@@ -95,13 +95,13 @@
               <div class="col-lg-6 mb-4">
                 <div class="friend-card" (click)="onFriendClick(friend); $event.stopPropagation()">
                   <div class="friend-avatar">
-                    <img [src]="friend.avatar" [alt]="friend.name" class="img-fluid" (error)="friend.avatar = friendServiceAccess.getAvatar(friend.username)">
+                    <img [src]="friend.image || friend.avatar" [alt]="friend.fullName || friend.name" class="img-fluid" (error)="friend.avatar = friendServiceAccess.getAvatar(friend.username)">
                     @if(friend.isOnline) {
                       <span class="online-badge"></span>
                     }
                   </div>
                   <div class="friend-info">
-                    <h4>{{ friend.name }}</h4>
+                    <h4>{{ friend.fullName || friend.name }}</h4>
                     <p class="username">{{ friend.username }}</p>
                     @if(friend.bio) {
                       <p class="bio">{{ friend.bio }}</p>

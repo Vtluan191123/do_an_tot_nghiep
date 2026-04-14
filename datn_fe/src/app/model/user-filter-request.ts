@@ -156,10 +156,12 @@ export interface UserSearchResponse {
 export interface UserResponse {
   id: number;
   username: string;
+  fullName?: string;
   email: string;
   description?: string;
   address?: string;
   imagesUrl?: string;
+  image?: string;
   age?: string;
   phoneNumber?: string;
   voteStar?: number;

@@ -11,16 +11,16 @@
       <div class="col-lg-6">
         <nav class="nav-menu">
           <ul>
-            <li class="active"><a routerLink="/">Trang Chủ</a></li>
-            <li><a routerLink="/class-timetable">Lớp Tập</a></li>
-            <li><a routerLink="/gym-room">Tạo Phòng Tập</a></li>
-            <li><a routerLink="/class-detail">Dịch Vụ</a></li>
-            <li><a routerLink="/team">Đội Ngũ</a></li>
-            <li><a routerLink="/combo-management">Quản Lý Combo</a></li>
-            <li><a routerLink="/subject-management">Quản Lý Môn Học</a></li>
-            <li><a routerLink="/booking-management">Quản Lý Đặt Lịch</a></li>
-            <li><a routerLink="/user-management">Quản Lý User</a></li>
-            <li><a routerLink="/statistics">Thống Kê & Báo Cáo</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/')}"><a routerLink="/">Trang Chủ</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/class-timetable')}"><a routerLink="/class-timetable">Lớp Tập</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/gym-room')}"><a routerLink="/gym-room">Tạo Phòng Tập</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/class-detail')}"><a routerLink="/class-detail">Dịch Vụ</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/team')}"><a routerLink="/team">Đội Ngũ</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/combo-management')}"><a routerLink="/combo-management">Quản Lý Combo</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/subject-management')}"><a routerLink="/subject-management">Quản Lý Môn Học</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/booking-management')}"><a routerLink="/booking-management">Quản Lý Đặt Lịch</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/user-management')}"><a routerLink="/user-management">Quản Lý User</a></li>
+            <li [ngClass]="{'active': isMenuItemActive('/statistics')}"><a routerLink="/statistics">Thống Kê & Báo Cáo</a></li>
           </ul>
         </nav>
       </div>

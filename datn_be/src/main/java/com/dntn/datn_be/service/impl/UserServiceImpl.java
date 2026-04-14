@@ -51,7 +51,30 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public ResponseGlobalDto<UserResponse> create(UserCreateRequest request) {
-        return null;
+        Users user = Users.builder()
+                .username(request.getUsername())
+                .fullName(request.getFullName())
+                .password(request.getPassword())
+                .email(request.getEmail())
+                .age(request.getAge())
+                .description(request.getDescription())
+                .address(request.getAddress())
+                .exp(request.getExp())
+                .phoneNumber(request.getPhoneNumber())
+                .imagesUrl(request.getImagesUrl())
+                .voteStar(request.getVoteStar())
+                .roleId(request.getRoleId())
+                .build();
+
+        userRepository.save(user);
+        UserResponse userResponse = new UserResponse();
+        BeanUtils.copyProperties(user, userResponse);
+
+        return ResponseGlobalDto.<UserResponse>builder()
+                .status(HttpStatus.CREATED.value())
+                .data(userResponse)
+                .message("Create user successfully")
+                .build();
     }
 
     @Override
@@ -140,8 +163,10 @@ public class UserServiceImpl implements UserService{
 
         // update từng field nếu != null
         if (request.getUsername() != null) user.setUsername(request.getUsername());
+        if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getAge() != null) user.setAge(request.getAge());
+        if (request.getDescription() != null) user.setDescription(request.getDescription());
         if (request.getAddress() != null) user.setAddress(request.getAddress());
         if (request.getExp() != null) user.setExp(request.getExp());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());

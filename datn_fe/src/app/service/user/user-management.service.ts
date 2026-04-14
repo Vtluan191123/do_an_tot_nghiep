@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class UserManagementService {
   private apiUrl = 'http://localhost:8080/api/user/';
+  private uploadUrl = 'http://localhost:8080/api/upload';
 
   constructor(private http: HttpClient) { }
 
@@ -50,6 +51,13 @@ export class UserManagementService {
    */
   deleteUsers(ids: number[]): Observable<any> {
     return this.http.request('delete', this.apiUrl, { body: ids });
+  }
+
+  /**
+   * Upload image file
+   */
+  uploadImage(formData: FormData): Observable<any> {
+    return this.http.post(`${this.uploadUrl}/image`, formData);
   }
 }
 

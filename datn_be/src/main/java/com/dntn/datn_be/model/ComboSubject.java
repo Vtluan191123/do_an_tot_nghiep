@@ -17,7 +17,7 @@ import lombok.Setter;
 public class ComboSubject extends BaseEntity{
 
     @Column(name = "combo_id")
-    private Long comboSubjectId;
+    private Long comboId;
 
     @Column(name = "subject_id")
     private Long subjectId;

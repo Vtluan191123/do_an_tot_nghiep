@@ -5,12 +5,15 @@ import { UserManagementService } from '../../service/user/user-management.servic
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import {BASE_URL_UPLOAD} from '../../constants/constants';
 
 interface User {
   id?: number;
   username: string;
   email: string;
   fullName: string;
+  image?: string;
+  imagesUrl?: string;
   phoneNumber?: string;
   avatar?: string;
   isActive?: boolean;
@@ -31,11 +34,20 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   showForm = false;
   isEditing = false;
   selectedUser: User | null = null;
+  isUploadingImage = false;
+
+  // Pagination properties
+  currentPage: number = 0;
+  pageSize: number = 10;
+  pageSizeOptions: number[] = [5, 10, 15, 20, 50];
+  totalUsers: number = 0;
+  totalPages: number = 0;
 
   formData: User = {
     username: '',
     email: '',
     fullName: '',
+    image: '',
     phoneNumber: '',
     avatar: '',
     isActive: true
@@ -60,8 +72,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     this.isLoading = true;
     const filter = {
-      page: 0,
-      size: 100,
+      page: this.currentPage,
+      size: this.pageSize,
       sortBy: 'id',
       sortDirection: 'DESC'
     };
@@ -72,6 +84,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response && response.data) {
             this.users = response.data;
+            this.totalUsers = response.count || 0;
+            this.totalPages = Math.ceil(this.totalUsers / this.pageSize);
           }
           this.isLoading = false;
         },
@@ -81,6 +95,61 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         }
       });
+  }
+
+  /**
+   * Go to next page
+   */
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadUsers();
+    }
+  }
+
+  /**
+   * Go to previous page
+   */
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadUsers();
+    }
+  }
+
+  /**
+   * Go to first page
+   */
+  firstPage(): void {
+    this.currentPage = 0;
+    this.loadUsers();
+  }
+
+  /**
+   * Go to last page
+   */
+  lastPage(): void {
+    this.currentPage = this.totalPages - 1;
+    this.loadUsers();
+  }
+
+  /**
+   * Change page size and reset to first page
+   */
+  changePageSize(newSize: number): void {
+    this.pageSize = newSize;
+    this.currentPage = 0;
+    this.loadUsers();
+  }
+
+  /**
+   * Go to specific page
+   */
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.loadUsers();
+    }
   }
 
   openForm(user?: User): void {
@@ -189,5 +258,73 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   getStatusLabel(isActive?: boolean): string {
     return isActive ? 'Hoạt Động' : 'Vô Hiệu Hóa';
   }
+
+  /**
+   * Handle image file selection and upload
+   */
+  onImageSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.toastr.error('Chỉ hỗ trợ định dạng: JPG, PNG, GIF, WebP');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.toastr.error('Kích thước ảnh không vượt quá 5MB');
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.formData.image = e.target.result; // Set as base64 for preview
+    };
+    reader.readAsDataURL(file);
+
+    // Upload file
+    this.uploadImage(file);
+  }
+
+  /**
+   * Upload image to server
+   */
+  private uploadImage(file: File): void {
+    this.isUploadingImage = true;
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.userService.uploadImage(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.isUploadingImage = false;
+          // Assuming backend returns URL or path
+          const imagePath = response.data || response;
+          this.formData.image = imagePath;
+          this.toastr.success('Upload ảnh thành công');
+        },
+        error: (error) => {
+          this.isUploadingImage = false;
+          console.error('Error uploading image:', error);
+          this.toastr.error('Lỗi upload ảnh');
+        }
+      });
+  }
+
+  /**
+   * Clear image selection
+   */
+  clearImage(): void {
+    this.formData.image = '';
+    this.toastr.info('Đã xóa ảnh');
+  }
+
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
 }
 

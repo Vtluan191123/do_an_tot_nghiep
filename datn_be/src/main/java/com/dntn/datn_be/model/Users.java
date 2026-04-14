@@ -20,6 +20,9 @@ public class Users  extends  BaseEntity
     @Column(name = "username")
     private String username;
 
+    @Column(name = "full_name")
+    private String fullName;
+
     @JsonIgnore
     @Column(name = "password")
     private String password;

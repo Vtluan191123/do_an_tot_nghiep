@@ -8,6 +8,9 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -57,6 +60,15 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
             params.add(request.getSubjectId());
         }
 
+        // ===== filter by keyword (search in related tables) =====
+        if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
+            sql.append(" AND (b.id LIKE ? OR b.status LIKE ?) ");
+            countSql.append(" AND (b.id LIKE ? OR b.status LIKE ?) ");
+            String keyword = "%" + request.getKeyword() + "%";
+            params.add(keyword);
+            params.add(keyword);
+        }
+
         // ===== add sorting =====
         sql.append(" ORDER BY b.").append(request.getSortBy())
                 .append(" ").append(request.getSortDirection());
@@ -83,7 +95,15 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
 
         List<Bookings> content = query.getResultList();
 
-        return new PageImpl<>(content, request.getPageable(), total);
+        // Create Pageable from request parameters
+        Pageable pageable = PageRequest.of(
+            request.getPage(), 
+            request.getSize(),
+            Sort.Direction.fromString(request.getSortDirection()),
+            request.getSortBy()
+        );
+
+        return new PageImpl<>(content, pageable, total);
     }
 }
 
