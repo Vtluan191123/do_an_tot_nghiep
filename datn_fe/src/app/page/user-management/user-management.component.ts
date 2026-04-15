@@ -83,6 +83,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Format date string from yyyy-MM-dd to yyyy-MM-dd HH:mm:ss
+   */
+  private formatDateTimeForBackend(dateString: string, isEndDate: boolean = false): string {
+    if (!dateString) return '';
+    // dateString format from type="date" is yyyy-MM-dd
+    // fromDate: append 00:00:00
+    // toDate: append 23:59:59
+    const time = isEndDate ? '23:59:59' : '00:00:00';
+    return `${dateString} ${time}`;
+  }
+
+  /**
    * Load roles from backend
    */
   loadRoles(): void {
@@ -129,8 +141,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       keyword: keyword || undefined,
       isActive: this.searchStatus !== '' ? this.searchStatus : undefined,
       roleId: this.searchRole !== '' ? this.searchRole : undefined,
-      fromDate: this.searchFromDate || undefined,
-      toDate: this.searchToDate || undefined
+      fromDate: this.searchFromDate ? this.formatDateTimeForBackend(this.searchFromDate, false) : undefined,
+      toDate: this.searchToDate ? this.formatDateTimeForBackend(this.searchToDate, true) : undefined
     };
 
     this.userService.getAllUsers(filter)
@@ -381,15 +393,29 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Create preview
+    // Create preview immediately
     const reader = new FileReader();
     reader.onload = (e: any) => {
       this.formData.image = e.target.result; // Set as base64 for preview
+      // Upload file after preview is set
+      this.uploadImage(file);
     };
     reader.readAsDataURL(file);
+  }
 
-    // Upload file
-    this.uploadImage(file);
+  /**
+   * Format image URL - if it's a filename only, prepend BASE_URL_UPLOAD
+   */
+  private formatImageUrl(imageData: string): string {
+    if (!imageData) return '';
+
+    // If already a full URL (starts with http), return as is
+    if (imageData.startsWith('http://') || imageData.startsWith('https://')) {
+      return imageData;
+    }
+
+    // Otherwise, prepend BASE_URL_UPLOAD
+    return BASE_URL_UPLOAD + imageData;
   }
 
   /**
@@ -398,22 +424,26 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   private uploadImage(file: File): void {
     this.isUploadingImage = true;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('files', file);
 
     this.userService.uploadImage(formData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           this.isUploadingImage = false;
-          // Assuming backend returns URL or path
-          const imagePath = response.data || response;
-          this.formData.image = imagePath;
+          // Backend returns array of URLs, get the first one
+          let imagePath = Array.isArray(response.data) ? response.data[0] : response.data;
+          // Format the URL (add BASE_URL_UPLOAD if needed)
+          imagePath = this.formatImageUrl(imagePath);
+          this.formData.imagesUrl = imagePath;
+          this.formData.image = imagePath; // Replace preview with server URL
           this.toastr.success('Upload ảnh thành công');
         },
         error: (error) => {
           this.isUploadingImage = false;
           console.error('Error uploading image:', error);
           this.toastr.error('Lỗi upload ảnh');
+          // Keep the preview if upload fails
         }
       });
   }
@@ -423,7 +453,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
    */
   clearImage(): void {
     this.formData.image = '';
-    this.toastr.info('Đã xóa ảnh');
+    this.formData.imagesUrl = '';
   }
 
   protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;

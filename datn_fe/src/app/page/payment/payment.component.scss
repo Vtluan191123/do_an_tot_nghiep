@@ -1,0 +1,83 @@
+.payment-section {
+  min-height: 100vh;
+
+  .payment-summary {
+    position: sticky;
+    top: 20px;
+
+    h3 {
+      font-weight: bold;
+      color: #333;
+    }
+
+    > div {
+      word-break: break-word;
+    }
+  }
+
+  .payment-form {
+    h3 {
+      font-weight: bold;
+      color: #333;
+    }
+
+    form {
+      .form-group {
+        input {
+          transition: all 0.3s ease;
+
+          &:focus {
+            outline: none;
+            border-color: #00a8e8;
+            box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.1);
+          }
+
+          &:invalid:not(:placeholder-shown) {
+            border-color: #dc3545;
+          }
+        }
+      }
+    }
+  }
+
+  .payment-submit-btn {
+    transition: all 0.3s ease !important;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0080c0 0%, #005fa3 100%) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 168, 232, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .payment-cancel-btn {
+    transition: all 0.3s ease !important;
+
+    &:hover {
+      background-color: #e0e0e0 !important;
+      border-color: #bbb !important;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-section {
+    .payment-summary {
+      position: static;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      input {
+        font-size: 16px; // Prevent zoom on iOS
+      }
+    }
+  }
+}
+

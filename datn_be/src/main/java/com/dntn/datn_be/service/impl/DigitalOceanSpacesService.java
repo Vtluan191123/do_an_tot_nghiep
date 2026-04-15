@@ -62,9 +62,8 @@ public class DigitalOceanSpacesService implements CloudStorageService {
 
                 s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileContent));
 
-                String fileUrl = getFileUrl(fileName);
-                uploadedUrls.add(fileUrl);
-                log.info("File uploaded successfully: {} → {}", fileName, fileUrl);
+                uploadedUrls.add(fileName);
+                log.info("File uploaded successfully: {} → {}", fileName, fileName);
 
             } catch (Exception e) {
                 log.error("Error uploading file: {} - Error: {}", file.getOriginalFilename(), e.getMessage(), e);

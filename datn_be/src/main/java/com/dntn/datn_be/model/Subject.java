@@ -29,7 +29,7 @@ public class Subject extends  BaseEntity{
     @Column(name = "status") //trạng thái lớp học
     private String status;
 
-    @Column(name = "size")
-    private int size;
+    @Column(name = "price")
+    private BigDecimal price;
 
 }

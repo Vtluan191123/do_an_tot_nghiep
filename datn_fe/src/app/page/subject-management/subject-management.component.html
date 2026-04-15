@@ -116,7 +116,7 @@
                 <th style="color: #495057; font-weight: 600;">ID</th>
                 <th style="color: #495057; font-weight: 600;">Tên Môn Học</th>
                 <th style="color: #495057; font-weight: 600;">Mô Tả</th>
-                <th style="color: #495057; font-weight: 600;">Số Lượng</th>
+                <th style="color: #495057; font-weight: 600;">Giá/Buổi</th>
                 <th style="color: #495057; font-weight: 600;">Trạng Thái</th>
                 <th style="color: #495057; font-weight: 600;">Hình Ảnh</th>
                 <th style="color: #495057; font-weight: 600;">Ngày Tạo</th>
@@ -128,7 +128,7 @@
                 <td><strong>{{ subject.id }}</strong></td>
                 <td><strong style="color: #333;">{{ subject.name }}</strong></td>
                 <td><span style="color: #666; font-size: 13px;">{{ subject.description | slice:0:40 }}{{ subject.description && subject.description.length > 40 ? '...' : '' }}</span></td>
-                <td><span class="badge" style="background-color: #e9ecef; color: #495057;">{{ subject.size }}</span></td>
+                <td><span class="badge" style="background-color: #e9ecef; color: #495057;">{{ (subject.price | number: '1.0-0') }} đ</span></td>
                 <td>
                   <span class="badge" [ngClass]="subject.status === 'ACTIVE' ? 'bg-success' : 'bg-warning'" style="font-size: 12px;">
                     {{ subject.status }}
@@ -303,16 +303,16 @@
               style="border-radius: 6px; border: 1px solid #ddd;"></textarea>
           </div>
 
-          <!-- Size -->
+          <!-- Price -->
           <div class="form-group mb-3">
-            <label for="size" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Số Lượng <span class="text-danger">*</span></label>
+            <label for="price" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Giá/Buổi (VND) <span class="text-danger">*</span></label>
             <input
               type="number"
               class="form-control"
-              id="size"
-              [(ngModel)]="formData.size"
-              name="size"
-              placeholder="Nhập số lượng"
+              id="price"
+              [(ngModel)]="formData.price"
+              name="price"
+              placeholder="Nhập giá tiền"
               min="0"
               required
               style="border-radius: 6px; border: 1px solid #ddd;">

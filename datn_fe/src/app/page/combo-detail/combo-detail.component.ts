@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ComboService } from '../../service/combo/combo.service';
@@ -7,6 +7,8 @@ import { Combo, ComboSubject } from '../../model/combo.model';
 import { NavComponent } from '../share/nav/nav.component';
 import { FooterComponent } from '../share/footer/footer.component';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface SubjectOption {
   id: number;
@@ -20,7 +22,7 @@ interface SubjectOption {
   templateUrl: './combo-detail.component.html',
   styleUrls: ['./combo-detail.component.scss']
 })
-export class ComboDetailComponent implements OnInit {
+export class ComboDetailComponent implements OnInit, OnDestroy {
 
   combo: Combo | null = null;
   loading: boolean = true;
@@ -31,6 +33,9 @@ export class ComboDetailComponent implements OnInit {
   // Subjects management
   subjects: SubjectOption[] = [];
   comboSubjectsWithNames: Array<{subject: ComboSubject; subjectName: string}> = [];
+
+  // Subscription management
+  private destroy$ = new Subject<void>();
 
   // Payment form
   paymentForm = {
@@ -56,6 +61,11 @@ export class ComboDetailComponent implements OnInit {
     this.loadComboDetail();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   /**
    * Load all subjects for mapping names
    */
@@ -67,56 +77,78 @@ export class ComboDetailComponent implements OnInit {
       sortDirection: 'DESC'
     };
 
-    this.subjectService.getAllSubjects(filter).subscribe({
-      next: (response: any) => {
-        if (response && response.data) {
-          this.subjects = response.data.map((subject: any) => ({
-            id: subject.id,
-            name: subject.name
-          }));
+    this.subjectService.getAllSubjects(filter)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.subjects = response.data.map((subject: any) => ({
+              id: subject.id,
+              name: subject.name
+            }));
+          }
+        },
+        error: (error) => {
+          console.error('Error loading subjects:', error);
         }
-      },
-      error: (error) => {
-        console.error('Error loading subjects:', error);
-      }
-    });
+      });
   }
 
   /**
    * Load combo details based on route ID - includes subjects
    */
   loadComboDetail(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        // Use getComboDetail to get combo with subjects
-        this.comboService.getComboDetail(Number(id)).subscribe(
-          (response: any) => {
-            if (response.status === 200 && response.data) {
-              this.combo = response.data;
+    this.route.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const id = params.get('id');
+        console.log('loadComboDetail - ID from route:', id);
 
-              // Process combo subjects to include names
-              if (this.combo && this.combo.comboSubjects && Array.isArray(this.combo.comboSubjects)) {
-                this.comboSubjectsWithNames = this.combo.comboSubjects.map(subject => ({
-                  subject: subject,
-                  subjectName: this.getSubjectName(subject.subjectId)
-                }));
+        if (id) {
+          // Use getComboDetail to get combo with subjects
+          this.comboService.getComboDetail(Number(id))
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(
+              (response: any) => {
+                console.log('getComboDetail response:', response);
+
+                if (response && response.status === 200 && response.data) {
+                  this.combo = response.data;
+                  console.log('Combo loaded successfully:', this.combo);
+
+                  // Process combo subjects to include names
+                  if (this.combo && this.combo.comboSubjects && Array.isArray(this.combo.comboSubjects)) {
+                    this.comboSubjectsWithNames = this.combo.comboSubjects.map(subject => ({
+                      subject: subject,
+                      subjectName: this.getSubjectName(subject.subjectId)
+                    }));
+                  }
+
+                  this.loading = false;
+                } else {
+                  console.warn('Invalid response structure:', response);
+                  this.error = 'Không tìm thấy gói combo';
+                  this.loading = false;
+                }
+              },
+              (error: any) => {
+                console.error('Error loading combo:', error);
+                console.error('Error details:', {
+                  status: error?.status,
+                  statusText: error?.statusText,
+                  message: error?.message,
+                  error: error?.error
+                });
+                this.error = `Lỗi khi tải thông tin gói combo: ${error?.status} ${error?.statusText}`;
+                this.loading = false;
               }
-
-              this.loading = false;
-            } else {
-              this.error = 'Không tìm thấy gói combo';
-              this.loading = false;
-            }
-          },
-          (error) => {
-            console.error('Error loading combo:', error);
-            this.error = 'Lỗi khi tải thông tin gói combo';
-            this.loading = false;
-          }
-        );
-      }
-    });
+            );
+        } else {
+          console.warn('No ID found in route params');
+          this.error = 'Không tìm thấy ID gói combo';
+          this.loading = false;
+        }
+      });
   }
 
   /**

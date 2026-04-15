@@ -12,7 +12,7 @@ interface SubjectModel {
   id?: number;
   name: string;
   description?: string;
-  size: number;
+  price: number;
   status: string;
   images?: string;
   createdAt?: string;
@@ -49,7 +49,7 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
   formData: SubjectModel = {
     name: '',
     description: '',
-    size: 0,
+    price: 0,
     status: 'ACTIVE',
     images: ''
   };
@@ -111,7 +111,7 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
     } else {
       this.isEditing = false;
       this.selectedSubject = null;
-      this.formData = {name: '', description: '', size: 0, status: 'ACTIVE', images: ''};
+      this.formData = {name: '', description: '', price: 0, status: 'ACTIVE', images: ''};
     }
   }
 
@@ -119,7 +119,7 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
     this.showForm = false;
     this.isEditing = false;
     this.selectedSubject = null;
-    this.formData = {name: '', description: '', size: 0, status: 'ACTIVE', images: ''};
+    this.formData = {name: '', description: '', price: 0, status: 'ACTIVE', images: ''};
   }
 
   saveSubject(): void {
@@ -128,8 +128,8 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.formData.size <= 0) {
-      this.toastr.warning('Vui lòng nhập số lượng > 0');
+    if (this.formData.price <= 0) {
+      this.toastr.warning('Vui lòng nhập giá tiền > 0');
       return;
     }
 

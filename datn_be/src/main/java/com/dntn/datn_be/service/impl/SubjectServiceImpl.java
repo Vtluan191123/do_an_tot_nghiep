@@ -29,7 +29,7 @@ public class SubjectServiceImpl implements SubjectService {
                 .description(request.getDescription())
                 .images(request.getImages())
                 .status(request.getStatus())
-                .size(request.getSize())
+                .price(request.getPrice())
                 .build();
 
         subjectRepository.save(subject);
@@ -81,7 +81,7 @@ public class SubjectServiceImpl implements SubjectService {
         if (request.getDescription() != null) subject.setDescription(request.getDescription());
         if (request.getImages() != null) subject.setImages(request.getImages());
         if (request.getStatus() != null) subject.setStatus(request.getStatus());
-        if (request.getSize() > 0) subject.setSize(request.getSize());
+        if (request.getPrice() != null) subject.setPrice(request.getPrice());
 
         subjectRepository.save(subject);
 

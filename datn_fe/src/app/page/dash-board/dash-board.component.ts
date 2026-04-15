@@ -1,5 +1,5 @@
-import {Component, AfterViewInit, Inject, PLATFORM_ID, OnInit} from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import {Component, AfterViewInit, Inject, PLATFORM_ID, OnInit, OnDestroy} from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import {NgStyle, NgForOf, NgIf} from '@angular/common';
 import {AVATAR_DEFAULT, ICON_MESSAGE} from '../share/other/icons/icons';
 import {SafeHtmlPipe} from '../share/pipe/pipe-html.pipe';
@@ -8,14 +8,19 @@ import {TransferDataService} from '../../service/tranfer-data/transfer-data.serv
 import {NavComponent} from '../share/nav/nav.component';
 import {FooterComponent} from '../share/footer/footer.component';
 import {ComboService} from '../../service/combo/combo.service';
+import {SubjectService} from '../../service/subject/subject.service';
 import {Router} from '@angular/router';
 import {Combo, ComboFilterRequest} from '../../model/combo.model';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {BASE_URL_UPLOAD} from '../../constants/constants';
 
 @Component({
   selector: 'app-dash-board',
   standalone: true,
   templateUrl: './dash-board.component.html',
   imports: [
+    CommonModule,
     NgStyle,
     NgForOf,
     NgIf,
@@ -26,26 +31,45 @@ import {Combo, ComboFilterRequest} from '../../model/combo.model';
   ],
   styleUrls: ['./dash-board.component.scss']
 })
-export class DashBoardComponent implements AfterViewInit,OnInit {
+export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
 
-  countMessage:any
+  countMessage: any;
+
+  // Combos
   combos: Combo[] = [];
   loadingCombos: boolean = true;
   errorCombos: string = '';
 
+  // Subjects
+  subjects: any[] = [];
+  loadingSubjects: boolean = true;
+  errorSubjects: string = '';
+
+  // Cleanup
+  private destroy$ = new Subject<void>();
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
-              private transferDataService:TransferDataService,
+              private transferDataService: TransferDataService,
               private comboService: ComboService,
+              private subjectService: SubjectService,
               private router: Router) {}
 
   ngOnInit(): void {
-    //get count mess
-    this.transferDataService.countMess$.subscribe((res)=>{
-      this.countMessage = res
-    })
+    // get count mess
+    this.transferDataService.countMess$.subscribe((res) => {
+      this.countMessage = res;
+    });
 
     // Load combos
     this.loadCombos();
+
+    // Load subjects
+    this.loadSubjects();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -59,22 +83,55 @@ export class DashBoardComponent implements AfterViewInit,OnInit {
       sortDirection: 'desc'
     };
 
-    this.comboService.getAllCombos(filter).subscribe(
-      (response: any) => {
-        if (response.status === 200) {
-          this.combos = response.data;
-          this.loadingCombos = false;
-        } else {
-          this.errorCombos = 'Lỗi khi tải danh sách gói';
+    this.comboService.getAllCombos(filter)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (response: any) => {
+          if (response.status === 200) {
+            this.combos = response.data;
+            this.loadingCombos = false;
+          } else {
+            this.errorCombos = 'Lỗi khi tải danh sách gói';
+            this.loadingCombos = false;
+          }
+        },
+        (error) => {
+          console.error('Error loading combos:', error);
+          this.errorCombos = 'Không thể tải danh sách gói';
           this.loadingCombos = false;
         }
-      },
-      (error) => {
-        console.error('Error loading combos:', error);
-        this.errorCombos = 'Không thể tải danh sách gói';
-        this.loadingCombos = false;
-      }
-    );
+      );
+  }
+
+  /**
+   * Load subjects from API
+   */
+  loadSubjects(): void {
+    const filter = {
+      page: 0,
+      size: 6,
+      sortBy: 'id',
+      sortDirection: 'desc'
+    };
+
+    this.subjectService.getAllSubjects(filter)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (response: any) => {
+          if (response.status === 200) {
+            this.subjects = response.data;
+            this.loadingSubjects = false;
+          } else {
+            this.errorSubjects = 'Lỗi khi tải danh sách môn học';
+            this.loadingSubjects = false;
+          }
+        },
+        (error) => {
+          console.error('Error loading subjects:', error);
+          this.errorSubjects = 'Không thể tải danh sách môn học';
+          this.loadingSubjects = false;
+        }
+      );
   }
 
   /**
@@ -82,6 +139,15 @@ export class DashBoardComponent implements AfterViewInit,OnInit {
    */
   viewComboDetail(id: number): void {
     this.router.navigate(['/combo-detail', id]);
+  }
+
+  /**
+   * Navigate to subject detail
+   */
+  viewSubjectDetail(id: number): void {
+    // You can navigate to a subject detail page if available
+    // For now, we can just open combo-detail or create a subject-detail page
+    this.router.navigate(['/subject-detail', id]);
   }
 
   /**
@@ -235,4 +301,5 @@ export class DashBoardComponent implements AfterViewInit,OnInit {
   protected readonly AVATAR_DEFAULT = AVATAR_DEFAULT;
 
 
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
 }

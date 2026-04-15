@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,5 +23,5 @@ public class SubjectUpdateRequest {
     
     private String status;
     
-    private int size;
+    private BigDecimal price;
 }

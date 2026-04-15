@@ -4,7 +4,7 @@ export interface Subject {
   description?: string;
   images?: string;
   status: string;
-  size: number;
+  price: number;
   createdAt?: Date;
   updatedAt?: Date;
   creator?: number;
@@ -26,7 +26,16 @@ export interface SubjectCreateRequest {
   description?: string;
   images?: string;
   status: string;
-  size: number;
+  price: number;
+}
+
+export interface SubjectUpdateRequest {
+  id: number;
+  name?: string;
+  description?: string;
+  images?: string;
+  status?: string;
+  price?: number;
 }
 
 export interface SubjectUpdateRequest extends SubjectCreateRequest {

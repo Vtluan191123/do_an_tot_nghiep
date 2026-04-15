@@ -84,3 +84,35 @@
   font-size: 16px;
   padding: 20px;
 }
+
+/* Subject Card Styles */
+.subject-card-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+    img {
+      transform: scale(1.1);
+    }
+  }
+
+  img {
+    transition: transform 0.3s ease;
+  }
+
+  button {
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #0080c0 0%, #005fa3 100%) !important;
+    }
+  }
+}

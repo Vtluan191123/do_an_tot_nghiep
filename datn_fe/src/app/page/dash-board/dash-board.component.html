@@ -41,149 +41,7 @@
 </section>
 <!-- Hero Section End -->
 
-<!-- ChoseUs Section Begin -->
-<section class="choseus-section spad">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="section-title">
-          <span>Why chose us?</span>
-          <h2>PUSH YOUR LIMITS FORWARD</h2>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-3 col-sm-6">
-        <div class="cs-item">
-          <span class="flaticon-034-stationary-bike"></span>
-          <h4>Modern equipment</h4>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            dolore facilisis.</p>
-        </div>
-      </div>
-      <div class="col-lg-3 col-sm-6">
-        <div class="cs-item">
-          <span class="flaticon-033-juice"></span>
-          <h4>Healthy nutrition plan</h4>
-          <p>Quis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel
-            facilisis.</p>
-        </div>
-      </div>
-      <div class="col-lg-3 col-sm-6">
-        <div class="cs-item">
-          <span class="flaticon-002-dumbell"></span>
-          <h4>Proffesponal training plan</h4>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            dolore facilisis.</p>
-        </div>
-      </div>
-      <div class="col-lg-3 col-sm-6">
-        <div class="cs-item">
-          <span class="flaticon-014-heart-beat"></span>
-          <h4>Unique to your needs</h4>
-          <p>Quis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel
-            facilisis.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- ChoseUs Section End -->
 
-<!-- Classes Section Begin -->
-<section class="classes-section spad">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="section-title">
-          <span>Our Classes</span>
-          <h2>WHAT WE CAN OFFER</h2>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-4 col-md-6">
-        <div class="class-item">
-          <div class="ci-pic">
-            <img src="assets/img/classes/class-1.jpg" alt="">
-          </div>
-          <div class="ci-text">
-            <span>STRENGTH</span>
-            <h5>Weightlifting</h5>
-            <a href="#"><i class="fa fa-angle-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-6">
-        <div class="class-item">
-          <div class="ci-pic">
-            <img src="assets/img/classes/class-2.jpg" alt="">
-          </div>
-          <div class="ci-text">
-            <span>Cardio</span>
-            <h5>Indoor cycling</h5>
-            <a href="#"><i class="fa fa-angle-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-6">
-        <div class="class-item">
-          <div class="ci-pic">
-            <img src="assets/img/classes/class-3.jpg" alt="">
-          </div>
-          <div class="ci-text">
-            <span>STRENGTH</span>
-            <h5>Kettlebell power</h5>
-            <a href="#"><i class="fa fa-angle-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6 col-md-6">
-        <div class="class-item">
-          <div class="ci-pic">
-            <img src="assets/img/classes/class-4.jpg" alt="">
-          </div>
-          <div class="ci-text">
-            <span>Cardio</span>
-            <h4>Indoor cycling</h4>
-            <a href="#"><i class="fa fa-angle-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="class-item">
-          <div class="ci-pic">
-            <img src="assets/img/classes/class-5.jpg" alt="">
-          </div>
-          <div class="ci-text">
-            <span>Training</span>
-            <h4>Boxing</h4>
-            <a href="#"><i class="fa fa-angle-right"></i></a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- ChoseUs Section End -->
-
-<!-- Banner Section Begin -->
-<section class="banner-section set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/banner-bg.jpg)'
-  }">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <div class="bs-text">
-          <h2>registration now to get more deals</h2>
-          <div class="bt-tips">Where health, beauty and fitness meet.</div>
-          <a href="#" class="primary-btn  btn-normal">Appointment</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- Banner Section End -->
 
 <!-- Pricing Section Begin -->
 <section class="pricing-section spad">
@@ -250,6 +108,139 @@
 </section>
 <!-- Pricing Section End -->
 
+<!-- Subjects Section Begin -->
+<section class="classes-section spad" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="section-title text-center">
+          <span style="color: #00a8e8; font-weight: bold; font-size: 16px;">KHÁM PHÁ THÊM</span>
+          <h2 style="margin-top: 15px; color: #333;">Các Môn Học Lẻ</h2>
+          <p style="color: #666; margin-top: 10px;">Chọn các môn học riêng lẻ theo nhu cầu và lịch trình của bạn</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loadingSubjects" class="row text-center" style="padding: 60px 0;">
+      <div class="col-lg-12">
+        <div style="font-size: 24px; color: #00a8e8;">
+          <i class="fa fa-spinner fa-spin"></i> Đang tải danh sách môn học...
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorSubjects && !loadingSubjects" class="row text-center" style="padding: 40px 0;">
+      <div class="col-lg-12">
+        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 20px; border-radius: 8px; color: #856404;">
+          <i class="fa fa-exclamation-triangle"></i> {{ errorSubjects }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects List -->
+    <div *ngIf="!loadingSubjects && !errorSubjects && subjects.length > 0" class="row" style="margin-top: 30px;">
+      <div *ngFor="let subject of subjects; let i = index" class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom: 30px;">
+        <div class="subject-card-item">
+          <!-- Image Section -->
+          <div style="position: relative; overflow: hidden; height: 220px;">
+            <img [src]="BASE_URL_UPLOAD + subject.images || 'assets/img/classes/class-1.jpg'"
+                 [alt]="subject.name"
+                 style="width: 100%; height: 100%; object-fit: cover;">
+
+            <!-- Badge -->
+            <div style="
+              position: absolute;
+              top: 12px;
+              right: 12px;
+              background: linear-gradient(135deg, #00a8e8 0%, #0080c0 100%);
+              color: white;
+              padding: 6px 14px;
+              border-radius: 20px;
+              font-size: 13px;
+              font-weight: bold;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+              {{ subject.status || 'Đang mở' }}
+            </div>
+          </div>
+
+          <!-- Content Section -->
+          <div style="padding: 20px;">
+            <!-- Title -->
+            <h5 style="
+              margin: 0 0 12px 0;
+              font-size: 18px;
+              color: #333;
+              font-weight: bold;
+              line-height: 1.4;
+              min-height: 50px;
+              display: flex;
+              align-items: center;">
+              {{ subject.name }}
+            </h5>
+
+            <!-- Description -->
+            <p style="
+              margin: 0 0 15px 0;
+              color: #666;
+              font-size: 14px;
+              line-height: 1.5;
+              min-height: 40px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;">
+              {{ subject.description | slice:0:80 }}...
+            </p>
+
+            <!-- Info -->
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 12px 0;
+              border-top: 1px solid #eee;
+              border-bottom: 1px solid #eee;
+              margin-bottom: 15px;
+              font-size: 13px;
+              color: #888;">
+              <span><i class="fa fa-dollar" style="margin-right: 5px; color: #00a8e8;"></i>Giá/Buổi: {{ formatPrice(subject.price) }}</span>
+            </div>
+
+            <!-- Button -->
+            <button (click)="viewSubjectDetail(subject.id)"
+              style="
+                width: 100%;
+                padding: 11px;
+                background: linear-gradient(135deg, #00a8e8 0%, #0080c0 100%);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                cursor: pointer;
+                font-size: 14px;">
+              <i class="fa fa-arrow-right" style="margin-right: 8px;"></i>Xem Chi Tiết
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loadingSubjects && subjects.length === 0 && !errorSubjects" class="row text-center" style="padding: 60px 0;">
+      <div class="col-lg-12">
+        <div style="color: #999; font-size: 18px;">
+          <i class="fa fa-inbox" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+          <p>Hiện chưa có môn học nào</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Subjects Section End -->
+
 <!-- Gallery Section Begin -->
 <div class="gallery-section">
   <div class="gallery">
@@ -278,108 +269,6 @@
 </div>
 <!-- Gallery Section End -->
 
-<!-- Team Section Begin -->
-<section class="team-section spad">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="team-title">
-          <div class="section-title">
-            <span>Our Team</span>
-            <h2>TRAIN WITH EXPERTS</h2>
-          </div>
-          <a href="#" class="primary-btn btn-normal appoinment-btn">appointment</a>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="ts-slider owl-carousel">
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="ts-item set-bg" [ngStyle]="{
-    'background-image': 'url(assets/img/team/team-1.jpg)'
-  }" >
-            <div class="ts_text">
-              <h4>Athart Rachel</h4>
-              <span>Gym Trainer</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</section>
-<!-- Team Section End -->
 
 <!-- Get In Touch Section Begin -->
 <div class="gettouch-section">

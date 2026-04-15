@@ -1,0 +1,221 @@
+<!--<div class="preloader" id="preloder">-->
+<!--  <div class="loader"></div>-->
+<!--</div>-->
+
+<!-- Navigation -->
+<app-nav></app-nav>
+
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" [ngStyle]="{'background-image': 'url(assets/img/breadcrumb-bg.jpg)'}">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="breadcrumb-text">
+          <h2>Thanh Toán</h2>
+          <div class="bt-option">
+            <a href="/dashboard">Trang chủ</a>
+            <span>Thanh toán</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Payment Section Begin -->
+<section class="payment-section spad" style="background: #f8f9fa; padding: 60px 0;">
+  <div class="container">
+    <div class="row">
+      <!-- Summary Column -->
+      <div class="col-lg-4 col-md-12" style="margin-bottom: 30px;">
+        <div class="payment-summary" style="
+          background: white;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+
+          <h3 style="color: #333; margin-bottom: 25px; font-size: 20px;">Thông Tin Đơn Hàng</h3>
+
+          <!-- Subject Info -->
+          <div *ngIf="enrollmentData" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #666;">Môn Học:</span>
+              <strong style="color: #333;">{{ enrollmentData.subjectName }}</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #666;">Số Buổi:</span>
+              <strong style="color: #333;">{{ enrollmentData.sessions }}</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #666;">Giá/Buổi:</span>
+              <strong style="color: #333;">{{ formatPrice(enrollmentData.price) }}</strong>
+            </div>
+
+            <div style="
+              border-top: 2px solid #eee;
+              padding-top: 15px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 18px;">
+              <span style="color: #333; font-weight: bold;">Tổng Tiền:</span>
+              <strong style="color: #00a8e8; font-size: 22px;">{{ formatPrice(enrollmentData.totalAmount) }}</strong>
+            </div>
+          </div>
+
+          <!-- VNPay Logo -->
+          <div style="
+            text-align: center;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            margin-top: 25px;">
+            <img src="assets/img/vnpay-logo.png"
+                 alt="VNPay"
+                 style="max-height: 40px; margin-bottom: 10px;">
+            <p style="color: #00a8e8; font-size: 12px; margin: 0;">Hỗ trợ thanh toán an toàn</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Form Column -->
+      <div class="col-lg-8 col-md-12">
+        <div class="payment-form" style="
+          background: white;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+
+          <h3 style="color: #333; margin-bottom: 25px; font-size: 20px;">Thông Tin Thanh Toán</h3>
+
+          <!-- Form -->
+          <form (ngSubmit)="submitPayment()">
+            <!-- Full Name -->
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Tên Đầy Đủ <span style="color: red;">*</span></label>
+              <input type="text"
+                     [(ngModel)]="formData.fullName"
+                     name="fullName"
+                     placeholder="Nhập tên đầy đủ của bạn"
+                     style="
+                       width: 100%;
+                       padding: 12px;
+                       border: 1px solid #ddd;
+                       border-radius: 6px;
+                       font-size: 16px;
+                       box-sizing: border-box;
+                       transition: border-color 0.3s ease;">
+            </div>
+
+            <!-- Email -->
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Email <span style="color: red;">*</span></label>
+              <input type="email"
+                     [(ngModel)]="formData.email"
+                     name="email"
+                     placeholder="Nhập email của bạn"
+                     style="
+                       width: 100%;
+                       padding: 12px;
+                       border: 1px solid #ddd;
+                       border-radius: 6px;
+                       font-size: 16px;
+                       box-sizing: border-box;
+                       transition: border-color 0.3s ease;">
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group" style="margin-bottom: 30px;">
+              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Số Điện Thoại <span style="color: red;">*</span></label>
+              <input type="tel"
+                     [(ngModel)]="formData.phone"
+                     name="phone"
+                     placeholder="Nhập số điện thoại của bạn"
+                     style="
+                       width: 100%;
+                       padding: 12px;
+                       border: 1px solid #ddd;
+                       border-radius: 6px;
+                       font-size: 16px;
+                       box-sizing: border-box;
+                       transition: border-color 0.3s ease;">
+            </div>
+
+            <!-- Payment Method Info -->
+            <div style="
+              background: #e3f2fd;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 25px;
+              border-left: 4px solid #00a8e8;">
+              <p style="margin: 0; color: #00a8e8; font-size: 14px;">
+                <i class="fa fa-info-circle" style="margin-right: 8px;"></i>
+                Bạn sẽ được chuyển đến trang thanh toán VNPay để hoàn tất giao dịch
+              </p>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display: flex; gap: 15px;">
+              <button type="submit"
+                [disabled]="loading"
+                class="payment-submit-btn"
+                style="
+                  flex: 1;
+                  padding: 15px;
+                  background: linear-gradient(135deg, #00a8e8 0%, #0080c0 100%);
+                  color: white;
+                  border: none;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  font-weight: bold;
+                  cursor: pointer;
+                  transition: all 0.3s ease;">
+                <i class="fa fa-credit-card" style="margin-right: 10px;"></i>
+                {{ loading ? 'Đang xử lý...' : 'Thanh Toán Ngay' }}
+              </button>
+
+              <button type="button"
+                (click)="goBack()"
+                class="payment-cancel-btn"
+                style="
+                  flex: 1;
+                  padding: 15px;
+                  background: #f0f0f0;
+                  color: #333;
+                  border: 2px solid #ddd;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  font-weight: bold;
+                  cursor: pointer;
+                  transition: all 0.3s ease;">
+                <i class="fa fa-arrow-left" style="margin-right: 10px;"></i>Quay Lại
+              </button>
+            </div>
+          </form>
+
+          <!-- Security Info -->
+          <div style="
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #999;
+            font-size: 12px;">
+            <p style="margin: 0;">
+              <i class="fa fa-lock" style="margin-right: 5px;"></i>
+              Thông tin của bạn được bảo vệ bằng mã hóa SSL 256-bit
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Payment Section End -->
+
+<!-- Footer -->
+<app-footer></app-footer>
+

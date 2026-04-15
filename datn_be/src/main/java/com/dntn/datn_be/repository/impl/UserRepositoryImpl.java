@@ -201,16 +201,26 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         // ===== fromDate =====
         if (request.getFromDate() != null && !request.getFromDate().isBlank()) {
+            // Convert date string to timestamp: yyyy-MM-dd -> yyyy-MM-dd 00:00:00
+            String fromDateStr = request.getFromDate();
+            if (!fromDateStr.contains(" ")) {
+                fromDateStr += " 00:00:00";
+            }
             sql.append(" AND u.created_at >= ? ");
             countSql.append(" AND u.created_at >= ? ");
-            params.add(java.sql.Timestamp.valueOf(request.getFromDate()));
+            params.add(java.sql.Timestamp.valueOf(fromDateStr));
         }
 
         // ===== toDate =====
         if (request.getToDate() != null && !request.getToDate().isBlank()) {
+            // Convert date string to timestamp: yyyy-MM-dd -> yyyy-MM-dd 23:59:59
+            String toDateStr = request.getToDate();
+            if (!toDateStr.contains(" ")) {
+                toDateStr += " 23:59:59";
+            }
             sql.append(" AND u.created_at <= ? ");
             countSql.append(" AND u.created_at <= ? ");
-            params.add(java.sql.Timestamp.valueOf(request.getToDate()));
+            params.add(java.sql.Timestamp.valueOf(toDateStr));
         }
 
         // ===== sort (anti SQL injection) =====

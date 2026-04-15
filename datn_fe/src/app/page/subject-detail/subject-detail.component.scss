@@ -1,0 +1,132 @@
+.subject-detail-section {
+  padding: 60px 0;
+  background: #f8f9fa;
+
+  .subject-detail-image {
+    margin-bottom: 30px;
+
+    img {
+      width: 100%;
+      height: auto;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+
+  .subject-detail-info {
+    h2 {
+      font-weight: bold;
+      line-height: 1.4;
+
+      @media (max-width: 768px) {
+        font-size: 24px;
+      }
+    }
+
+    .subject-info-details {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+      > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        span {
+          display: flex;
+          align-items: center;
+        }
+
+        strong {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .subject-action {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+      input[type="number"] {
+        font-size: 16px;
+
+        &:focus {
+          outline: none;
+          border-color: #00a8e8;
+          box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.1);
+        }
+      }
+    }
+
+    button {
+      transition: all 0.3s ease;
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  /* Button Styles */
+  .subject-enroll-btn {
+    transition: all 0.3s ease !important;
+
+    &:hover {
+      background: linear-gradient(135deg, #0080c0 0%, #005fa3 100%) !important;
+    }
+  }
+
+  .subject-back-btn {
+    transition: all 0.3s ease !important;
+
+    &:hover {
+      background-color: #e0e0e0 !important;
+    }
+  }
+
+  /* Feature Card Styles */
+  .feature-card {
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transform: translateY(-5px);
+    }
+  }
+}
+
+/* Loading & Error States */
+.alert {
+  &.alert-danger {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    color: #721c24;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .subject-detail-section {
+    padding: 30px 0;
+
+    .row {
+      .col-lg-6 {
+        margin-bottom: 30px;
+      }
+    }
+  }
+}
+

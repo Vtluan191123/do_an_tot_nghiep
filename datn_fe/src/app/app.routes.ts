@@ -11,6 +11,8 @@ import { ClassTimetableComponent } from './page/class-timetable/class-timetable.
 import { GymRoomComponent } from './page/gym-room/gym-room.component';
 import { FriendSearchComponent } from './page/friend-search/friend-search.component';
 import { ComboDetailComponent } from './page/combo-detail/combo-detail.component';
+import { SubjectDetailComponent } from './page/subject-detail/subject-detail.component';
+import { PaymentComponent } from './page/payment/payment.component';
 import { ComboManagementComponent } from './page/combo-management/combo-management.component';
 import { SubjectManagementComponent } from './page/subject-management/subject-management.component';
 import { BookingManagementComponent } from './page/booking-management/booking-management.component';
@@ -30,6 +32,8 @@ export const routes: Routes = [
   { path: 'class-timetable', component: ClassTimetableComponent },
   { path: 'class-detail', component: ClassDetailComponent },
   { path: 'combo-detail/:id', component: ComboDetailComponent },
+  { path: 'subject-detail/:id', component: SubjectDetailComponent },
+  { path: 'payment', component: PaymentComponent },
   { path: 'combo-management', component: ComboManagementComponent },
   { path: 'subject-management', component: SubjectManagementComponent },
   { path: 'booking-management', component: BookingManagementComponent },

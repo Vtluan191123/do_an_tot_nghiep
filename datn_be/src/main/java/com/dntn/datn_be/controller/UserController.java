@@ -4,9 +4,8 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
+import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
-import com.dntn.datn_be.model.Users;
-import com.dntn.datn_be.model.mongo.BaseMongoMessage;
 import com.dntn.datn_be.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +30,12 @@ public class UserController {
     @PostMapping("/search")
     public ResponseGlobalDto<List<UserResponse>> gets(@RequestBody UserFilterRequest request) throws IOException {
         return userService.gets(request);
+    }
+
+    // ================== GET ROLES FOR FILTER ==================
+    @GetMapping("/role")
+    public ResponseGlobalDto<List<RoleResponse>> getRoles() {
+        return userService.getRoles();
     }
 
     // ================== GET BY ID ==================

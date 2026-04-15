@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Combo, ComboFilterRequest } from '../../model/combo.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ComboService {
-  private apiUrl = 'http://localhost:8080/api/combo';
+  private apiUrl = `${environment.apiUrl}/api/combo`;
 
   constructor(private http: HttpClient) { }
 
