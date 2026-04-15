@@ -10,4 +10,8 @@ public class ComboFilterRequest extends BaseFilterRequest {
     private Long id;
     
     private String code;
+    
+    private Long subjectId;
+    
+    private String subjectName;
 }

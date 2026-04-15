@@ -9,14 +9,11 @@ public class UserFilterRequest extends BaseFilterRequest {
 
     private Long id;
     private Long roleId;
-
-    // filter theo khoảng thời gian
-    private String fromDate;
-    private String toDate;
+    private Boolean isActive;
+    private boolean isAdmin;
 
     // Tìm kiếm theo keyword (kế thừa từ BaseFilterRequest)
-    // Backend sẽ tìm kiếm trong username, email, v.v
-    // Sử dụng: keyword = "search_term" từ frontend
+    // Backend sẽ tìm kiếm trong username, email, fullName, v.v với LIKE và OR
 }
 
 

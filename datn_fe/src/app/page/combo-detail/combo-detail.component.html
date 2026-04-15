@@ -64,6 +64,27 @@
             <p>{{ combo.description }}</p>
           </div>
 
+          <!-- Subjects in Combo -->
+          <div class="combo-subjects" *ngIf="comboSubjectsWithNames && comboSubjectsWithNames.length > 0">
+            <h4>Các môn học trong gói</h4>
+            <div class="subjects-table">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th style="width: 70%;">Tên môn học</th>
+                    <th style="width: 30%;">Số buổi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of comboSubjectsWithNames">
+                    <td>{{ item.subjectName }}</td>
+                    <td class="text-center">{{ item.subject.totalTeach }} buổi</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Features List -->
           <div class="combo-features">
             <h4>Bao gồm trong gói:</h4>

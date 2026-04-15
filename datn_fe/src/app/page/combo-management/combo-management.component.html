@@ -22,11 +22,98 @@
     <div class="row">
       <div class="col-lg-12">
         <!-- Header with Add Button -->
-        <div class="management-header">
+        <div class="management-header d-flex justify-content-between align-items-center mb-4">
           <h3>Danh Sách Combo</h3>
-          <button class="btn btn-primary" (click)="openForm()">
+          <button class="btn btn-primary" (click)="openForm()" style="background-color: #17a2b8; border: none; border-radius: 6px; font-weight: 500;">
             <i class="fa fa-plus"></i> Thêm Combo
           </button>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="card mb-4 shadow-sm" style="border: none; border-radius: 8px;">
+          <div class="card-body">
+            <h5 class="card-title mb-4" style="font-weight: 600; color: #333;">Tìm Kiếm & Lọc</h5>
+            <form (ngSubmit)="onSearch()">
+              <div class="row g-3">
+                <!-- Search by Code -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchCode" class="form-label fw-500" style="color: #555; font-size: 14px;">Code</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchCode"
+                    [(ngModel)]="searchCode"
+                    name="searchCode"
+                    placeholder="Code"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search by Subject -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchSubject" class="form-label fw-500" style="color: #555; font-size: 14px;">Môn Học</label>
+                  <select
+                    class="form-control"
+                    id="searchSubject"
+                    [(ngModel)]="searchSubjectId"
+                    name="searchSubject"
+                    (change)="onSearch()"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    <option [value]="null">-- Chọn Môn Học --</option>
+                    <option *ngFor="let subject of subjects" [value]="subject.id">
+                      {{ subject.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Search by Name -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchName" class="form-label fw-500" style="color: #555; font-size: 14px;">Tên Combo</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchName"
+                    [(ngModel)]="searchName"
+                    name="searchName"
+                    placeholder="Tên"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search from Date -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchFromDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Từ Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchFromDate"
+                    [(ngModel)]="searchFromDate"
+                    name="searchFromDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search to Date -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchToDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Đến Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchToDate"
+                    [(ngModel)]="searchToDate"
+                    name="searchToDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-2 col-md-12 d-flex gap-2 align-items-end">
+                  <button type="submit" class="btn flex-grow-1" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 500;">
+                    <i class="fa fa-search"></i> Tìm
+                  </button>
+                  <button type="button" class="btn flex-grow-1" style="background-color: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 500;" (click)="onReset()">
+                    <i class="fa fa-redo"></i> Reset
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- Loading State -->
@@ -37,38 +124,142 @@
         </div>
 
         <!-- Combos Table -->
-        <div *ngIf="!isLoading && combos.length > 0" class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-header">
+        <div *ngIf="!isLoading && combos.length > 0" class="table-responsive shadow-sm" style="border-radius: 8px; overflow: hidden;">
+          <table class="table table-hover mb-0">
+            <thead class="table-header" style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
               <tr>
-                <th>ID</th>
-                <th>Code</th>
-                <th>Tên Combo</th>
-                <th>Mô Tả</th>
-                <th>Giá</th>
-                <th>Ngày Tạo</th>
-                <th>Hành Động</th>
+                <th style="color: #495057; font-weight: 600;">ID</th>
+                <th style="color: #495057; font-weight: 600;">Code</th>
+                <th style="color: #495057; font-weight: 600;">Tên Combo</th>
+                <th style="color: #495057; font-weight: 600;">Mô Tả</th>
+                <th style="color: #495057; font-weight: 600;">Giá</th>
+                <th style="color: #495057; font-weight: 600;">Ngày Tạo</th>
+                <th style="color: #495057; font-weight: 600;">Hành Động</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let combo of combos">
-                <td>{{ combo.id }}</td>
-                <td><span class="badge badge-primary">{{ combo.code }}</span></td>
-                <td><strong>{{ combo.name }}</strong></td>
-                <td>{{ combo.description | slice:0:50 }}...</td>
-                <td><span class="price">{{ combo.prices | currency }}</span></td>
-                <td>{{ combo.createdAt | date:'short' }}</td>
+              <tr *ngFor="let combo of combos" style="transition: background-color 0.3s ease;">
+                <td><strong>{{ combo.id }}</strong></td>
+                <td><span class="badge" style="background-color: #e3f2fd; color: #1976d2;">{{ combo.code }}</span></td>
+                <td><strong style="color: #333;">{{ combo.name }}</strong></td>
+                <td><span style="color: #666; font-size: 13px;">{{ combo.description | slice:0:50 }}{{ combo.description && combo.description.length > 50 ? '...' : '' }}</span></td>
+                <td><strong style="color: #17a2b8;">{{ combo.prices | currency }}</strong></td>
+                <td><span style="color: #666; font-size: 13px;">{{ combo.createdAt | date:'short' }}</span></td>
                 <td>
-                  <button class="btn btn-sm btn-warning" (click)="openForm(combo)" title="Edit">
+                  <button class="btn btn-sm" style="background-color: #ffc107; color: #333; border: none; border-radius: 4px; padding: 5px 10px; margin-right: 5px;" (click)="openForm(combo)" title="Edit">
                     <i class="fa fa-edit"></i> Sửa
                   </button>
-                  <button class="btn btn-sm btn-danger" (click)="deleteCombo(combo.id!)" title="Delete">
+                  <button class="btn btn-sm" style="background-color: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px;" (click)="deleteCombo(combo.id!)" title="Delete">
                     <i class="fa fa-trash"></i> Xóa
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination Section - All in one line -->
+        <div class="row mt-4 mb-3">
+          <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center" style="flex-wrap: wrap; gap: 15px;">
+              <!-- Left: Pagination Info -->
+              <div class="pagination-info">
+                <span style="color: #495057; font-weight: 500; font-size: 14px;">
+                  Tổng cộng: <strong style="color: #17a2b8;">{{ totalCombos }}</strong> combo | Trang <strong style="color: #17a2b8;">{{ currentPage + 1 }} / {{ totalPages }}</strong>
+                </span>
+              </div>
+
+              <!-- Center: Pagination Buttons -->
+              <div *ngIf="totalPages > 1">
+                <nav aria-label="Page navigation">
+                  <ul class="pagination mb-0" style="gap: 3px;">
+                    <!-- First Page -->
+                    <li class="page-item" [class.disabled]="currentPage === 0">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="firstPage()"
+                        [disabled]="currentPage === 0"
+                        title="Trang đầu tiên"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        <i class="fa fa-step-backward"></i>
+                      </button>
+                    </li>
+
+                    <!-- Previous Page -->
+                    <li class="page-item" [class.disabled]="currentPage === 0">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="previousPage()"
+                        [disabled]="currentPage === 0"
+                        title="Trang trước"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        <i class="fa fa-chevron-left"></i> Trước
+                      </button>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    <li
+                      *ngFor="let page of getPaginationNumbers()"
+                      class="page-item"
+                      [class.active]="currentPage === page">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="goToPage(page)"
+                        [style.background-color]="currentPage === page ? '#17a2b8' : 'white'"
+                        [style.color]="currentPage === page ? 'white' : '#495057'"
+                        [style.border-color]="currentPage === page ? '#17a2b8' : '#dee2e6'"
+                        style="border-radius: 4px; border: 1px solid;">
+                        {{ page + 1 }}
+                      </button>
+                    </li>
+
+                    <!-- Next Page -->
+                    <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="nextPage()"
+                        [disabled]="currentPage >= totalPages - 1"
+                        title="Trang tiếp theo"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        Tiếp <i class="fa fa-chevron-right"></i>
+                      </button>
+                    </li>
+
+                    <!-- Last Page -->
+                    <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="lastPage()"
+                        [disabled]="currentPage >= totalPages - 1"
+                        title="Trang cuối cùng"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        <i class="fa fa-step-forward"></i>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+
+              <!-- Right: Page Size Selector -->
+              <div class="d-flex align-items-center gap-2">
+                <label class="mb-0" style="color: #495057; font-weight: 500; font-size: 14px; white-space: nowrap;">Kích thước:</label>
+                <select
+                  class="form-select form-select-sm"
+                  style="width: auto; min-width: 140px; border-radius: 6px; border: 1px solid #dee2e6;"
+                  [(ngModel)]="pageSize"
+                  (change)="changePageSize(pageSize)">
+                  <option *ngFor="let size of pageSizeOptions" [value]="size">
+                    {{ size }} mục/trang
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Empty State -->
@@ -83,17 +274,17 @@
 
 <!-- Form Modal -->
 <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
-  <div class="modal-dialog" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ isEditing ? 'Chỉnh Sửa' : 'Thêm' }} Combo</h5>
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
+    <div class="modal-content" style="border: none; border-radius: 8px;">
+      <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; border-radius: 8px 8px 0 0;">
+        <h5 class="modal-title" style="color: #333; font-weight: 600;">{{ isEditing ? 'Chỉnh Sửa' : 'Thêm' }} Combo</h5>
         <button type="button" class="btn-close" (click)="closeForm()"></button>
       </div>
       <form (ngSubmit)="saveCombo()">
-        <div class="modal-body">
+        <div class="modal-body" style="padding: 24px;">
           <!-- Code -->
           <div class="form-group mb-3">
-            <label for="code" class="form-label">Code <span class="text-danger">*</span></label>
+            <label for="code" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Code <span class="text-danger">*</span></label>
             <input
               type="text"
               class="form-control"
@@ -101,12 +292,13 @@
               [(ngModel)]="formData.code"
               name="code"
               placeholder="Nhập code combo"
-              required>
+              required
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Name -->
           <div class="form-group mb-3">
-            <label for="name" class="form-label">Tên Combo <span class="text-danger">*</span></label>
+            <label for="name" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Tên Combo <span class="text-danger">*</span></label>
             <input
               type="text"
               class="form-control"
@@ -114,24 +306,26 @@
               [(ngModel)]="formData.name"
               name="name"
               placeholder="Nhập tên combo"
-              required>
+              required
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Description -->
           <div class="form-group mb-3">
-            <label for="description" class="form-label">Mô Tả</label>
+            <label for="description" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Mô Tả</label>
             <textarea
               class="form-control"
               id="description"
               [(ngModel)]="formData.description"
               name="description"
               placeholder="Nhập mô tả combo"
-              rows="3"></textarea>
+              rows="3"
+              style="border-radius: 6px; border: 1px solid #ddd;"></textarea>
           </div>
 
           <!-- Price -->
           <div class="form-group mb-3">
-            <label for="prices" class="form-label">Giá <span class="text-danger">*</span></label>
+            <label for="prices" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Giá <span class="text-danger">*</span></label>
             <input
               type="number"
               class="form-control"
@@ -140,16 +334,79 @@
               name="prices"
               placeholder="Nhập giá combo"
               step="0.01"
-              required>
+              required
+              style="border-radius: 6px; border: 1px solid #ddd;">
+          </div>
+
+          <!-- Subject Management -->
+          <div class="form-group mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <label class="form-label" style="color: #333; font-weight: 500; margin-bottom: 0;">Chọn Môn Học <span class="text-danger">*</span></label>
+              <button type="button" class="btn btn-sm btn-success" (click)="addSubject()" style="border-radius: 4px;">
+                <i class="fa fa-plus"></i> Thêm Môn
+              </button>
+            </div>
+
+            <!-- Subjects Table -->
+            <div *ngIf="selectedSubjects.length > 0" class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+              <table class="table table-sm mb-0" style="border-collapse: collapse;">
+                <thead style="background-color: #f8f9fa; position: sticky; top: 0;">
+                  <tr>
+                    <th style="color: #495057; font-weight: 600; border: 1px solid #dee2e6;">Môn Học</th>
+                    <th style="color: #495057; font-weight: 600; border: 1px solid #dee2e6; width: 120px;">Số Buổi</th>
+                    <th style="color: #495057; font-weight: 600; border: 1px solid #dee2e6; width: 60px; text-align: center;">Hành Động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let subject of selectedSubjects; let i = index" style="border-bottom: 1px solid #dee2e6;">
+                    <td style="border: 1px solid #dee2e6; padding: 8px;">
+                      <select
+                        class="form-select form-select-sm"
+                        [(ngModel)]="subject.subjectId"
+                        [name]="'subject_' + i"
+                        style="border-radius: 4px;">
+                        <option [value]="0">-- Chọn Môn Học --</option>
+                        <option *ngFor="let opt of getAvailableSubjects(subject.subjectId)" [value]="opt.id">
+                          {{ opt.name }}
+                        </option>
+                      </select>
+                    </td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px;">
+                      <input
+                        type="number"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="subject.totalTeach"
+                        [name]="'totalTeach_' + i"
+                        min="1"
+                        placeholder="Số buổi"
+                        style="border-radius: 4px;">
+                    </td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-danger"
+                        (click)="removeSubject(i)"
+                        style="border-radius: 4px; padding: 4px 8px;">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="selectedSubjects.length === 0" class="alert alert-info mb-0" style="border-radius: 6px;">
+              <small>Chưa có môn học nào. Nhấp "Thêm Môn" để bắt đầu.</small>
+            </div>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Hủy</button>
-          <button type="submit" class="btn btn-primary">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
+        <div class="modal-footer" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6; padding: 16px;">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" style="background-color: #6c757d; border: none; border-radius: 6px;">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="background-color: #17a2b8; border: none; border-radius: 6px;">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-

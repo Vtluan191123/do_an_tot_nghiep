@@ -168,12 +168,20 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             params.add(request.getRoleId());
         }
 
-        // ===== keyword =====
+        // ===== filter by isActive =====
+        if (request.getIsActive() != null) {
+            sql.append(" AND u.is_active = ? ");
+            countSql.append(" AND u.is_active = ? ");
+            params.add(request.getIsActive());
+        }
+
+        // ===== keyword - LIKE with OR in username, email, fullName =====
         if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
             sql.append("""
             AND (
                 LOWER(u.username) LIKE ?
                 OR LOWER(u.email) LIKE ?
+                OR LOWER(u.full_name) LIKE ?
             )
         """);
 
@@ -181,10 +189,12 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             AND (
                 LOWER(u.username) LIKE ?
                 OR LOWER(u.email) LIKE ?
+                OR LOWER(u.full_name) LIKE ?
             )
         """);
 
             String keyword = "%" + request.getKeyword().toLowerCase() + "%";
+            params.add(keyword);
             params.add(keyword);
             params.add(keyword);
         }

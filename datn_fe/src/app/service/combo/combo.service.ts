@@ -26,6 +26,13 @@ export class ComboService {
   }
 
   /**
+   * Get combo details with subjects for editing
+   */
+  getComboDetail(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}/detail`);
+  }
+
+  /**
    * Create new combo
    */
   createCombo(combo: any): Observable<any> {

@@ -22,11 +22,125 @@
     <div class="row">
       <div class="col-lg-12">
         <!-- Header with Add Button -->
-        <div class="management-header">
+        <div class="management-header d-flex justify-content-between align-items-center mb-4">
           <h3>Danh Sách User</h3>
-          <button class="btn btn-primary" (click)="openForm()">
+          <button class="btn btn-primary" (click)="openForm()" style="background-color: #17a2b8; border: none; border-radius: 6px; font-weight: 500;">
             <i class="fa fa-plus"></i> Thêm User
           </button>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="card mb-4 shadow-sm" style="border: none; border-radius: 8px;">
+          <div class="card-body">
+            <h5 class="card-title mb-4" style="font-weight: 600; color: #333;">Tìm Kiếm & Lọc</h5>
+            <form (ngSubmit)="onSearch()">
+              <div class="row g-3">
+                <!-- Search by Username -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchUsername" class="form-label fw-500" style="color: #555; font-size: 14px;">Username</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchUsername"
+                    [(ngModel)]="searchUsername"
+                    name="searchUsername"
+                    placeholder="Username"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search by Email -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchEmail" class="form-label fw-500" style="color: #555; font-size: 14px;">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="searchEmail"
+                    [(ngModel)]="searchEmail"
+                    name="searchEmail"
+                    placeholder="Email"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search by Full Name -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchFullName" class="form-label fw-500" style="color: #555; font-size: 14px;">Tên Đầy Đủ</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchFullName"
+                    [(ngModel)]="searchFullName"
+                    name="searchFullName"
+                    placeholder="Tên"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search by Status -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>
+                  <select
+                    class="form-select"
+                    id="searchStatus"
+                    [(ngModel)]="searchStatus"
+                    name="searchStatus"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    <option value="">-- Tất Cả --</option>
+                    <option [value]="true">Hoạt Động</option>
+                    <option [value]="false">Vô Hiệu Hóa</option>
+                  </select>
+                </div>
+
+                <!-- Search by Role -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchRole" class="form-label fw-500" style="color: #555; font-size: 14px;">Vai Trò</label>
+                  <select
+                    class="form-select"
+                    id="searchRole"
+                    [(ngModel)]="searchRole"
+                    name="searchRole"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    <option value="">-- Tất Cả --</option>
+                    <option *ngFor="let role of roles" [value]="role.id">
+                      {{ role.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Search from Date -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchFromDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Từ Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchFromDate"
+                    [(ngModel)]="searchFromDate"
+                    name="searchFromDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search to Date -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchToDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Đến Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchToDate"
+                    [(ngModel)]="searchToDate"
+                    name="searchToDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-4 col-md-12 d-flex gap-2 align-items-end">
+                  <button type="submit" class="btn flex-grow-1" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 500;">
+                    <i class="fa fa-search"></i> Tìm
+                  </button>
+                  <button type="button" class="btn flex-grow-1" style="background-color: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 500;" (click)="onReset()">
+                    <i class="fa fa-redo"></i> Reset
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- Loading State -->
@@ -37,69 +151,143 @@
         </div>
 
         <!-- Users Table -->
-        <div *ngIf="!isLoading && users.length > 0" class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-header">
+        <div *ngIf="!isLoading && users.length > 0" class="table-responsive shadow-sm" style="border-radius: 8px; overflow: hidden;">
+          <table class="table table-hover mb-0">
+            <thead class="table-header" style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
               <tr>
-                <th>ID</th>
-                <th>Image</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Tên Đầy Đủ</th>
-                <th>Số Điện Thoại</th>
-                <th>Trạng Thái</th>
-                <th>Ngày Tạo</th>
-                <th>Hành Động</th>
+                <th style="color: #495057; font-weight: 600;">ID</th>
+                <th style="color: #495057; font-weight: 600;">Hình Ảnh</th>
+                <th style="color: #495057; font-weight: 600;">Username</th>
+                <th style="color: #495057; font-weight: 600;">Email</th>
+                <th style="color: #495057; font-weight: 600;">Tên Đầy Đủ</th>
+                <th style="color: #495057; font-weight: 600;">Số Điện Thoại</th>
+                <th style="color: #495057; font-weight: 600;">Ngày Tạo</th>
+                <th style="color: #495057; font-weight: 600;">Hành Động</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of users">
-                <td>{{ user.id }}</td>
-                <td>
+              <tr *ngFor="let user of users" style="transition: background-color 0.3s ease;">
+                <td><strong>{{ user.id }}</strong></td>
+                <td style="text-align: center;">
                   <img
-                    *ngIf=" user.image || user.imagesUrl"
+                    *ngIf="user.image || user.imagesUrl"
                     [src]="BASE_URL_UPLOAD + (user.image || user.imagesUrl)"
                     alt="User Avatar"
                     class="img-thumbnail"
-                    style="width: 50px; height: 50px; object-fit: cover;">
-                  <span *ngIf="!user.image && !user.imagesUrl" class="text-muted">No Image</span>
+                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                  <span *ngIf="!user.image && !user.imagesUrl" class="text-muted" style="font-size: 13px;">-</span>
                 </td>
-                <td><span class="badge badge-primary">{{ user.username }}</span></td>
-                <td>{{ user.email }}</td>
-                <td><strong>{{ user.fullName }}</strong></td>
-                <td>{{ user.phoneNumber || 'N/A' }}</td>
+                <td><span class="badge" style="background-color: #e3f2fd; color: #1976d2;">{{ user.username }}</span></td>
+                <td><span style="color: #666; font-size: 13px;">{{ user.email }}</span></td>
+                <td><strong style="color: #333;">{{ user.fullName }}</strong></td>
+                <td><span style="color: #666; font-size: 13px;">{{ user.phoneNumber || 'N/A' }}</span></td>
+                <td><span style="color: #666; font-size: 13px;">{{ user.createdAt | date:'short' }}</span></td>
                 <td>
-                  <span class="badge" [ngClass]="getStatusBadge(user.isActive)">
-                    {{ getStatusLabel(user.isActive) }}
-                  </span>
-                </td>
-                <td>{{ user.createdAt | date:'short' }}</td>
-                <td>
-                  <button class="btn btn-sm btn-warning" (click)="openForm(user)" title="Edit">
+                  <button class="btn btn-sm" style="background-color: #ffc107; color: #333; border: none; border-radius: 4px; padding: 5px 10px; margin-right: 5px;" (click)="openForm(user)" title="Edit">
                     <i class="fa fa-edit"></i> Sửa
                   </button>
-                  <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id!)" title="Delete">
+                  <button class="btn btn-sm" style="background-color: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px;" (click)="deleteUser(user.id!)" title="Delete">
                     <i class="fa fa-trash"></i> Xóa
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
 
-          <!-- Pagination Section -->
-          <div class="row mt-4">
-            <div class="col-lg-6">
+        <!-- Pagination Section - All in one line -->
+        <div class="row mt-4 mb-3">
+          <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center" style="flex-wrap: wrap; gap: 15px;">
+              <!-- Left: Pagination Info -->
               <div class="pagination-info">
-                <span>Tổng cộng: {{ totalUsers }} user | Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
+                <span style="color: #495057; font-weight: 500; font-size: 14px;">
+                  Tổng cộng: <strong style="color: #17a2b8;">{{ totalUsers }}</strong> user | Trang <strong style="color: #17a2b8;">{{ currentPage + 1 }} / {{ totalPages }}</strong>
+                </span>
               </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="pagination-controls d-flex justify-content-end align-items-center gap-2">
-                <!-- Page Size Selector -->
-                <label class="me-2">Kích thước:</label>
+
+              <!-- Center: Pagination Buttons -->
+              <div *ngIf="totalPages > 1">
+                <nav aria-label="Page navigation">
+                  <ul class="pagination mb-0" style="gap: 3px;">
+                    <!-- First Page -->
+                    <li class="page-item" [class.disabled]="currentPage === 0">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="firstPage()"
+                        [disabled]="currentPage === 0"
+                        title="Trang đầu tiên"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        <i class="fa fa-step-backward"></i>
+                      </button>
+                    </li>
+
+                    <!-- Previous Page -->
+                    <li class="page-item" [class.disabled]="currentPage === 0">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="previousPage()"
+                        [disabled]="currentPage === 0"
+                        title="Trang trước"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        <i class="fa fa-chevron-left"></i> Trước
+                      </button>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    <li
+                      *ngFor="let page of getPaginationNumbers()"
+                      class="page-item"
+                      [class.active]="currentPage === page">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="goToPage(page)"
+                        [style.background-color]="currentPage === page ? '#17a2b8' : 'white'"
+                        [style.color]="currentPage === page ? 'white' : '#495057'"
+                        [style.border-color]="currentPage === page ? '#17a2b8' : '#dee2e6'"
+                        style="border-radius: 4px; border: 1px solid;">
+                        {{ page + 1 }}
+                      </button>
+                    </li>
+
+                    <!-- Next Page -->
+                    <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="nextPage()"
+                        [disabled]="currentPage >= totalPages - 1"
+                        title="Trang tiếp theo"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        Tiếp <i class="fa fa-chevron-right"></i>
+                      </button>
+                    </li>
+
+                    <!-- Last Page -->
+                    <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                      <button
+                        type="button"
+                        class="page-link"
+                        (click)="lastPage()"
+                        [disabled]="currentPage >= totalPages - 1"
+                        title="Trang cuối cùng"
+                        style="border-radius: 4px; border: 1px solid #dee2e6;">
+                        <i class="fa fa-step-forward"></i>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+
+              <!-- Right: Page Size Selector -->
+              <div class="d-flex align-items-center gap-2">
+                <label class="mb-0" style="color: #495057; font-weight: 500; font-size: 14px; white-space: nowrap;">Kích thước:</label>
                 <select
                   class="form-select form-select-sm"
-                  style="width: auto;"
+                  style="width: auto; min-width: 140px; border-radius: 6px; border: 1px solid #dee2e6;"
                   [(ngModel)]="pageSize"
                   (change)="changePageSize(pageSize)">
                   <option *ngFor="let size of pageSizeOptions" [value]="size">
@@ -107,72 +295,6 @@
                   </option>
                 </select>
               </div>
-            </div>
-          </div>
-
-          <!-- Pagination Buttons -->
-          <div *ngIf="totalPages > 1" class="row mt-3">
-            <div class="col-lg-12">
-              <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center" style="gap: 5px;">
-                  <!-- First Page -->
-                  <li class="page-item" [class.disabled]="currentPage === 0">
-                    <button
-                      class="page-link"
-                      (click)="firstPage()"
-                      [disabled]="currentPage === 0"
-                      title="Trang đầu tiên">
-                      <i class="fa fa-step-backward"></i>
-                    </button>
-                  </li>
-
-                  <!-- Previous Page -->
-                  <li class="page-item" [class.disabled]="currentPage === 0">
-                    <button
-                      class="page-link"
-                      (click)="previousPage()"
-                      [disabled]="currentPage === 0"
-                      title="Trang trước">
-                      <i class="fa fa-chevron-left"></i> Trước
-                    </button>
-                  </li>
-
-                  <!-- Page Numbers -->
-                  <li
-                    *ngFor="let page of ([] | slice: 0: (totalPages <= 5 ? totalPages : 5)); let i = index"
-                    class="page-item"
-                    [class.active]="currentPage === (totalPages <= 5 ? i : currentPage)">
-                    <button
-                      class="page-link"
-                      (click)="goToPage(totalPages <= 5 ? i : currentPage)"
-                      [class.active]="currentPage === (totalPages <= 5 ? i : currentPage)">
-                      {{ totalPages <= 5 ? i + 1 : currentPage + 1 }}
-                    </button>
-                  </li>
-
-                  <!-- Next Page -->
-                  <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
-                    <button
-                      class="page-link"
-                      (click)="nextPage()"
-                      [disabled]="currentPage >= totalPages - 1"
-                      title="Trang tiếp theo">
-                      Tiếp <i class="fa fa-chevron-right"></i>
-                    </button>
-                  </li>
-
-                  <!-- Last Page -->
-                  <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
-                    <button
-                      class="page-link"
-                      (click)="lastPage()"
-                      [disabled]="currentPage >= totalPages - 1"
-                      title="Trang cuối cùng">
-                      <i class="fa fa-step-forward"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
             </div>
           </div>
         </div>
@@ -189,17 +311,17 @@
 
 <!-- Form Modal -->
 <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
-  <div class="modal-dialog" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ isEditing ? 'Chỉnh Sửa' : 'Thêm' }} User</h5>
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
+    <div class="modal-content" style="border: none; border-radius: 8px;">
+      <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; border-radius: 8px 8px 0 0;">
+        <h5 class="modal-title" style="color: #333; font-weight: 600;">{{ isEditing ? 'Chỉnh Sửa' : 'Thêm' }} User</h5>
         <button type="button" class="btn-close" (click)="closeForm()"></button>
       </div>
       <form (ngSubmit)="saveUser()">
-        <div class="modal-body">
+        <div class="modal-body" style="padding: 24px;">
           <!-- Username -->
           <div class="form-group mb-3">
-            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+            <label for="username" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Username <span class="text-danger">*</span></label>
             <input
               type="text"
               class="form-control"
@@ -207,12 +329,13 @@
               [(ngModel)]="formData.username"
               name="username"
               placeholder="Nhập username"
-              required>
+              required
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Email -->
           <div class="form-group mb-3">
-            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <label for="email" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Email <span class="text-danger">*</span></label>
             <input
               type="email"
               class="form-control"
@@ -220,12 +343,13 @@
               [(ngModel)]="formData.email"
               name="email"
               placeholder="Nhập email"
-              required>
+              required
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Full Name -->
           <div class="form-group mb-3">
-            <label for="fullName" class="form-label">Tên Đầy Đủ <span class="text-danger">*</span></label>
+            <label for="fullName" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Tên Đầy Đủ <span class="text-danger">*</span></label>
             <input
               type="text"
               class="form-control"
@@ -233,38 +357,23 @@
               [(ngModel)]="formData.fullName"
               name="fullName"
               placeholder="Nhập tên đầy đủ"
-              required>
+              required
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Image -->
           <div class="form-group mb-3">
-            <label for="image" class="form-label">Hình Ảnh</label>
-            <div class="input-group">
-              <input
-                type="file"
-                class="form-control"
-                id="imageFile"
-                accept="image/*"
-                (change)="onImageSelected($event)"
-                [disabled]="isUploadingImage"
-                #fileInput>
-              <button
-                class="btn btn-outline-secondary"
-                type="button"
-                (click)="fileInput.click()"
-                [disabled]="isUploadingImage">
-                <i class="fa fa-upload"></i> Chọn Ảnh
-              </button>
-              <button
-                class="btn btn-outline-danger"
-                type="button"
-                (click)="clearImage()"
-                [disabled]="!formData.image">
-                <i class="fa fa-trash"></i>
-              </button>
-            </div>
-            <small class="form-text text-muted d-block mt-2">
-              <strong>Định dạng:</strong> JPG, PNG, GIF, WebP (Max 5MB)
+            <label for="image" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Hình Ảnh</label>
+            <input
+              type="file"
+              class="form-control"
+              id="imageFile"
+              accept="image/*"
+              (change)="onImageSelected($event)"
+              [disabled]="isUploadingImage"
+              style="border-radius: 6px; border: 1px solid #ddd;">
+            <small class="form-text text-muted" style="font-size: 12px; margin-top: 6px; display: block;">
+              Chọn file hình ảnh (JPG, PNG, GIF, WebP - Max 5MB)
             </small>
 
             <!-- Upload Status -->
@@ -272,71 +381,81 @@
               <div class="spinner-border spinner-border-sm" role="status">
                 <span class="sr-only">Uploading...</span>
               </div>
-              <span class="ms-2">Đang upload ảnh...</span>
+              <span class="ms-2" style="font-size: 12px;">Đang upload ảnh...</span>
             </div>
 
             <!-- Image Preview -->
             <div *ngIf="formData.image && !isUploadingImage" class="mt-3">
-              <img
-                [src]="formData.image.startsWith('http') || formData.image.startsWith('data:') ? formData.image : BASE_URL_UPLOAD + formData.image"
-                alt="Preview"
-                style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+              <div class="alert alert-info" style="background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; border-radius: 6px;">
+                <strong>Ảnh được chọn:</strong>
+                <div class="mt-2">
+                  <img
+                    [src]="formData.image.startsWith('http') || formData.image.startsWith('data:') ? formData.image : BASE_URL_UPLOAD + formData.image"
+                    alt="Preview"
+                    class="img-thumbnail"
+                    style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 6px;">
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Hidden Image URL Input (for manual URL entry) -->
           <div class="form-group mb-3">
-            <label for="imageUrl" class="form-label">Hoặc nhập URL hình ảnh</label>
+            <label for="imageUrl" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Hoặc nhập URL hình ảnh</label>
             <input
               type="text"
               class="form-control"
               id="imageUrl"
               [(ngModel)]="formData.image"
               name="imageUrl"
-              placeholder="https://example.com/image.jpg">
+              placeholder="https://example.com/image.jpg"
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Phone Number -->
           <div class="form-group mb-3">
-            <label for="phoneNumber" class="form-label">Số Điện Thoại</label>
+            <label for="phoneNumber" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Số Điện Thoại</label>
             <input
               type="text"
               class="form-control"
               id="phoneNumber"
               [(ngModel)]="formData.phoneNumber"
               name="phoneNumber"
-              placeholder="Nhập số điện thoại">
+              placeholder="Nhập số điện thoại"
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Avatar -->
           <div class="form-group mb-3">
-            <label for="avatar" class="form-label">Avatar URL</label>
+            <label for="avatar" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Avatar URL</label>
             <input
               type="text"
               class="form-control"
               id="avatar"
               [(ngModel)]="formData.avatar"
               name="avatar"
-              placeholder="Nhập URL avatar">
+              placeholder="Nhập URL avatar"
+              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Status -->
           <div class="form-group mb-3">
-            <label for="isActive" class="form-label">Trạng Thái</label>
+            <label for="isActive" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Trạng Thái</label>
             <select
               class="form-control"
               id="isActive"
               [(ngModel)]="formData.isActive"
-              name="isActive">
+              name="isActive"
+              style="border-radius: 6px; border: 1px solid #ddd;">
               <option [value]="true">Hoạt Động</option>
               <option [value]="false">Vô Hiệu Hóa</option>
             </select>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Hủy</button>
-          <button type="submit" class="btn btn-primary">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
+        <div class="modal-footer" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6; padding: 16px;">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" style="background-color: #6c757d; border: none; border-radius: 6px;">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="background-color: #17a2b8; border: none; border-radius: 6px;">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
         </div>
       </form>
     </div>

@@ -3,16 +3,14 @@ package com.dntn.datn_be.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "combo_subject")
 public class ComboSubject extends BaseEntity{
 
@@ -23,5 +21,5 @@ public class ComboSubject extends BaseEntity{
     private Long subjectId;
 
     @Column(name = "total_teach") //tổng số buổi học
-    private Long totalTeach;
+    private Integer totalTeach;
 }

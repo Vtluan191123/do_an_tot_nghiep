@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SubjectService } from '../../service/subject/subject.service';
+import { UploadService } from '../../service/upload/upload.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -32,11 +33,24 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
   isEditing = false;
   selectedSubject: SubjectModel | null = null;
 
+  // Search and filter properties
+  searchName = '';
+  searchStatus = '';
+  searchFromDate = '';
+  searchToDate = '';
+
+  // Pagination properties
+  currentPage = 0;
+  pageSize = 10;
+  pageSizeOptions: number[] = [5, 10, 20, 50, 100];
+  totalElements = 0;
+  totalPages = 0;
+
   formData: SubjectModel = {
     name: '',
     description: '',
     size: 0,
-    status: 'active',
+    status: 'ACTIVE',
     images: ''
   };
 
@@ -44,6 +58,7 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private subjectService: SubjectService,
+    private uploadService: UploadService,
     private toastr: ToastrService
   ) {
   }
@@ -60,10 +75,14 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
   loadSubjects(): void {
     this.isLoading = true;
     const filter = {
-      page: 0,
-      size: 100,
+      page: this.currentPage,
+      size: this.pageSize,
       sortBy: 'id',
-      sortDirection: 'DESC'
+      sortDirection: 'DESC',
+      keyword: this.searchName.trim() || undefined,
+      status: this.searchStatus || undefined,
+      fromDate: this.searchFromDate || undefined,
+      toDate: this.searchToDate || undefined
     };
 
     this.subjectService.getAllSubjects(filter)
@@ -72,12 +91,12 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response && response.data) {
             this.subjects = response.data;
+            this.totalElements = response.count || 0;
+            this.totalPages = Math.ceil(this.totalElements / this.pageSize);
           }
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading subjects:', error);
-          this.toastr.error('Lỗi tải danh sách môn học');
           this.isLoading = false;
         }
       });
@@ -92,7 +111,7 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
     } else {
       this.isEditing = false;
       this.selectedSubject = null;
-      this.formData = {name: '', description: '', size: 0, status: 'active', images: ''};
+      this.formData = {name: '', description: '', size: 0, status: 'ACTIVE', images: ''};
     }
   }
 
@@ -100,7 +119,7 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
     this.showForm = false;
     this.isEditing = false;
     this.selectedSubject = null;
-    this.formData = {name: '', description: '', size: 0, status: 'active', images: ''};
+    this.formData = {name: '', description: '', size: 0, status: 'ACTIVE', images: ''};
   }
 
   saveSubject(): void {
@@ -174,13 +193,157 @@ export class SubjectManagementComponent implements OnInit, OnDestroy {
   onImageSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.formData.images = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.toastr.error('Kích thước file không được vượt quá 5MB');
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        this.toastr.error('Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WebP)');
+        return;
+      }
+
+      // Upload file to server
+      this.uploadService.uploadFile(file)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response: any) => {
+            if (response && response.data && response.data.length > 0) {
+              // Set the image path from the uploaded file
+              this.formData.images = response.data[0];
+              this.toastr.success('Upload ảnh thành công');
+            }
+          },
+          error: (error) => {
+            console.error('Error uploading image:', error);
+            this.toastr.error('Lỗi upload ảnh');
+          }
+        });
     }
   }
 
+  // Search and filter methods
+  onSearch(): void {
+    this.currentPage = 0; // Reset to first page when searching
+    this.loadSubjects();
+  }
+
+  onReset(): void {
+    this.searchName = '';
+    this.searchStatus = '';
+    this.searchFromDate = '';
+    this.searchToDate = '';
+    this.currentPage = 0;
+    this.loadSubjects();
+  }
+
+  onPageChange(page: number): void {
+    // Check if page is valid
+    if (page < 0 || page >= this.totalPages) {
+      return;
+    }
+    this.currentPage = page;
+    this.loadSubjects();
+  }
+
+  /**
+   * Go to next page
+   */
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadSubjects();
+    }
+  }
+
+  /**
+   * Go to previous page
+   */
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadSubjects();
+    }
+  }
+
+  /**
+   * Go to first page
+   */
+  firstPage(): void {
+    this.currentPage = 0;
+    this.loadSubjects();
+  }
+
+  /**
+   * Go to last page
+   */
+  lastPage(): void {
+    this.currentPage = this.totalPages - 1;
+    this.loadSubjects();
+  }
+
+  /**
+   * Change page size and reset to first page
+   */
+  changePageSize(newSize: number): void {
+    this.pageSize = newSize;
+    this.currentPage = 0;
+    this.loadSubjects();
+  }
+
+  /**
+   * Go to specific page
+   */
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.loadSubjects();
+    }
+  }
+
+  /**
+   * Generate pagination numbers to display
+   */
+  getPaginationNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+
+    if (this.totalPages <= maxPagesToShow) {
+      // Show all pages if total is less than max
+      for (let i = 0; i < this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show current page and surrounding pages
+      let startPage = Math.max(0, this.currentPage - Math.floor(maxPagesToShow / 2));
+      let endPage = Math.min(this.totalPages - 1, startPage + maxPagesToShow - 1);
+
+      // Adjust start page if we're near the end
+      if (endPage - startPage + 1 < maxPagesToShow) {
+        startPage = Math.max(0, endPage - maxPagesToShow + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    for (let i = 0; i < this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+
   protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
+  protected readonly Math = Math;
 }

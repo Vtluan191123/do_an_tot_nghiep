@@ -6,6 +6,12 @@ export interface Combo {
   prices: number;
   createdAt: string;
   updatedAt: string;
+  comboSubjects?: ComboSubject[];
+}
+
+export interface ComboSubject {
+  subjectId: number;
+  totalTeach: number;
 }
 
 export interface ComboFilterRequest {

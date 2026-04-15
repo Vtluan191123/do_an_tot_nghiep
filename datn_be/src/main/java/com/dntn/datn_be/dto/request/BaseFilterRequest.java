@@ -19,6 +19,10 @@ public class BaseFilterRequest {
     // keyword search (optional)
     private String keyword;
 
+    // date range filter (optional)
+    private String fromDate;
+    private String toDate;
+
     public Pageable toPageable() {
         // Convert 1-based page from frontend to 0-based for Spring PageRequest
         // Frontend sends page = 1, 2, 3, ...

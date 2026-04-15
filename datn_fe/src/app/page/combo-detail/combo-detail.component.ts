@@ -1,11 +1,17 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ComboService } from '../../service/combo/combo.service';
-import { Combo } from '../../model/combo.model';
+import { SubjectService } from '../../service/subject/subject.service';
+import { Combo, ComboSubject } from '../../model/combo.model';
 import { NavComponent } from '../share/nav/nav.component';
 import { FooterComponent } from '../share/footer/footer.component';
 import { FormsModule } from '@angular/forms';
+
+interface SubjectOption {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-combo-detail',
@@ -22,6 +28,10 @@ export class ComboDetailComponent implements OnInit {
   quantity: number = 1;
   showPaymentModal: boolean = false;
 
+  // Subjects management
+  subjects: SubjectOption[] = [];
+  comboSubjectsWithNames: Array<{subject: ComboSubject; subjectName: string}> = [];
+
   // Payment form
   paymentForm = {
     fullName: '',
@@ -37,24 +47,62 @@ export class ComboDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private comboService: ComboService,
+    private subjectService: SubjectService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
+    this.loadSubjects();
     this.loadComboDetail();
   }
 
   /**
-   * Load combo details based on route ID
+   * Load all subjects for mapping names
+   */
+  loadSubjects(): void {
+    const filter = {
+      page: 0,
+      size: 1000,
+      sortBy: 'id',
+      sortDirection: 'DESC'
+    };
+
+    this.subjectService.getAllSubjects(filter).subscribe({
+      next: (response: any) => {
+        if (response && response.data) {
+          this.subjects = response.data.map((subject: any) => ({
+            id: subject.id,
+            name: subject.name
+          }));
+        }
+      },
+      error: (error) => {
+        console.error('Error loading subjects:', error);
+      }
+    });
+  }
+
+  /**
+   * Load combo details based on route ID - includes subjects
    */
   loadComboDetail(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
-        this.comboService.getComboById(Number(id)).subscribe(
+        // Use getComboDetail to get combo with subjects
+        this.comboService.getComboDetail(Number(id)).subscribe(
           (response: any) => {
-            if (response.status === 200) {
+            if (response.status === 200 && response.data) {
               this.combo = response.data;
+
+              // Process combo subjects to include names
+              if (this.combo && this.combo.comboSubjects && Array.isArray(this.combo.comboSubjects)) {
+                this.comboSubjectsWithNames = this.combo.comboSubjects.map(subject => ({
+                  subject: subject,
+                  subjectName: this.getSubjectName(subject.subjectId)
+                }));
+              }
+
               this.loading = false;
             } else {
               this.error = 'Không tìm thấy gói combo';
@@ -69,6 +117,14 @@ export class ComboDetailComponent implements OnInit {
         );
       }
     });
+  }
+
+  /**
+   * Get subject name by ID
+   */
+  getSubjectName(subjectId: number): string {
+    const subject = this.subjects.find(s => s.id === subjectId);
+    return subject ? subject.name : `Môn học #${subjectId}`;
   }
 
   /**

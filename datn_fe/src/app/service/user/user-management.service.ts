@@ -59,5 +59,11 @@ export class UserManagementService {
   uploadImage(formData: FormData): Observable<any> {
     return this.http.post(`${this.uploadUrl}/image`, formData);
   }
-}
 
+  /**
+   * Get all roles
+   */
+  getAllRoles(): Observable<any> {
+    return this.http.get('http://localhost:8080/api/role');
+  }
+}

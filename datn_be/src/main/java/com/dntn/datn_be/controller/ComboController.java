@@ -4,6 +4,8 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.ComboCreateRequest;
 import com.dntn.datn_be.dto.request.ComboFilterRequest;
 import com.dntn.datn_be.dto.request.ComboUpdateRequest;
+import com.dntn.datn_be.dto.response.ComboDetailResponse;
+import com.dntn.datn_be.dto.response.ComboSubjectDropdownResponse;
 import com.dntn.datn_be.model.Combo;
 import com.dntn.datn_be.service.ComboService;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +56,16 @@ public class ComboController {
         return comboService.get(request);
     }
 
+    /**
+     * Get combo details with subjects for editing
+     * @param id Combo ID
+     * @return Combo details with subjects
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseGlobalDto<ComboDetailResponse> getComboDetail(@PathVariable Long id) {
+        return comboService.getComboDetail(id);
+    }
+
     // ================== UPDATE ==================
     /**
      * Update combo information
@@ -85,5 +97,15 @@ public class ComboController {
     @DeleteMapping
     public ResponseGlobalDto<Boolean> deletes(@RequestBody List<Long> ids) {
         return comboService.deletes(ids);
+    }
+
+    // ================== DROPDOWN ==================
+    /**
+     * Get all subjects available in combos for dropdown selection
+     * @return List of subjects for dropdown
+     */
+    @GetMapping("/subjects/dropdown")
+    public ResponseGlobalDto<List<ComboSubjectDropdownResponse>> getSubjectsForDropdown() {
+        return comboService.getSubjectsForDropdown();
     }
 }

@@ -36,12 +36,24 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   selectedUser: User | null = null;
   isUploadingImage = false;
 
+  // Roles list
+  roles: any[] = [];
+
   // Pagination properties
   currentPage: number = 0;
   pageSize: number = 10;
   pageSizeOptions: number[] = [5, 10, 15, 20, 50];
   totalUsers: number = 0;
   totalPages: number = 0;
+
+  // Search and filter properties
+  searchUsername = '';
+  searchEmail = '';
+  searchFullName = '';
+  searchStatus: boolean | string = '';
+  searchRole: number | string = '';  // Changed to number for ID
+  searchFromDate = '';
+  searchToDate = '';
 
   formData: User = {
     username: '',
@@ -61,6 +73,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadRoles();
     this.loadUsers();
   }
 
@@ -69,13 +82,55 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Load roles from backend
+   */
+  loadRoles(): void {
+    this.userService.getAllRoles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.roles = response.data;
+          } else if (Array.isArray(response)) {
+            this.roles = response;
+          }
+        },
+        error: (error) => {
+          console.error('Error loading roles:', error);
+          // Fallback to default roles if backend fails
+          this.roles = [
+            { id: 1, code: 'ROLE_ADMIN', name: 'Quản trị hệ thống' },
+            { id: 2, code: 'ROLE_USER', name: 'Các quyền cơ bản của người dùng' },
+            { id: 3, code: 'ROLE_COACH', name: 'Các quyền của người huấn luyện' }
+          ];
+        }
+      });
+  }
+
   loadUsers(): void {
     this.isLoading = true;
+
+    // Combine search fields into keyword for backend to LIKE with OR
+    let keyword = '';
+    if (this.searchUsername.trim()) {
+      keyword = this.searchUsername.trim();
+    } else if (this.searchEmail.trim()) {
+      keyword = this.searchEmail.trim();
+    } else if (this.searchFullName.trim()) {
+      keyword = this.searchFullName.trim();
+    }
+
     const filter = {
       page: this.currentPage,
       size: this.pageSize,
       sortBy: 'id',
-      sortDirection: 'DESC'
+      sortDirection: 'DESC',
+      keyword: keyword || undefined,
+      isActive: this.searchStatus !== '' ? this.searchStatus : undefined,
+      roleId: this.searchRole !== '' ? this.searchRole : undefined,
+      fromDate: this.searchFromDate || undefined,
+      toDate: this.searchToDate || undefined
     };
 
     this.userService.getAllUsers(filter)
@@ -90,11 +145,27 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading users:', error);
-          this.toastr.error('Lỗi tải danh sách user');
           this.isLoading = false;
         }
       });
+  }
+
+  // Search and filter methods
+  onSearch(): void {
+    this.currentPage = 0; // Reset to first page when searching
+    this.loadUsers();
+  }
+
+  onReset(): void {
+    this.searchUsername = '';
+    this.searchEmail = '';
+    this.searchFullName = '';
+    this.searchStatus = '';
+    this.searchRole = '';
+    this.searchFromDate = '';
+    this.searchToDate = '';
+    this.currentPage = 0;
+    this.loadUsers();
   }
 
   /**
@@ -150,6 +221,36 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       this.currentPage = page;
       this.loadUsers();
     }
+  }
+
+  /**
+   * Generate pagination numbers to display
+   */
+  getPaginationNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+
+    if (this.totalPages <= maxPagesToShow) {
+      // Show all pages if total is less than max
+      for (let i = 0; i < this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show current page and surrounding pages
+      let startPage = Math.max(0, this.currentPage - Math.floor(maxPagesToShow / 2));
+      let endPage = Math.min(this.totalPages - 1, startPage + maxPagesToShow - 1);
+
+      // Adjust start page if we're near the end
+      if (endPage - startPage + 1 < maxPagesToShow) {
+        startPage = Math.max(0, endPage - maxPagesToShow + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
   }
 
   openForm(user?: User): void {

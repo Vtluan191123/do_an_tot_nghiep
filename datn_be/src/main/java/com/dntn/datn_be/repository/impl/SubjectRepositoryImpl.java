@@ -4,10 +4,6 @@ import com.dntn.datn_be.dto.request.SubjectFilterRequest;
 import com.dntn.datn_be.model.Subject;
 import com.dntn.datn_be.repository.SubjectRepositoryCustom;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,68 +21,111 @@ public class SubjectRepositoryImpl implements SubjectRepositoryCustom {
 
     @Override
     public Page<Subject> filter(SubjectFilterRequest request, Pageable pageable) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         
-        // ===== Build count query =====
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<Subject> countRoot = countQuery.from(Subject.class);
-        countQuery.select(cb.count(countRoot));
+        // ===== Build SQL =====
+        StringBuilder sql = new StringBuilder("""
+        SELECT s.*
+        FROM subject s
+        WHERE 1=1
+    """);
         
-        List<Predicate> predicates = buildPredicates(cb, countRoot, request);
-        if (!predicates.isEmpty()) {
-            countQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+        StringBuilder countSql = new StringBuilder("""
+        SELECT COUNT(*)
+        FROM subject s
+        WHERE 1=1
+    """);
+        
+        List<Object> params = new ArrayList<>();
+        
+        // ===== Filter by id =====
+        if (request.getId() != null) {
+            sql.append(" AND s.id = ? ");
+            countSql.append(" AND s.id = ? ");
+            params.add(request.getId());
         }
         
-        Long total = entityManager.createQuery(countQuery).getSingleResult();
-        
-        // ===== Build data query =====
-        CriteriaQuery<Subject> dataQuery = cb.createQuery(Subject.class);
-        Root<Subject> dataRoot = dataQuery.from(Subject.class);
-        dataQuery.select(dataRoot);
-        
-        predicates = buildPredicates(cb, dataRoot, request);
-        if (!predicates.isEmpty()) {
-            dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+        // ===== Filter by status =====
+        if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+            sql.append(" AND s.status = ? ");
+            countSql.append(" AND s.status = ? ");
+            params.add(request.getStatus());
         }
         
-        // Apply sorting from Pageable
-        dataQuery.orderBy(pageable.getSort().stream()
-                .map(order -> order.isAscending() 
-                    ? cb.asc(dataRoot.get(order.getProperty()))
-                    : cb.desc(dataRoot.get(order.getProperty())))
-                .toList());
+        // ===== Filter by keyword (search in name and description) =====
+        if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
+            sql.append(" AND (LOWER(s.name) LIKE ? OR LOWER(s.description) LIKE ?) ");
+            countSql.append(" AND (LOWER(s.name) LIKE ? OR LOWER(s.description) LIKE ?) ");
+            String keyword = "%" + request.getKeyword().toLowerCase().trim() + "%";
+            params.add(keyword);
+            params.add(keyword);
+        }
         
-        List<Subject> content = entityManager.createQuery(dataQuery)
-                .setFirstResult((int) pageable.getOffset())
-                .setMaxResults(pageable.getPageSize())
-                .getResultList();
+        // ===== Filter by fromDate =====
+        if (request.getFromDate() != null && !request.getFromDate().isBlank()) {
+            // Convert date string to timestamp: yyyy-MM-dd -> yyyy-MM-dd 00:00:00
+            String fromDateStr = request.getFromDate();
+            if (!fromDateStr.contains(" ")) {
+                fromDateStr += " 00:00:00";
+            }
+            sql.append(" AND s.created_at >= ? ");
+            countSql.append(" AND s.created_at >= ? ");
+            params.add(java.sql.Timestamp.valueOf(fromDateStr));
+        }
+        
+        // ===== Filter by toDate =====
+        if (request.getToDate() != null && !request.getToDate().isBlank()) {
+            // Convert date string to timestamp: yyyy-MM-dd -> yyyy-MM-dd 23:59:59
+            String toDateStr = request.getToDate();
+            if (!toDateStr.contains(" ")) {
+                toDateStr += " 23:59:59";
+            }
+            sql.append(" AND s.created_at <= ? ");
+            countSql.append(" AND s.created_at <= ? ");
+            params.add(java.sql.Timestamp.valueOf(toDateStr));
+        }
+        
+        // ===== Add sorting =====
+        String sortBy = pageable.getSort().stream()
+            .findFirst()
+            .map(org.springframework.data.domain.Sort.Order::getProperty)
+            .orElse("id");
+        String sortDirection = pageable.getSort().stream()
+            .findFirst()
+            .map(order -> order.isAscending() ? "ASC" : "DESC")
+            .orElse("DESC");
+        
+        sql.append(" ORDER BY s.").append(sortBy).append(" ").append(sortDirection);
+        
+        // ===== Add pagination (SQL Server syntax) =====
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
+        
+        // ===== Execute count query =====
+        jakarta.persistence.Query countQuery = entityManager.createNativeQuery(countSql.toString());
+        for (int i = 0; i < params.size(); i++) {
+            countQuery.setParameter(i + 1, params.get(i));
+        }
+        Object countResult = countQuery.getSingleResult();
+        Long total;
+        if (countResult instanceof Long) {
+            total = (Long) countResult;
+        } else if (countResult instanceof Number) {
+            total = ((Number) countResult).longValue();
+        } else {
+            total = 0L;
+        }
+        
+        // ===== Execute data query =====
+        jakarta.persistence.Query dataQuery = entityManager.createNativeQuery(sql.toString(), Subject.class);
+        for (int i = 0; i < params.size(); i++) {
+            dataQuery.setParameter(i + 1, params.get(i));
+        }
+        dataQuery.setParameter(params.size() + 1, pageable.getOffset());
+        dataQuery.setParameter(params.size() + 2, pageable.getPageSize());
+        
+        @SuppressWarnings("unchecked")
+        List<Subject> content = dataQuery.getResultList();
         
         return new PageImpl<>(content, pageable, total);
-    }
-    
-    private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Subject> root, SubjectFilterRequest request) {
-        List<Predicate> predicates = new ArrayList<>();
-        
-        // Filter by id
-        if (request.getId() != null) {
-            predicates.add(cb.equal(root.get("id"), request.getId()));
-        }
-        
-        // Filter by status
-        if (request.getStatus() != null && !request.getStatus().isEmpty()) {
-            predicates.add(cb.equal(root.get("status"), request.getStatus()));
-        }
-        
-        // Filter by keyword
-        if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
-            String keyword = "%" + request.getKeyword() + "%";
-            predicates.add(cb.or(
-                cb.like(root.get("name"), keyword),
-                cb.like(root.get("description"), keyword)
-            ));
-        }
-        
-        return predicates;
     }
 }
 

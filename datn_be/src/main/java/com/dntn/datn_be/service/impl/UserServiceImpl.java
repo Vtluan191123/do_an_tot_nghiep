@@ -81,9 +81,13 @@ public class UserServiceImpl implements UserService{
     public ResponseGlobalDto<List<UserResponse>> gets(UserFilterRequest request) {
         Users currentUser = authService.getCurrentUser();
         Long currentUserId = currentUser.getId();
+        boolean isAdmin = request.isAdmin();
         Page<Users> page = userRepository.filter(request);
         List<Users> usersList = page.getContent();
+        List<UserResponse> userResponses = new ArrayList<>();
+        BeanUtils.copyProperties(page, usersList);
 
+        if(!isAdmin){
         // Get all friend requests
         List<BaseMongoAddFriend> allFriendRequests = this.baseMongoAddFriendRepository
                 .findByUserAddOrUserReceiver(currentUserId, currentUserId);
@@ -92,12 +96,12 @@ public class UserServiceImpl implements UserService{
         // Also track who sent the request
         Map<Long, Integer> userStatusMap = new HashMap<>();
         Map<Long, Boolean> userSentByMeMap = new HashMap<>();  // true = I sent it, false = they sent it
-        
+
         for (BaseMongoAddFriend friendRequest : allFriendRequests) {
             Long otherUserId;
             Integer status = friendRequest.getStatus();
             Boolean sentByMe;
-            
+
             // Determine other user ID and who sent the request
             if (currentUserId.equals(friendRequest.getUserAdd().longValue())) {
                 // I sent the request
@@ -110,7 +114,7 @@ public class UserServiceImpl implements UserService{
             } else {
                 continue;
             }
-            
+
             // Map status: 1 = accepted friends, 0 = pending requests
             if (status == 1) {
                 userStatusMap.put(otherUserId, 1);  // Accepted friend
@@ -122,7 +126,7 @@ public class UserServiceImpl implements UserService{
         }
 
         // Convert all users to UserResponse with statusFriend and sentByMe, excluding current user
-        List<UserResponse> userResponses = usersList.stream()
+         userResponses = usersList.stream()
                 .filter(user -> !user.getId().equals(currentUserId))
                 .map(user -> {
                     UserResponse userResponse = new UserResponse();
@@ -136,7 +140,7 @@ public class UserServiceImpl implements UserService{
                     return userResponse;
                 })
                 .collect(Collectors.toList());
-
+}
         return ResponseGlobalDto.<List<UserResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .data(userResponses)
