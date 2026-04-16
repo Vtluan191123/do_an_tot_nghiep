@@ -5,12 +5,9 @@ import com.dntn.datn_be.dto.request.*;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
-import com.dntn.datn_be.model.Users;
-import org.apache.catalina.User;
-import org.springframework.data.domain.Page;
+import com.dntn.datn_be.dto.response.CoachDetailResponse;
 
 import java.util.List;
-import java.util.Objects;
 
 public interface UserService extends BaseGlobalService<UserResponse, UserCreateRequest, UserFilterRequest, UserUpdateRequest,Long>{
     ResponseGlobalDto<Boolean> addFiend( Integer userAddId,Integer userReceiverId);
@@ -20,4 +17,5 @@ public interface UserService extends BaseGlobalService<UserResponse, UserCreateR
     ResponseGlobalDto<List<RoleResponse>> getRoles();
     ResponseGlobalDto<Boolean> assignCoachRole(AssignCoachRoleRequest request);
     ResponseGlobalDto<List<Long>> getUserCoachSubjects(Long userId);
+    ResponseGlobalDto<List<CoachDetailResponse>> getAllCoachesWithSubjects();
 }

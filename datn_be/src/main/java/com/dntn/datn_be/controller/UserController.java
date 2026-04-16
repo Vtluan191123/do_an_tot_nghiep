@@ -76,4 +76,10 @@ public class UserController {
     public ResponseGlobalDto<List<Long>> getUserCoachSubjects(@PathVariable Long userId) {
         return userService.getUserCoachSubjects(userId);
     }
+
+    // ================== GET ALL COACHES WITH SUBJECTS ==================
+    @GetMapping("/coaches/all")
+    public ResponseGlobalDto<?> getAllCoachesWithSubjects() {
+        return userService.getAllCoachesWithSubjects();
+    }
 }

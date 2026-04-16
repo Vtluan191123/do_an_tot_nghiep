@@ -1,2 +1,290 @@
 /* Styles for out-team component */
 
+.coach-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: background 0.3s;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+    }
+
+    .modal-header {
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      border-radius: 12px 12px 0 0;
+
+      .coach-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .modal-body {
+      padding: 30px;
+
+      h2 {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+        color: #1a1a1a;
+      }
+
+      .role {
+        color: #ff6b6b;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      .add-friend-button-container {
+        margin-bottom: 25px;
+
+        .add-friend-btn {
+          width: 100%;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+
+          i {
+            font-size: 18px;
+          }
+
+          &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ff5252 0%, #ff3d3d 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+          }
+
+          &:active:not(:disabled) {
+            transform: translateY(0);
+          }
+
+          &:disabled,
+          &.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #ccc 0%, #bbb 100%);
+          }
+
+          &.loading {
+            animation: pulse 1.5s infinite;
+          }
+        }
+      }
+
+      .coach-info {
+        margin-bottom: 30px;
+
+        .info-group {
+          margin-bottom: 15px;
+
+          label {
+            font-weight: 700;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-transform: uppercase;
+          }
+
+          p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+
+            a {
+              color: #ff6b6b;
+              text-decoration: none;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+          }
+        }
+      }
+
+      .subjects-section {
+        border-top: 2px solid #f0f0f0;
+        padding-top: 20px;
+
+        h3 {
+          margin: 0 0 20px 0;
+          font-size: 20px;
+          color: #1a1a1a;
+        }
+
+        .subjects-list {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 15px;
+
+          .subject-card {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            transition: all 0.3s;
+
+            &:hover {
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .subject-image {
+              width: 80px;
+              height: 80px;
+              border-radius: 8px;
+              overflow: hidden;
+              flex-shrink: 0;
+
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              }
+            }
+
+            .subject-info {
+              flex: 1;
+
+              h4 {
+                margin: 0 0 5px 0;
+                font-size: 16px;
+                color: #1a1a1a;
+              }
+
+              p {
+                margin: 0 0 8px 0;
+                font-size: 13px;
+                color: #666;
+                line-height: 1.4;
+              }
+
+              .status-badge {
+                display: inline-block;
+                background: #f0f0f0;
+                color: #333;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+              }
+            }
+          }
+        }
+      }
+
+      .no-subjects {
+        text-align: center;
+        padding: 20px;
+        color: #999;
+      }
+    }
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .coach-modal .modal-content {
+    max-width: 90%;
+    max-height: 85vh;
+
+    .modal-header {
+      height: 200px;
+    }
+
+    .modal-body {
+      padding: 20px;
+
+      h2 {
+        font-size: 22px;
+      }
+
+      .subjects-section .subjects-list .subject-card {
+        flex-direction: column;
+
+        .subject-image {
+          width: 100%;
+          height: 150px;
+        }
+      }
+    }
+  }
+}

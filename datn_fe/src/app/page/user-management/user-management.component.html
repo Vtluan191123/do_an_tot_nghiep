@@ -170,12 +170,12 @@
                 <td><strong>{{ user.id }}</strong></td>
                 <td style="text-align: center;">
                   <img
-                    *ngIf="user.image || user.imagesUrl"
-                    [src]="BASE_URL_UPLOAD + (user.image || user.imagesUrl)"
+                    *ngIf="user.imagesUrl"
+                    [src]="BASE_URL_UPLOAD + user.imagesUrl"
                     alt="User Avatar"
                     class="img-thumbnail"
                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                  <span *ngIf="!user.image && !user.imagesUrl" class="text-muted" style="font-size: 13px;">-</span>
+                  <span *ngIf="!user.imagesUrl" class="text-muted" style="font-size: 13px;">-</span>
                 </td>
                 <td><span class="badge" style="background-color: #e3f2fd; color: #1976d2;">{{ user.username }}</span></td>
                 <td><span style="color: #666; font-size: 13px;">{{ user.email }}</span></td>
@@ -364,7 +364,7 @@
               style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
-          <!-- Image -->
+          <!-- Image Upload -->
           <div class="form-group mb-3">
             <label for="image" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Hình Ảnh</label>
             <input
@@ -388,31 +388,18 @@
             </div>
 
             <!-- Image Preview -->
-            <div *ngIf="formData.image && !isUploadingImage" class="mt-3">
+            <div *ngIf="formData.imagesUrl && !isUploadingImage" class="mt-3">
               <div class="alert alert-info" style="background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; border-radius: 6px;">
                 <strong>Ảnh được chọn:</strong>
                 <div class="mt-2">
                   <img
-                    [src]="formData.image.startsWith('http') || formData.image.startsWith('data:') ? formData.image : BASE_URL_UPLOAD + formData.image"
+                    [src]="formData.imagesUrl.startsWith('http') ? formData.imagesUrl : BASE_URL_UPLOAD + formData.imagesUrl"
                     alt="Preview"
                     class="img-thumbnail"
                     style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 6px;">
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Hidden Image URL Input (for manual URL entry) -->
-          <div class="form-group mb-3">
-            <label for="imageUrl" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Hoặc nhập URL hình ảnh</label>
-            <input
-              type="text"
-              class="form-control"
-              id="imageUrl"
-              [(ngModel)]="formData.image"
-              name="imageUrl"
-              placeholder="https://example.com/image.jpg"
-              style="border-radius: 6px; border: 1px solid #ddd;">
           </div>
 
           <!-- Phone Number -->
@@ -426,33 +413,6 @@
               name="phoneNumber"
               placeholder="Nhập số điện thoại"
               style="border-radius: 6px; border: 1px solid #ddd;">
-          </div>
-
-          <!-- Avatar -->
-          <div class="form-group mb-3">
-            <label for="avatar" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Avatar URL</label>
-            <input
-              type="text"
-              class="form-control"
-              id="avatar"
-              [(ngModel)]="formData.avatar"
-              name="avatar"
-              placeholder="Nhập URL avatar"
-              style="border-radius: 6px; border: 1px solid #ddd;">
-          </div>
-
-          <!-- Status -->
-          <div class="form-group mb-3">
-            <label for="isActive" class="form-label" style="color: #333; font-weight: 500; margin-bottom: 8px;">Trạng Thái</label>
-            <select
-              class="form-control"
-              id="isActive"
-              [(ngModel)]="formData.isActive"
-              name="isActive"
-              style="border-radius: 6px; border: 1px solid #ddd;">
-              <option [value]="true">Hoạt Động</option>
-              <option [value]="false">Vô Hiệu Hóa</option>
-            </select>
           </div>
         </div>
 

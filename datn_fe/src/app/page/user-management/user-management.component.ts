@@ -12,12 +12,9 @@ interface User {
   username: string;
   email: string;
   fullName: string;
-  image?: string;
   imagesUrl?: string;
   phoneNumber?: string;
-  avatar?: string;
   roleId?: number;
-  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -74,10 +71,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     username: '',
     email: '',
     fullName: '',
-    image: '',
-    phoneNumber: '',
-    avatar: '',
-    isActive: true
+    imagesUrl: '',
+    phoneNumber: ''
   };
 
   private destroy$ = new Subject<void>();
@@ -171,7 +166,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           }
           this.isLoading = false;
         },
-        error: (error) => {
+        error: () => {
           this.isLoading = false;
         }
       });
@@ -293,9 +288,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         username: '',
         email: '',
         fullName: '',
-        phoneNumber: '',
-        avatar: '',
-        isActive: true
+        imagesUrl: '',
+        phoneNumber: ''
       };
     }
   }
@@ -308,9 +302,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       username: '',
       email: '',
       fullName: '',
-      phoneNumber: '',
-      avatar: '',
-      isActive: true
+      imagesUrl: '',
+      phoneNumber: ''
     };
   }
 
@@ -379,13 +372,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusBadge(isActive?: boolean): string {
-    return isActive ? 'badge-success' : 'badge-danger';
-  }
-
-  getStatusLabel(isActive?: boolean): string {
-    return isActive ? 'Hoạt Động' : 'Vô Hiệu Hóa';
-  }
 
   /**
    * Handle image file selection and upload
@@ -408,14 +394,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Create preview immediately
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.formData.image = e.target.result; // Set as base64 for preview
-      // Upload file after preview is set
-      this.uploadImage(file);
-    };
-    reader.readAsDataURL(file);
+    // Upload file immediately
+    this.uploadImage(file);
   }
 
   /**
@@ -451,24 +431,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           // Format the URL (add BASE_URL_UPLOAD if needed)
           imagePath = this.formatImageUrl(imagePath);
           this.formData.imagesUrl = imagePath;
-          this.formData.image = imagePath; // Replace preview with server URL
           this.toastr.success('Upload ảnh thành công');
         },
-        error: (error) => {
+        error: () => {
           this.isUploadingImage = false;
-          console.error('Error uploading image:', error);
           this.toastr.error('Lỗi upload ảnh');
-          // Keep the preview if upload fails
         }
       });
-  }
-
-  /**
-   * Clear image selection
-   */
-  clearImage(): void {
-    this.formData.image = '';
-    this.formData.imagesUrl = '';
   }
 
   /**
