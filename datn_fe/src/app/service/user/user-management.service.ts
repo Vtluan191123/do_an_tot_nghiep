@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
 export class UserManagementService {
   private apiUrl = `${environment.apiUrl}/api/user/`;
   private uploadUrl = `${environment.apiUrl}/api/upload`;
+  private subjectUrl = `${environment.apiUrl}/api/subject`;
 
   constructor(private http: HttpClient) { }
 
@@ -66,5 +67,32 @@ export class UserManagementService {
    */
   getAllRoles(): Observable<any> {
     return this.http.get(`${this.apiUrl}role`);
+  }
+
+  /**
+   * Get all subjects
+   */
+  getAllSubjects(): Observable<any> {
+    const filter = {
+      page: 0,
+      size: 1000,
+      sortBy: 'id',
+      sortDirection: 'DESC'
+    };
+    return this.http.post(`${this.subjectUrl}/search`, filter);
+  }
+
+  /**
+   * Assign coach role with subjects
+   */
+  assignCoachRole(request: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}assign-coach-role`, request);
+  }
+
+  /**
+   * Get user's coach subjects
+   */
+  getUserCoachSubjects(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}${userId}/coach-subjects`);
   }
 }

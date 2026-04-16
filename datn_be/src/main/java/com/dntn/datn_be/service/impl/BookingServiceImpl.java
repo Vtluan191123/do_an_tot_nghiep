@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -90,6 +91,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> delete(Long request) {
         Bookings booking = bookingRepository.findById(request)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -104,6 +106,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> deletes(List<Long> request) {
         List<Bookings> bookings = bookingRepository.findAllById(request);
 

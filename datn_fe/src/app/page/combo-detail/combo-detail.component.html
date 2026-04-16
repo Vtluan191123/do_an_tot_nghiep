@@ -115,8 +115,8 @@
 
           <!-- Action Buttons -->
           <div class="combo-actions">
-            <button (click)="openPaymentModal()" class="primary-btn btn-enroll">
-              <i class="fa fa-credit-card"></i> Thanh toán ngay
+            <button (click)="enrollCombo()" class="primary-btn btn-enroll">
+              <i class="fa fa-shopping-cart"></i> Mua ngay
             </button>
             <button (click)="goBack()" class="secondary-btn">
               <i class="fa fa-arrow-left"></i> Quay lại
@@ -129,98 +129,6 @@
 </section>
 <!-- Combo Detail Section End -->
 
-<!-- Payment Modal Begin -->
-<div *ngIf="showPaymentModal" class="payment-modal-overlay" (click)="closePaymentModal()">
-  <div class="payment-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Thông tin thanh toán</h3>
-      <button class="close-btn" (click)="closePaymentModal()">×</button>
-    </div>
-
-    <form class="payment-form">
-      <!-- Personal Information -->
-      <div class="form-section">
-        <h4>Thông tin cá nhân</h4>
-        <div class="form-group">
-          <label for="fullName">Họ và tên</label>
-          <input type="text" id="fullName" [(ngModel)]="paymentForm.fullName"
-                 name="fullName" placeholder="Nhập họ và tên" required>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" [(ngModel)]="paymentForm.email"
-                   name="email" placeholder="Nhập email" required>
-          </div>
-          <div class="form-group">
-            <label for="phone">Số điện thoại</label>
-            <input type="tel" id="phone" [(ngModel)]="paymentForm.phone"
-                   name="phone" placeholder="Nhập số điện thoại" required>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card Information -->
-      <div class="form-section">
-        <h4>Thông tin thẻ</h4>
-        <div class="form-group">
-          <label for="cardNumber">Số thẻ</label>
-          <input type="text" id="cardNumber" [(ngModel)]="paymentForm.cardNumber"
-                 name="cardNumber" placeholder="1234 5678 9012 3456"
-                 maxlength="16" required>
-        </div>
-        <div class="form-group">
-          <label for="cardHolder">Tên chủ thẻ</label>
-          <input type="text" id="cardHolder" [(ngModel)]="paymentForm.cardHolder"
-                 name="cardHolder" placeholder="Nhập tên chủ thẻ" required>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="expiryDate">Hạn sử dụng</label>
-            <input type="text" id="expiryDate" [(ngModel)]="paymentForm.expiryDate"
-                   name="expiryDate" placeholder="MM/YY" maxlength="5" required>
-          </div>
-          <div class="form-group">
-            <label for="cvv">CVV</label>
-            <input type="text" id="cvv" [(ngModel)]="paymentForm.cvv"
-                   name="cvv" placeholder="123" maxlength="3" required>
-          </div>
-        </div>
-      </div>
-
-      <!-- Order Summary -->
-      <div class="order-summary">
-        <div class="summary-item">
-          <span>Gói:</span>
-          <span>{{ combo?.name }}</span>
-        </div>
-        <div class="summary-item">
-          <span>Số lượng:</span>
-          <span>{{ quantity }} tháng</span>
-        </div>
-        <div class="summary-item">
-          <span>Giá:</span>
-          <span>{{ formatPrice(combo?.prices || 0) }}</span>
-        </div>
-        <div class="summary-item total">
-          <span>Tổng:</span>
-          <span>{{ formatPrice(getTotalPrice()) }}</span>
-        </div>
-      </div>
-
-      <!-- Form Actions -->
-      <div class="form-actions">
-        <button type="button" (click)="processPayment()" class="primary-btn btn-pay">
-          <i class="fa fa-lock"></i> Thanh toán
-        </button>
-        <button type="button" (click)="closePaymentModal()" class="secondary-btn">
-          Hủy
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-<!-- Payment Modal End -->
 
 <!-- Footer -->
 <app-footer></app-footer>

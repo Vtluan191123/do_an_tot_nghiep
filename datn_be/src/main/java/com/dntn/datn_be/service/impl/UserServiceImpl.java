@@ -6,6 +6,7 @@ import com.dntn.datn_be.dto.common.SocketDataGlobal;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
+import com.dntn.datn_be.dto.request.AssignCoachRoleRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
@@ -13,11 +14,13 @@ import com.dntn.datn_be.model.GroudMessageUser;
 import com.dntn.datn_be.model.NotificationType;
 import com.dntn.datn_be.model.Roles;
 import com.dntn.datn_be.model.Users;
+import com.dntn.datn_be.model.UserSubject;
 import com.dntn.datn_be.model.mongo.BaseMongoAddFriend;
 import com.dntn.datn_be.model.mongo.BaseMongoGroud;
 import com.dntn.datn_be.repository.GroudMessageUserRepository;
 import com.dntn.datn_be.repository.RoleRepository;
 import com.dntn.datn_be.repository.UserRepository;
+import com.dntn.datn_be.repository.UserSubjectRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoAddFriendRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoGroudRepository;
 import com.dntn.datn_be.service.AuthService;
@@ -32,6 +35,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
@@ -51,6 +55,7 @@ public class UserServiceImpl implements UserService{
     private final WebSocketService webSocketService;
     private final String ENTITY = "UserServiceImpl";
     private final RoleRepository roleRepository;
+    private final UserSubjectRepository userSubjectRepository;
 
 
     @Override
@@ -198,6 +203,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> delete(Long request) {
         Users user = userRepository.findById(request)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -211,6 +217,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> deletes(List<Long> request) {
         List<Users> users = userRepository.findAllById(request);
 
@@ -352,6 +359,7 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> cancelFiend(Integer userAddId, Integer userReceiverId, String groudId) {
         BaseMongoAddFriend baseMongoAddFriend = this.baseMongoAddFriendRepository.findByUserAddAndUserReceiver(userAddId, userReceiverId);
         if(baseMongoAddFriend != null){
@@ -410,6 +418,104 @@ public class UserServiceImpl implements UserService{
                 .count((long) roleResponses.size())
                 .message("Get roles successfully")
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseGlobalDto<Boolean> assignCoachRole(AssignCoachRoleRequest request) {
+        try {
+            Users user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Set the new role
+            Long newRoleId = request.getRoleId();
+            if (newRoleId == null) {
+                // Fallback to Coach role if not specified
+                newRoleId = 3L;
+            }
+            user.setRoleId(newRoleId);
+            userRepository.save(user);
+
+            // If the new role is NOT Coach (roleId 3), delete all UserSubject records for this user
+            if (!newRoleId.equals(3L)) {
+                userSubjectRepository.deleteByUserId(request.getUserId());
+                return ResponseGlobalDto.<Boolean>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(true)
+                        .message("Role assigned successfully. User subject records deleted.")
+                        .build();
+            }
+
+            // If the new role IS Coach (roleId 3), manage subjects
+            // First, delete old subjects that are no longer selected
+            List<UserSubject> existingCoachSubjects = userSubjectRepository.findByUserIdAndIsCoachTrue(request.getUserId());
+            for (UserSubject existingSubject : existingCoachSubjects) {
+                if (request.getSubjectIds() == null || !request.getSubjectIds().contains(existingSubject.getSubjectId())) {
+                    userSubjectRepository.delete(existingSubject);
+                }
+            }
+
+            // Then add or update the newly selected subjects
+            if (request.getSubjectIds() != null && !request.getSubjectIds().isEmpty()) {
+                for (Long subjectId : request.getSubjectIds()) {
+                    // Check if user already has this subject
+                    UserSubject existingUserSubject = userSubjectRepository.findAll().stream()
+                            .filter(us -> us.getUserId().equals(request.getUserId()) && 
+                                   us.getSubjectId().equals(subjectId))
+                            .findFirst()
+                            .orElse(null);
+                    
+                    if (existingUserSubject == null) {
+                        UserSubject userSubject = UserSubject.builder()
+                                .userId(request.getUserId())
+                                .subjectId(subjectId)
+                                .total(0L)  // Coach không có total
+                                .isCoach(true)
+                                .build();
+                        userSubjectRepository.save(userSubject);
+                    } else {
+                        // Update isCoach = true if not already
+                        existingUserSubject.setIsCoach(true);
+                        userSubjectRepository.save(existingUserSubject);
+                    }
+                }
+            }
+
+            return ResponseGlobalDto.<Boolean>builder()
+                    .status(HttpStatus.OK.value())
+                    .data(true)
+                    .message("Coach role assigned successfully with subjects")
+                    .build();
+        } catch (Exception e) {
+            return ResponseGlobalDto.<Boolean>builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .data(false)
+                    .message("Error assigning role: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @Override
+    public ResponseGlobalDto<List<Long>> getUserCoachSubjects(Long userId) {
+        try {
+            List<UserSubject> coachSubjects = userSubjectRepository.findByUserIdAndIsCoachTrue(userId);
+            List<Long> subjectIds = coachSubjects.stream()
+                    .map(UserSubject::getSubjectId)
+                    .collect(Collectors.toList());
+
+            return ResponseGlobalDto.<List<Long>>builder()
+                    .status(HttpStatus.OK.value())
+                    .data(subjectIds)
+                    .count((long) subjectIds.size())
+                    .message("Get user coach subjects successfully")
+                    .build();
+        } catch (Exception e) {
+            return ResponseGlobalDto.<List<Long>>builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .data(new ArrayList<>())
+                    .message("Error getting user coach subjects: " + e.getMessage())
+                    .build();
+        }
     }
 
 

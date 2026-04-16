@@ -28,7 +28,6 @@ export class ComboDetailComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   error: string = '';
   quantity: number = 1;
-  showPaymentModal: boolean = false;
 
   // Subjects management
   subjects: SubjectOption[] = [];
@@ -37,16 +36,6 @@ export class ComboDetailComponent implements OnInit, OnDestroy {
   // Subscription management
   private destroy$ = new Subject<void>();
 
-  // Payment form
-  paymentForm = {
-    fullName: '',
-    email: '',
-    phone: '',
-    cardNumber: '',
-    cardHolder: '',
-    expiryDate: '',
-    cvv: ''
-  };
 
   constructor(
     private route: ActivatedRoute,
@@ -160,70 +149,45 @@ export class ComboDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Open payment modal
+   * Enroll combo and go to payment page (similar to subject)
+   */
+  enrollCombo(): void {
+    if (!this.combo || this.quantity < 1) return;
+
+    // Store enrollment data and navigate to payment
+    const enrollmentData = {
+      comboId: this.combo.id,
+      comboName: this.combo.name,
+      quantity: this.quantity,
+      price: this.combo.prices,
+      totalAmount: Number(this.combo.prices) * this.quantity
+    };
+
+    localStorage.setItem('enrollmentData', JSON.stringify(enrollmentData));
+    this.router.navigate(['/payment']);
+  }
+
+  /**
+   * Open payment modal (deprecated - kept for backward compatibility)
    */
   openPaymentModal(): void {
-    if (!this.paymentForm.fullName || !this.paymentForm.email || !this.paymentForm.phone) {
-      alert('Vui lòng điền đầy đủ thông tin cá nhân');
-      return;
-    }
-    this.showPaymentModal = true;
+    this.enrollCombo();
   }
 
   /**
-   * Close payment modal
+   * Close payment modal (deprecated - not used anymore)
    */
   closePaymentModal(): void {
-    this.showPaymentModal = false;
+    // Payment moved to separate page
   }
 
   /**
-   * Process payment
+   * Process payment (deprecated - kept for backward compatibility)
    */
   processPayment(): void {
-    if (!this.validatePaymentForm()) {
-      alert('Vui lòng điền đầy đủ thông tin thanh toán');
-      return;
-    }
-
-    // Simulate payment processing
-    console.log('Processing payment...', this.paymentForm);
-    alert('Thanh toán thành công! Cảm ơn bạn đã mua gói ' + this.combo?.name);
-
-    // Reset form and close modal
-    this.resetPaymentForm();
-    this.showPaymentModal = false;
-
-    // Redirect to dashboard
-    setTimeout(() => {
-      this.router.navigate(['/dashboard']);
-    }, 1500);
+    this.enrollCombo();
   }
 
-  /**
-   * Validate payment form
-   */
-  validatePaymentForm(): boolean {
-    return this.paymentForm.cardNumber.length >= 16 &&
-           this.paymentForm.cardHolder.trim() !== '' &&
-           this.paymentForm.expiryDate.match(/^\d{2}\/\d{2}$/) !== null &&
-           this.paymentForm.cvv.length === 3;
-  }
-
-  /**
-   * Reset payment form
-   */
-  resetPaymentForm(): void {
-    this.paymentForm = {
-      fullName: '',
-      email: '',
-      phone: '',
-      cardNumber: '',
-      cardHolder: '',
-      expiryDate: '',
-      cvv: ''
-    };
-  }
 
   /**
    * Calculate total price

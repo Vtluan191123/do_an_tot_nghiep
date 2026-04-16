@@ -22,10 +22,10 @@ public class UserSubject extends BaseEntity{
     @Column(name = "subject_id")
     private Long subjectId;
 
-    @Column(name = "total_teach") //tổng số buổi học
-    private Long totalTeach;
+    @Column(name = "total")  // Tổng số buổi học hoặc số tháng sử dụng
+    private Long total;
 
     @Column(name = "is_coach")
-    private boolean isCoach;
+    private Boolean isCoach;
 
 }

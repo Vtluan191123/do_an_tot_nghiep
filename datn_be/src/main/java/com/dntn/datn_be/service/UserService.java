@@ -18,4 +18,6 @@ public interface UserService extends BaseGlobalService<UserResponse, UserCreateR
     ResponseGlobalDto<Boolean> cancelFiend(Integer userAddId,Integer userReceiverId,String groudId);
     ResponseGlobalDto<GetListGroudsDto> getListGrouds(Long userId);
     ResponseGlobalDto<List<RoleResponse>> getRoles();
+    ResponseGlobalDto<Boolean> assignCoachRole(AssignCoachRoleRequest request);
+    ResponseGlobalDto<List<Long>> getUserCoachSubjects(Long userId);
 }

@@ -4,6 +4,7 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.UserCreateRequest;
 import com.dntn.datn_be.dto.request.UserFilterRequest;
 import com.dntn.datn_be.dto.request.UserUpdateRequest;
+import com.dntn.datn_be.dto.request.AssignCoachRoleRequest;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.service.UserService;
@@ -62,5 +63,17 @@ public class UserController {
     @DeleteMapping
     public ResponseGlobalDto<Boolean> deletes(@RequestBody List<Long> ids) {
         return userService.deletes(ids);
+    }
+
+    // ================== ASSIGN COACH ROLE ==================
+    @PostMapping("/assign-coach-role")
+    public ResponseGlobalDto<Boolean> assignCoachRole(@RequestBody AssignCoachRoleRequest request) {
+        return userService.assignCoachRole(request);
+    }
+
+    // ================== GET USER COACH SUBJECTS ==================
+    @GetMapping("/{userId}/coach-subjects")
+    public ResponseGlobalDto<List<Long>> getUserCoachSubjects(@PathVariable Long userId) {
+        return userService.getUserCoachSubjects(userId);
     }
 }

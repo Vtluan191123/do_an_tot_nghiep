@@ -38,7 +38,7 @@
           <h3 style="color: #333; margin-bottom: 25px; font-size: 20px;">Thông Tin Đơn Hàng</h3>
 
           <!-- Subject Info -->
-          <div *ngIf="enrollmentData" style="margin-bottom: 25px;">
+          <div *ngIf="enrollmentData && enrollmentData.subjectId" style="margin-bottom: 25px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <span style="color: #666;">Môn Học:</span>
               <strong style="color: #333;">{{ enrollmentData.subjectName }}</strong>
@@ -51,6 +51,35 @@
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <span style="color: #666;">Giá/Buổi:</span>
+              <strong style="color: #333;">{{ formatPrice(enrollmentData.price) }}</strong>
+            </div>
+
+            <div style="
+              border-top: 2px solid #eee;
+              padding-top: 15px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 18px;">
+              <span style="color: #333; font-weight: bold;">Tổng Tiền:</span>
+              <strong style="color: #00a8e8; font-size: 22px;">{{ formatPrice(enrollmentData.totalAmount) }}</strong>
+            </div>
+          </div>
+
+          <!-- Combo Info -->
+          <div *ngIf="enrollmentData && enrollmentData.comboId" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #666;">Gói Combo:</span>
+              <strong style="color: #333;">{{ enrollmentData.comboName }}</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #666;">Số Lượng (Tháng):</span>
+              <strong style="color: #333;">{{ enrollmentData.quantity }}</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="color: #666;">Giá/Tháng:</span>
               <strong style="color: #333;">{{ formatPrice(enrollmentData.price) }}</strong>
             </div>
 

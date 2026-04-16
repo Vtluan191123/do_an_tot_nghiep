@@ -10,9 +10,12 @@ import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 interface EnrollmentData {
-  subjectId: number;
-  subjectName: string;
-  sessions: number;
+  subjectId?: number;
+  subjectName?: string;
+  comboId?: number;
+  comboName?: string;
+  sessions?: number;
+  quantity?: number;
   price: number;
   totalAmount: number;
 }
@@ -81,16 +84,26 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
     this.loading = true;
 
-    const params = {
-      subjectId: this.enrollmentData.subjectId,
-      sessions: this.enrollmentData.sessions,
+    // Determine if it's subject or combo payment
+    const isCombo = !!this.enrollmentData.comboId;
+    const endpoint = isCombo ? '/vnpay-submit-order-combo' : '/vnpay-submit-order';
+
+    const params: any = {
       fullName: this.formData.fullName,
       email: this.formData.email,
       phone: this.formData.phone,
       amount: this.enrollmentData.totalAmount
     };
 
-    this.http.post<any>(`${this.apiUrl}/vnpay-submit-order`, null, { params })
+    if (isCombo) {
+      params.comboId = this.enrollmentData.comboId;
+      params.quantity = this.enrollmentData.quantity;
+    } else {
+      params.subjectId = this.enrollmentData.subjectId;
+      params.sessions = this.enrollmentData.sessions;
+    }
+
+    this.http.post<any>(`${this.apiUrl}${endpoint}`, null, { params })
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (response: any) => {
@@ -141,11 +154,17 @@ export class PaymentComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Go back to subject detail
+   * Go back to detail page (subject or combo)
    */
   goBack(): void {
     if (this.enrollmentData) {
-      this.router.navigate(['/subject-detail', this.enrollmentData.subjectId]);
+      if (this.enrollmentData.comboId) {
+        this.router.navigate(['/combo-detail', this.enrollmentData.comboId]);
+      } else if (this.enrollmentData.subjectId) {
+        this.router.navigate(['/subject-detail', this.enrollmentData.subjectId]);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
     } else {
       this.router.navigate(['/dashboard']);
     }

@@ -16,6 +16,7 @@ interface User {
   imagesUrl?: string;
   phoneNumber?: string;
   avatar?: string;
+  roleId?: number;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -36,8 +37,22 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   selectedUser: User | null = null;
   isUploadingImage = false;
 
+  // Role assignment properties
+  showAssignRoleModal = false;
+  selectedUserForRole: User | null = null;
+  selectedRoleId: number | null = null;
+  selectedSubjects: number[] = [];
+  allSubjects: any[] = [];
+  isAssigningRole = false;
+  hoveredSubjectId: number | null = null;
+
   // Roles list
   roles: any[] = [];
+
+  // Getter for numeric role ID (for template comparisons)
+  get roleIdNum(): number {
+    return this.selectedRoleId ? Number(this.selectedRoleId) : 0;
+  }
 
   // Pagination properties
   currentPage: number = 0;
@@ -454,6 +469,255 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   clearImage(): void {
     this.formData.image = '';
     this.formData.imagesUrl = '';
+  }
+
+  /**
+   * Load all subjects for coach assignment
+   */
+  loadAllSubjects(): void {
+    this.userService.getAllSubjects()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.allSubjects = response.data;
+          }
+        },
+        error: (error) => {
+          console.error('Error loading subjects:', error);
+          this.toastr.error('Lỗi tải danh sách môn học');
+        }
+      });
+  }
+
+  /**
+   * Open assign role modal for coach
+   */
+  openAssignRoleModal(user: User): void {
+    this.selectedUserForRole = user;
+    this.selectedRoleId = null;
+    this.selectedSubjects = [];
+
+    console.log('Opening assign role modal for user:', user.id);
+
+    // Load roles synchronously
+    this.loadRolesSync();
+
+    // Load all subjects immediately when modal opens (so they're ready when user selects Coach)
+    this.loadAllSubjects();
+
+    // Show modal after initial setup
+    this.showAssignRoleModal = true;
+
+    // If user already has coach role, load their existing subjects
+    if (user.roleId === 3) { // 3 = ROLE_COACH
+      console.log('Loading coach subjects for user:', user.id);
+      this.userService.getUserCoachSubjects(user.id!)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response: any) => {
+            console.log('Coach subjects response:', response);
+            if (response && response.data && Array.isArray(response.data)) {
+              this.selectedSubjects = response.data;
+              this.selectedRoleId = 3;
+              console.log('Loaded coach subjects:', this.selectedSubjects);
+            }
+          },
+          error: (error) => {
+            console.error('Error loading user coach subjects:', error);
+          }
+        });
+    }
+  }
+
+  /**
+   * Get current role name
+   */
+  getCurrentRoleName(): string {
+    if (!this.selectedUserForRole?.roleId || !this.roles || this.roles.length === 0) {
+      return '';
+    }
+    const role = this.roles.find(r => r.id === this.selectedUserForRole?.roleId);
+    return role ? role.name : 'Không xác định';
+  }
+
+  /**
+   * Load roles synchronously - use cached roles or fallback
+   */
+  private loadRolesSync(): void {
+    console.log('loadRolesSync called, current roles:', this.roles);
+
+    // Always ensure we have default roles
+    if (!this.roles || this.roles.length === 0) {
+      console.log('No roles loaded, setting default roles');
+      this.roles = [
+        { id: 1, code: 'ROLE_ADMIN', name: 'Quản trị hệ thống' },
+        { id: 2, code: 'ROLE_USER', name: 'Các quyền cơ bản của người dùng' },
+        { id: 3, code: 'ROLE_COACH', name: 'Các quyền của người huấn luyện' }
+      ];
+      console.log('Default roles set:', this.roles);
+    } else {
+      console.log('Using cached roles:', this.roles);
+    }
+
+    // Also try to load fresh roles from backend in background
+    this.userService.getAllRoles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          console.log('Fresh roles loaded from backend:', response);
+          if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+            console.log('Updating roles from backend:', response.data);
+            this.roles = response.data;
+          } else if (Array.isArray(response) && response.length > 0) {
+            console.log('Updating roles from backend array:', response);
+            this.roles = response;
+          }
+        },
+        error: (error) => {
+          console.error('Error loading roles from backend:', error);
+          // Keep the default roles - don't override
+        }
+      });
+  }
+
+  /**
+   * Close assign role modal
+   */
+  closeAssignRoleModal(): void {
+    this.showAssignRoleModal = false;
+    this.selectedUserForRole = null;
+    this.selectedRoleId = null;
+    this.selectedSubjects = [];
+  }
+
+  /**
+   * Toggle subject selection
+   */
+  toggleSubject(subjectId: number): void {
+    const index = this.selectedSubjects.indexOf(subjectId);
+    if (index > -1) {
+      this.selectedSubjects.splice(index, 1);
+    } else {
+      this.selectedSubjects.push(subjectId);
+    }
+  }
+
+  /**
+   * Check if subject is selected
+   */
+  isSubjectSelected(subjectId: number): boolean {
+    return this.selectedSubjects.includes(subjectId);
+  }
+
+  /**
+   * Handle role change event
+   */
+  onRoleChange(): void {
+    console.log('Role changed to:', this.selectedRoleId);
+    console.log('Type:', typeof this.selectedRoleId);
+
+    // Convert to number for comparison
+    const roleId = Number(this.selectedRoleId);
+
+    if (roleId === 3) {
+      // Coach role selected - ensure subjects are visible
+      console.log('Coach role selected (roleId=3)');
+      if (!this.allSubjects || this.allSubjects.length === 0) {
+        console.log('Subjects not loaded, loading now...');
+        this.loadAllSubjects();
+      }
+    } else if (this.selectedRoleId && roleId !== 3) {
+      // Non-Coach role selected - clear subject selections
+      console.log('Non-Coach role selected, clearing subjects...');
+      this.selectedSubjects = [];
+    }
+  }
+
+  /**
+   * TrackBy function for roles ngFor
+   */
+  trackByRoleId(index: number, role: any): any {
+    return role?.id || index;
+  }
+
+  /**
+   * TrackBy function for subjects ngFor
+   */
+  trackBySubjectId(index: number, subject: any): any {
+    return subject?.id || index;
+  }
+
+  /**
+   * Assign role with subjects (if coach)
+   */
+  assignCoachRole(): void {
+    console.log('assignCoachRole called');
+    console.log('selectedUserForRole:', this.selectedUserForRole);
+    console.log('selectedRoleId:', this.selectedRoleId, 'type:', typeof this.selectedRoleId);
+    console.log('selectedSubjects:', this.selectedSubjects);
+
+    if (!this.selectedUserForRole?.id) {
+      this.toastr.error('Vui lòng chọn user');
+      return;
+    }
+
+    if (!this.selectedRoleId) {
+      this.toastr.warning('Vui lòng chọn vai trò');
+      return;
+    }
+
+    // Convert to number for comparison
+    const roleId = Number(this.selectedRoleId);
+    console.log('Converted roleId:', roleId);
+
+    // If Coach role is selected, subjects are required
+    if (roleId === 3) {  // 3 is ROLE_COACH
+      if (this.selectedSubjects.length === 0) {
+        this.toastr.warning('Vui lòng chọn ít nhất một môn học cho vai trò Coach');
+        return;
+      }
+    }
+
+    // Show confirmation if changing from coach to non-coach role
+    if (this.selectedUserForRole?.roleId === 3 && roleId !== 3) {
+      const confirmed = confirm('Cảnh báo: Nếu đổi vai trò từ Coach sang vai trò khác, toàn bộ môn học liên kết sẽ bị xóa. Bạn có chắc chắn không?');
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    this.isAssigningRole = true;
+
+    const request = {
+      userId: this.selectedUserForRole.id,
+      roleId: roleId,
+      subjectIds: roleId === 3 ? this.selectedSubjects : []
+    };
+
+    console.log('Sending request:', request);
+
+    this.userService.assignCoachRole(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Response received:', response);
+          this.isAssigningRole = false;
+          if (response && (response.data === true || response.status === 200 || response.status === 'OK')) {
+            this.toastr.success('Cập nhật vai trò thành công');
+            this.closeAssignRoleModal();
+            this.loadUsers();
+          } else {
+            this.toastr.error('Lỗi cập nhật vai trò: ' + (response?.message || 'Lỗi không xác định'));
+          }
+        },
+        error: (error) => {
+          this.isAssigningRole = false;
+          console.error('Error assigning role:', error);
+          const errorMsg = error?.error?.message || error?.error?.data || error?.message || 'Lỗi không xác định';
+          this.toastr.error('Lỗi cập nhật vai trò: ' + errorMsg);
+        }
+      });
   }
 
   protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;

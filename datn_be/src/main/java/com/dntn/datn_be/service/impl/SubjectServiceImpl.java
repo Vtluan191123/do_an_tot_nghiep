@@ -1,6 +1,5 @@
 package com.dntn.datn_be.service.impl;
 
-import com.dntn.datn_be.constants.MessageConstants;
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.SubjectCreateRequest;
 import com.dntn.datn_be.dto.request.SubjectFilterRequest;
@@ -12,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -93,6 +93,7 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> delete(Long request) {
         Subject subject = subjectRepository.findById(request)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -107,6 +108,7 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
+    @Transactional
     public ResponseGlobalDto<Boolean> deletes(List<Long> request) {
         List<Subject> subjects = subjectRepository.findAllById(request);
 
