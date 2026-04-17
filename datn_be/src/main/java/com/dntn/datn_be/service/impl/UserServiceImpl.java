@@ -10,17 +10,20 @@ import com.dntn.datn_be.dto.request.AssignCoachRoleRequest;
 import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
+import com.dntn.datn_be.dto.response.CoachDetailResponse;
 import com.dntn.datn_be.model.GroudMessageUser;
 import com.dntn.datn_be.model.NotificationType;
 import com.dntn.datn_be.model.Roles;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.model.UserSubject;
+import com.dntn.datn_be.model.Subject;
 import com.dntn.datn_be.model.mongo.BaseMongoAddFriend;
 import com.dntn.datn_be.model.mongo.BaseMongoGroud;
 import com.dntn.datn_be.repository.GroudMessageUserRepository;
 import com.dntn.datn_be.repository.RoleRepository;
 import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.repository.UserSubjectRepository;
+import com.dntn.datn_be.repository.SubjectRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoAddFriendRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoGroudRepository;
 import com.dntn.datn_be.service.AuthService;
@@ -56,6 +59,7 @@ public class UserServiceImpl implements UserService{
     private final String ENTITY = "UserServiceImpl";
     private final RoleRepository roleRepository;
     private final UserSubjectRepository userSubjectRepository;
+    private final SubjectRepository subjectRepository;
 
 
     @Override
@@ -518,5 +522,71 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    @Override
+    public ResponseGlobalDto<List<CoachDetailResponse>> getAllCoachesWithSubjects() {
+        try {
+            // Lấy tất cả users có roleId = 3 (Coach)
+            List<Users> coaches = userRepository.findAll().stream()
+                    .filter(user -> user.getRoleId() != null && user.getRoleId().equals(3L))
+                    .collect(Collectors.toList());
+
+            List<CoachDetailResponse> coachDetailResponses = coaches.stream()
+                    .map(coach -> {
+                        // Lấy danh sách subject của coach
+                        List<UserSubject> coachSubjects = userSubjectRepository.findByUserIdAndIsCoachTrue(coach.getId());
+                        
+                        // Lấy thông tin subject từ subjectIds
+                        List<CoachDetailResponse.SubjectDetailResponse> subjects = coachSubjects.stream()
+                                .map(userSubject -> {
+                                    // Tìm Subject từ ID
+                                    Optional<Subject> subjectOpt = subjectRepository.findById(userSubject.getSubjectId());
+                                    if (subjectOpt.isPresent()) {
+                                        Subject subject = subjectOpt.get();
+                                        return CoachDetailResponse.SubjectDetailResponse.builder()
+                                                .id(subject.getId())
+                                                .name(subject.getName())
+                                                .description(subject.getDescription())
+                                                .images(subject.getImages())
+                                                .status(subject.getStatus())
+                                                .build();
+                                    }
+                                    return null;
+                                })
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+
+                        return CoachDetailResponse.builder()
+                                .id(coach.getId())
+                                .username(coach.getUsername())
+                                .fullName(coach.getFullName())
+                                .email(coach.getEmail())
+                                .age(coach.getAge())
+                                .description(coach.getDescription())
+                                .address(coach.getAddress())
+                                .exp(coach.getExp())
+                                .phoneNumber(coach.getPhoneNumber())
+                                .imagesUrl(coach.getImagesUrl())
+                                .voteStar(coach.getVoteStar())
+                                .roleId(coach.getRoleId())
+                                .subjects(subjects)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseGlobalDto.<List<CoachDetailResponse>>builder()
+                    .status(HttpStatus.OK.value())
+                    .data(coachDetailResponses)
+                    .count((long) coachDetailResponses.size())
+                    .message("Get all coaches with subjects successfully")
+                    .build();
+        } catch (Exception e) {
+            return ResponseGlobalDto.<List<CoachDetailResponse>>builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .data(new ArrayList<>())
+                    .message("Error getting coaches: " + e.getMessage())
+                    .build();
+        }
+    }
 
 }
+

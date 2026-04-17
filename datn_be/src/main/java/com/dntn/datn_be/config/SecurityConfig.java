@@ -38,8 +38,8 @@ public class SecurityConfig {
                 //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PUBLIC).permitAll()
-                        .requestMatchers("/api/user/role").authenticated()
-                        .requestMatchers("/api/user/search").hasRole(RoleConstants.RoleTypes.ROLE_ADMIN)
+//                        .requestMatchers("/api/user/role").authenticated()
+//                        .requestMatchers("/api/user/search").hasRole(RoleConstants.RoleTypes.ROLE_ADMIN)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

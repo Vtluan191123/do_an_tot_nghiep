@@ -30,101 +30,130 @@
         </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-lg-4 col-sm-6">
-        <div class="ts-item set-bg" [style.backgroundImage]="'url(assets/img/team/team-1.jpg)'">
-          <div class="ts_text">
-            <h4>Athart Rachel</h4>
-            <span>Gym Trainer</span>
-            <div class="tt_social">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-youtube-play"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-              <a href="#"><i class="fa fa-envelope-o"></i></a>
-            </div>
-          </div>
-        </div>
+
+    <!-- Loading State -->
+    <div class="row" *ngIf="loading">
+      <div class="col-lg-12 text-center">
+        <p>Loading coaches...</p>
       </div>
-      <div class="col-lg-4 col-sm-6">
-        <div class="ts-item set-bg" [style.backgroundImage]="'url(assets/img/team/team-2.jpg)'">
+    </div>
+
+    <!-- Coaches Grid -->
+    <div class="row" *ngIf="!loading && coaches.length > 0">
+      <div class="col-lg-4 col-sm-6" *ngFor="let coach of coaches">
+        <div class="ts-item set-bg cursor-pointer"
+             [style.backgroundImage]="'url(' + (BASE_URL_UPLOAD + coach.imagesUrl || 'assets/img/team/team-1.jpg') + ')'"
+             (click)="selectCoach(coach)"
+             style="cursor: pointer;">
           <div class="ts_text">
-            <h4>Athart Rachel</h4>
-            <span>Gym Trainer</span>
+            <h4>{{ coach.fullName || coach.username }}</h4>
+            <span>Coach</span>
             <div class="tt_social">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-youtube-play"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-              <a href="#"><i class="fa fa-envelope-o"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-sm-6">
-        <div class="ts-item set-bg" [style.backgroundImage]="'url(assets/img/team/team-3.jpg)'">
-          <div class="ts_text">
-            <h4>Athart Rachel</h4>
-            <span>Gym Trainer</span>
-            <div class="tt_social">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-youtube-play"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-              <a href="#"><i class="fa fa-envelope-o"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-sm-6">
-        <div class="ts-item set-bg" [style.backgroundImage]="'url(assets/img/team/team-4.jpg)'">
-          <div class="ts_text">
-            <h4>Athart Rachel</h4>
-            <span>Gym Trainer</span>
-            <div class="tt_social">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-youtube-play"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-              <a href="#"><i class="fa fa-envelope-o"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-sm-6">
-        <div class="ts-item set-bg" [style.backgroundImage]="'url(assets/img/team/team-5.jpg)'">
-          <div class="ts_text">
-            <h4>Athart Rachel</h4>
-            <span>Gym Trainer</span>
-            <div class="tt_social">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-youtube-play"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-              <a href="#"><i class="fa fa-envelope-o"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-sm-6">
-        <div class="ts-item set-bg" [style.backgroundImage]="'url(assets/img/team/team-6.jpg)'">
-          <div class="ts_text">
-            <h4>Athart Rachel</h4>
-            <span>Gym Trainer</span>
-            <div class="tt_social">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-youtube-play"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-              <a href="#"><i class="fa fa-envelope-o"></i></a>
+              <a *ngIf="coach.email" [href]="'mailto:' + coach.email"><i class="fa fa-envelope-o"></i></a>
+              <a *ngIf="coach.phoneNumber" [href]="'tel:' + coach.phoneNumber"><i class="fa fa-mobile"></i></a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- No Coaches Found -->
+    <div class="row" *ngIf="!loading && coaches.length === 0">
+      <div class="col-lg-12 text-center">
+        <p>No coaches available at the moment.</p>
+      </div>
+    </div>
   </div>
 </section>
 <!-- Team Section End -->
+
+<!-- Coach Detail Modal -->
+<div class="coach-modal" *ngIf="showModal && selectedCoach" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeModal()">&times;</button>
+
+    <div class="modal-header">
+      <img [src]="BASE_URL_UPLOAD + selectedCoach.imagesUrl || 'assets/img/team/team-1.jpg'"
+           [alt]="selectedCoach.fullName"
+           class="coach-image">
+    </div>
+
+    <div class="modal-body">
+      <h2>{{ selectedCoach.fullName || selectedCoach.username }}</h2>
+      <p class="role">Coach</p>
+
+      <!-- Add Friend Button -->
+      <div class="add-friend-button-container">
+        <button class="add-friend-btn"
+                (click)="addFriend()"
+                [disabled]="addingFriend"
+                [class.loading]="addingFriend">
+          <i class="fa fa-user-plus"></i>
+          {{ addingFriend ? 'Đang gửi...' : 'Gửi lời mời kết bạn' }}
+        </button>
+      </div>
+
+      <!-- Coach Info -->
+      <div class="coach-info">
+        <div class="info-group" *ngIf="selectedCoach.description">
+          <label>Description:</label>
+          <p>{{ selectedCoach.description }}</p>
+        </div>
+
+        <div class="info-group" *ngIf="selectedCoach.exp">
+          <label>Experience:</label>
+          <p>{{ selectedCoach.exp }}</p>
+        </div>
+
+        <div class="info-group" *ngIf="selectedCoach.age">
+          <label>Age:</label>
+          <p>{{ selectedCoach.age }}</p>
+        </div>
+
+        <div class="info-group" *ngIf="selectedCoach.email">
+          <label>Email:</label>
+          <p><a [href]="'mailto:' + selectedCoach.email">{{ selectedCoach.email }}</a></p>
+        </div>
+
+        <div class="info-group" *ngIf="selectedCoach.phoneNumber">
+          <label>Phone:</label>
+          <p><a [href]="'tel:' + selectedCoach.phoneNumber">{{ selectedCoach.phoneNumber }}</a></p>
+        </div>
+
+        <div class="info-group" *ngIf="selectedCoach.address">
+          <label>Address:</label>
+          <p>{{ selectedCoach.address }}</p>
+        </div>
+
+        <div class="info-group" *ngIf="selectedCoach.voteStar">
+          <label>Rating:</label>
+          <p>{{ selectedCoach.voteStar }} <i class="fa fa-star"></i></p>
+        </div>
+      </div>
+
+      <!-- Subjects Teaching -->
+      <div class="subjects-section" *ngIf="selectedCoach.subjects && selectedCoach.subjects.length > 0">
+        <h3>Subjects Teaching</h3>
+        <div class="subjects-list">
+          <div class="subject-card" *ngFor="let subject of selectedCoach.subjects">
+            <div class="subject-image" *ngIf="subject.images">
+              <img [src]="BASE_URL_UPLOAD + subject.images" [alt]="subject.name">
+            </div>
+            <div class="subject-info">
+              <h4>{{ subject.name }}</h4>
+              <p *ngIf="subject.description">{{ subject.description }}</p>
+              <span *ngIf="subject.status" class="status-badge">{{ subject.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-subjects" *ngIf="!selectedCoach.subjects || selectedCoach.subjects.length === 0">
+        <p>No subjects assigned yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Get In Touch Section Begin -->
 <div class="gettouch-section">
@@ -155,5 +184,4 @@
   </div>
 </div>
 <!-- Get In Touch Section End -->
-
 
