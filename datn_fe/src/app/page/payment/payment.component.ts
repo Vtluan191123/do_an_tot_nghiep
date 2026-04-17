@@ -81,7 +81,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
       alert('Lỗi: Không tìm thấy thông tin đăng ký');
       return;
     }
-
+    debugger
     this.loading = true;
 
     // Determine if it's subject or combo payment
@@ -110,6 +110,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
           console.log('Payment URL response:', response);
           if (response.status === 200 && response.data) {
             // Redirect to VNPay
+            debugger
             window.location.href = response.data;
           } else {
             alert('Lỗi: Không thể tạo URL thanh toán');

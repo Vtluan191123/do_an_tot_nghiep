@@ -2,6 +2,8 @@ package com.dntn.datn_be.controller;
 
 import com.dntn.datn_be.config.VNPayConfig;
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
+import com.dntn.datn_be.model.Users;
+import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.VNPayService;
 import com.dntn.datn_be.model.Order;
 import com.dntn.datn_be.model.UserSubject;
@@ -27,13 +29,13 @@ public class PaymentController {
     private final VNPayService vnPayService;
     private final OrderRepository orderRepository;
     private final UserSubjectRepository userSubjectRepository;
+    private final AuthService authService;
 
     /**
      * Create VNPay payment URL
      * @param subjectId Subject ID to enroll
      * @param sessions Number of sessions to enroll
      * @param request HTTP request
-     * @param session HTTP session
      * @return VNPay payment URL
      */
     @PostMapping("/vnpay-submit-order")
@@ -44,8 +46,25 @@ public class PaymentController {
             @RequestParam("email") String email,
             @RequestParam("phone") String phone,
             @RequestParam("amount") long amount,
-            HttpServletRequest request,
-            HttpSession session) {
+            HttpServletRequest request) {
+
+
+        Users currentUser = authService.getCurrentUser();
+
+        // ✅ 1. CREATE ORDER (PENDING)
+        Order order = Order.builder()
+                .userId(currentUser.getId())
+                .subjectId(subjectId)
+                .quantity(sessions)
+                .orderType("SUBJECT")
+                .paymentStatus("PENDING")
+                .totalAmount(BigDecimal.valueOf(amount))
+                .fullName(fullName)
+                .email(email)
+                .phoneNumber(phone)
+                .build();
+
+        order = orderRepository.save(order);
 
         // Validate VNPay configuration
         if (VNPayConfig.vnp_TmnCode == null || VNPayConfig.vnp_TmnCode.isEmpty()) {
@@ -65,20 +84,9 @@ public class PaymentController {
         }
 
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String orderInfo = "Enroll subject " + subjectId + " for " + sessions + " sessions - " + fullName;
+        String orderInfo = "Order-" + order.getId() + "-subject-" + subjectId;
 
-        Map<String, Object> sessionData = new HashMap<>();
-        sessionData.put("subjectId", subjectId);
-        sessionData.put("sessions", sessions);
-        sessionData.put("fullName", fullName);
-        sessionData.put("email", email);
-        sessionData.put("phone_number", phone);
-        sessionData.put("orderType", "SUBJECT");
-
-        String paymentUrl = vnPayService.createOrder(amount, orderInfo, baseUrl, sessionData);
-
-        // Store in session
-        session.setAttribute("paymentData", sessionData);
+        String paymentUrl = vnPayService.createOrder(amount, orderInfo, baseUrl);
 
         return ResponseGlobalDto.<String>builder()
                 .status(HttpStatus.OK.value())
@@ -96,25 +104,28 @@ public class PaymentController {
     @GetMapping("/vnpay-payment")
     public void paymentCallback(
             HttpServletRequest request,
-            HttpSession session,
             HttpServletResponse httpServletResponse) throws IOException {
+        System.out.println(request.getQueryString());
 
         int paymentStatus = vnPayService.orderReturn(request);
 
-        // Get session data
-        @SuppressWarnings("unchecked")
-        Map<String, Object> paymentData = (Map<String, Object>) session.getAttribute("paymentData");
+        // Get orderId from orderInfo parameter (format: Order-{orderId}-subject-{subjectId})
+        String orderInfo = request.getParameter("vnp_OrderInfo");
+        Long orderId = extractOrderIdFromOrderInfo(orderInfo);
         
         String redirectUrl;
 
-        if (paymentStatus == 1) {
-            // Payment successful - tạo Order
-            if (paymentData != null) {
-                try {
-                    createOrderFromPayment(paymentData, request);
-                } catch (Exception e) {
-                    System.err.println("Error creating order: " + e.getMessage());
+        if (paymentStatus == 1 && orderId != null) {
+            // Payment successful - update Order status
+            try {
+                Order order = orderRepository.findById(orderId).orElse(null);
+                if (order != null) {
+                    order.setPaymentStatus("SUCCESS");
+                    order.setTransactionId(request.getParameter("vnp_TransactionNo"));
+                    orderRepository.save(order);
                 }
+            } catch (Exception e) {
+                System.err.println("Error updating order: " + e.getMessage());
             }
             redirectUrl = "http://localhost:4200/payment/success";
         } else {
@@ -125,47 +136,20 @@ public class PaymentController {
     }
 
     /**
-     * Tạo Order record sau thanh toán thành công
+     * Extract orderId from orderInfo (format: Order-{orderId}-...)
      */
-    private void createOrderFromPayment(Map<String, Object> paymentData, HttpServletRequest request) {
+    private Long extractOrderIdFromOrderInfo(String orderInfo) {
         try {
-            String orderType = (String) paymentData.getOrDefault("orderType", "SUBJECT");
-            
-            Order order = Order.builder()
-                    .transactionId(request.getParameter("vnp_TransactionNo"))
-                    .totalAmount(new BigDecimal(request.getParameter("vnp_Amount") != null ? 
-                            Long.parseLong(request.getParameter("vnp_Amount")) / 100 : 0))
-                    .paymentStatus("SUCCESS")
-                    .orderType(orderType)
-                    .fullName((String) paymentData.getOrDefault("fullName", ""))
-                    .email((String) paymentData.getOrDefault("email", ""))
-                    .phoneNumber((String) paymentData.getOrDefault("phone_number", ""))
-                    .notes("VNPay payment")
-                    .build();
-
-            if ("SUBJECT".equals(orderType)) {
-                Long subjectId = paymentData.get("subjectId") != null ? 
-                        Long.parseLong(String.valueOf(paymentData.get("subjectId"))) : null;
-                Integer sessions = paymentData.get("sessions") != null ? 
-                        (Integer) paymentData.get("sessions") : 0;
-                
-                order.setSubjectId(subjectId);
-                order.setQuantity(sessions);
-            } else if ("COMBO".equals(orderType)) {
-                Long comboId = paymentData.get("comboId") != null ? 
-                        Long.parseLong(String.valueOf(paymentData.get("comboId"))) : null;
-                Integer quantity = paymentData.get("quantity") != null ? 
-                        (Integer) paymentData.get("quantity") : 0;
-                
-                order.setComboId(comboId);
-                order.setQuantity(quantity);
+            if (orderInfo != null && orderInfo.startsWith("Order-")) {
+                String[] parts = orderInfo.split("-");
+                if (parts.length > 1) {
+                    return Long.parseLong(parts[1]);
+                }
             }
-
-            orderRepository.save(order);
         } catch (Exception e) {
-            System.err.println("Error in createOrderFromPayment: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error extracting orderId: " + e.getMessage());
         }
+        return null;
     }
 
     /**
@@ -173,7 +157,6 @@ public class PaymentController {
      * @param comboId Combo ID to purchase
      * @param quantity Number of months to purchase
      * @param request HTTP request
-     * @param session HTTP session
      * @return VNPay payment URL
      */
     @PostMapping("/vnpay-submit-order-combo")
@@ -184,8 +167,24 @@ public class PaymentController {
             @RequestParam("email") String email,
             @RequestParam("phone") String phone,
             @RequestParam("amount") long amount,
-            HttpServletRequest request,
-            HttpSession session) {
+            HttpServletRequest request) {
+
+        Users currentUser = authService.getCurrentUser();
+
+        // ✅ 1. CREATE ORDER (PENDING)
+        Order order = Order.builder()
+                .userId(currentUser.getId())
+                .comboId(comboId)
+                .quantity(quantity)
+                .orderType("COMBO")
+                .paymentStatus("PENDING")
+                .totalAmount(BigDecimal.valueOf(amount))
+                .fullName(fullName)
+                .email(email)
+                .phoneNumber(phone)
+                .build();
+
+        order = orderRepository.save(order);
 
         // Validate VNPay configuration
         if (VNPayConfig.vnp_TmnCode == null || VNPayConfig.vnp_TmnCode.isEmpty()) {
@@ -205,20 +204,9 @@ public class PaymentController {
         }
 
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String orderInfo = "Purchase combo " + comboId + " for " + quantity + " months - " + fullName;
+        String orderInfo = "Order-" + order.getId() + "-combo-" + comboId;
 
-        Map<String, Object> sessionData = new HashMap<>();
-        sessionData.put("comboId", comboId);
-        sessionData.put("quantity", quantity);
-        sessionData.put("fullName", fullName);
-        sessionData.put("email", email);
-        sessionData.put("phone_number", phone);
-        sessionData.put("orderType", "COMBO");
-
-        String paymentUrl = vnPayService.createOrder(amount, orderInfo, baseUrl, sessionData);
-
-        // Store in session
-        session.setAttribute("paymentData", sessionData);
+        String paymentUrl = vnPayService.createOrder(amount, orderInfo, baseUrl);
 
         return ResponseGlobalDto.<String>builder()
                 .status(HttpStatus.OK.value())

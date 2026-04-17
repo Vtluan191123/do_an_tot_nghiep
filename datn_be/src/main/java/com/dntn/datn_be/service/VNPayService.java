@@ -21,7 +21,7 @@ public class VNPayService {
      * @param sessions Sessions info (optional)
      * @return VNPay payment URL
      */
-    public String createOrder(long totalAmount, String orderInfo, String urlReturn, Map sessions) {
+    public String createOrder(long totalAmount, String orderInfo, String urlReturn) {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
@@ -88,9 +88,9 @@ public class VNPayService {
         String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
 
         // Store transaction info in session
-        sessions.put("vnp_TxnRef", vnp_TxnRef);
-        sessions.put("vnp_Amount", totalAmount);
-        sessions.put("vnp_OrderInfo", orderInfo);
+//        sessions.put("vnp_TxnRef", vnp_TxnRef);
+//        sessions.put("vnp_Amount", totalAmount);
+//        sessions.put("vnp_OrderInfo", orderInfo);
 
         return paymentUrl;
     }
