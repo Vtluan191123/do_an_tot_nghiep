@@ -1,0 +1,188 @@
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="breadcrumb-text">
+          <h2>Các Môn Học Đã Đăng Ký</h2>
+          <div class="bt-option">
+            <a href="/">Home</a>
+            <span>Enrolled Subjects</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Content Section Begin -->
+<section class="content-section spad">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Header -->
+        <div class="section-header mb-4">
+          <h3 class="header-title">
+            <i class="fa fa-book me-2"></i>Các Môn Học Đã Đăng Ký
+          </h3>
+          <p class="header-subtitle">Quản lý các môn học bạn đã đăng ký và theo dõi số buổi học</p>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Đang tải...</span>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div *ngIf="!isLoading && enrolledSubjects.length > 0" class="row mb-4">
+          <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="stat-card stat-card-primary">
+              <div class="stat-icon">
+                <i class="fa fa-book"></i>
+              </div>
+              <div class="stat-content">
+                <h6 class="stat-label">Tổng Môn Học</h6>
+                <p class="stat-value">{{ enrolledSubjects.length }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="stat-card stat-card-success">
+              <div class="stat-icon">
+                <i class="fa fa-clock-o"></i>
+              </div>
+              <div class="stat-content">
+                <h6 class="stat-label">Tổng Buổi</h6>
+                <p class="stat-value">{{ totalSessions }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="stat-card stat-card-info">
+              <div class="stat-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </div>
+              <div class="stat-content">
+                <h6 class="stat-label">Buổi Còn Lại</h6>
+                <p class="stat-value">{{ totalRemaining }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="stat-card stat-card-warning">
+              <div class="stat-icon">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <h6 class="stat-label">Đã Sử Dụng</h6>
+                <p class="stat-value">{{ totalSessions - totalRemaining }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enrolled Subjects Table -->
+        <div *ngIf="!isLoading" class="table-card">
+          <div class="table-header">
+            <h5 class="table-title">
+              <i class="fa fa-list me-2"></i>Danh Sách Môn Học
+            </h5>
+          </div>
+          <div class="table-body">
+            <div *ngIf="enrolledSubjects.length === 0" class="empty-state">
+              <div class="empty-icon">
+                <i class="fa fa-inbox"></i>
+              </div>
+              <p class="empty-text">Bạn chưa đăng ký môn học nào</p>
+              <small class="empty-subtext">Hãy duyệt các môn học có sẵn và đăng ký để bắt đầu học</small>
+            </div>
+
+            <div *ngIf="enrolledSubjects.length > 0" class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-header-row">
+                  <tr>
+                    <th><i class="fa fa-book me-2"></i>Tên Môn Học</th>
+                    <th class="text-center">Tổng Buổi</th>
+                    <th class="text-center">Buổi Còn Lại</th>
+                    <th class="text-center">Tiến Độ</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th>Ngày Đăng Ký</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let subject of enrolledSubjects">
+                    <td>
+                      <div class="subject-cell">
+                        <div class="subject-icon">
+                          <i class="fa fa-book"></i>
+                        </div>
+                        <div>
+                          <h6 class="subject-name">{{ subject.subjectName }}</h6>
+                          <small class="subject-id">ID: {{ subject.subjectId }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-primary">{{ subject.total }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge" [ngClass]="subject.remaining > 0 ? 'badge-info' : 'badge-secondary'">{{ subject.remaining }}</span>
+                    </td>
+                    <td>
+                      <div class="progress-cell">
+                        <div class="progress">
+                          <div
+                            class="progress-bar"
+                            [style.width.%]="getProgressPercentage(subject)"
+                            [ngClass]="{
+                              'bg-success': getProgressPercentage(subject) === 100,
+                              'bg-warning': getProgressPercentage(subject) >= 50 && getProgressPercentage(subject) < 100,
+                              'bg-info': getProgressPercentage(subject) < 50
+                            }"
+                            role="progressbar"
+                            [attr.aria-valuenow]="getProgressPercentage(subject)"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                            <small class="progress-text">{{ getProgressPercentage(subject) }}%</small>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge" [ngClass]="getStatusBadgeClass(subject)">
+                        {{ getStatusLabel(subject) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="enrollment-date">{{ formatDate(subject.enrollmentDate) }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && enrolledSubjects.length === 0" class="empty-card">
+          <div class="empty-icon-large">
+            <i class="fa fa-inbox"></i>
+          </div>
+          <h5 class="empty-card-title">Chưa Có Môn Học Nào</h5>
+          <p class="empty-card-text">Bạn chưa đăng ký bất kỳ môn học nào. Hãy bắt đầu bằng cách duyệt và đăng ký các môn học có sẵn.</p>
+          <button class="btn btn-primary" routerLink="/category">
+            <i class="fa fa-search me-2"></i>Tìm Kiếm Môn Học
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Content Section End -->
+

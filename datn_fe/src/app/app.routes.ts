@@ -18,28 +18,34 @@ import { SubjectManagementComponent } from './page/subject-management/subject-ma
 import { BookingManagementComponent } from './page/booking-management/booking-management.component';
 import { UserManagementComponent } from './page/user-management/user-management.component';
 import { StatisticsComponent } from './page/statistics/statistics.component';
+import { StudentEnrolledSubjectsComponent } from './page/student-enrolled-subjects/student-enrolled-subjects.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: DashBoardComponent },
-  { path: 'dashboard', component: DashBoardComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'call', component: VideoCallComponent },
-  { path: 'room-subject', component: VideoConferenceClientComponent },
-  { path: 'category', component: CategoryComponent },
-  { path: 'gym-room', component: GymRoomComponent },
-  { path: 'friend-search', component: FriendSearchComponent },
-  { path: 'class-timetable', component: ClassTimetableComponent },
-  { path: 'class-detail', component: ClassDetailComponent },
-  { path: 'combo-detail/:id', component: ComboDetailComponent },
-  { path: 'subject-detail/:id', component: SubjectDetailComponent },
-  { path: 'payment', component: PaymentComponent },
-  { path: 'combo-management', component: ComboManagementComponent },
-  { path: 'subject-management', component: SubjectManagementComponent },
-  { path: 'booking-management', component: BookingManagementComponent },
-  { path: 'user-management', component: UserManagementComponent },
-  { path: 'statistics', component: StatisticsComponent },
-  { path: 'team', component: OutTeamComponent },
-  // Catch-all route: nếu sai path sẽ forward về ''
+
+  // Protected routes - require authentication
+  { path: '', component: DashBoardComponent, canActivate: [authGuard] },
+  { path: 'dashboard', component: DashBoardComponent, canActivate: [authGuard] },
+  { path: 'call', component: VideoCallComponent, canActivate: [authGuard] },
+  { path: 'room-subject', component: VideoConferenceClientComponent, canActivate: [authGuard] },
+  { path: 'category', component: CategoryComponent, canActivate: [authGuard] },
+  { path: 'gym-room', component: GymRoomComponent, canActivate: [authGuard] },
+  { path: 'friend-search', component: FriendSearchComponent, canActivate: [authGuard] },
+  { path: 'class-timetable', component: ClassTimetableComponent, canActivate: [authGuard] },
+  { path: 'class-detail', component: ClassDetailComponent, canActivate: [authGuard] },
+  { path: 'combo-detail/:id', component: ComboDetailComponent, canActivate: [authGuard] },
+  { path: 'subject-detail/:id', component: SubjectDetailComponent, canActivate: [authGuard] },
+  { path: 'payment', component: PaymentComponent, canActivate: [authGuard] },
+  { path: 'combo-management', component: ComboManagementComponent, canActivate: [authGuard] },
+  { path: 'subject-management', component: SubjectManagementComponent, canActivate: [authGuard] },
+  { path: 'booking-management', component: BookingManagementComponent, canActivate: [authGuard] },
+  { path: 'user-management', component: UserManagementComponent, canActivate: [authGuard] },
+  { path: 'statistics', component: StatisticsComponent, canActivate: [authGuard] },
+  { path: 'student-enrolled-subjects', component: StudentEnrolledSubjectsComponent, canActivate: [authGuard] },
+  { path: 'team', component: OutTeamComponent, canActivate: [authGuard] },
+
+  // Catch-all route
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

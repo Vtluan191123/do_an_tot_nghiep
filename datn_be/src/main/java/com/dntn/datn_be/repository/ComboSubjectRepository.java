@@ -23,4 +23,11 @@ public interface ComboSubjectRepository extends JpaRepository<ComboSubject,Long>
      */
     @Query("SELECT DISTINCT cs.subjectId FROM ComboSubject cs ORDER BY cs.subjectId")
     List<Long> findAllDistinctSubjectIds();
+
+    /**
+     * Find all subjects in a combo
+     * @param comboId Combo ID
+     * @return List of ComboSubject records for the given combo
+     */
+    List<ComboSubject> findByComboId(Long comboId);
 }

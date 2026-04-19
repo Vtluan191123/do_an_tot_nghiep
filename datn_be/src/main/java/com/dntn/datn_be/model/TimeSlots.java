@@ -28,4 +28,7 @@ public class TimeSlots extends BaseEntity{
     @Column(name = "available_slot")
     private Long availableSlot;
 
+    @Column(name = "training methods")  //Online or offline
+    private String trainingMethods;
+
 }

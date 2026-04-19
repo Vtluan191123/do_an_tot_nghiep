@@ -31,11 +31,12 @@ import { SubjectManagementComponent } from './page/subject-management/subject-ma
 import { BookingManagementComponent } from './page/booking-management/booking-management.component';
 import { UserManagementComponent } from './page/user-management/user-management.component';
 import { StatisticsComponent } from './page/statistics/statistics.component';
+import { StudentEnrolledSubjectsComponent } from './page/student-enrolled-subjects/student-enrolled-subjects.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent, ComboManagementComponent, SubjectManagementComponent, BookingManagementComponent, UserManagementComponent, StatisticsComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent, ComboManagementComponent, SubjectManagementComponent, BookingManagementComponent, UserManagementComponent, StatisticsComponent, StudentEnrolledSubjectsComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

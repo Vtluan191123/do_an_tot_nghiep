@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { JwtUtility } from '../../util/jwt.utility';
 
 export interface LoginRequest {
   username: string;
@@ -211,6 +212,14 @@ export class AuthService {
   }
 
   /**
+   * Get current user ID
+   */
+  getCurrentUserId(): number | null {
+    const user = this.getCurrentUser();
+    return user && user.id ? user.id : null;
+  }
+
+  /**
    * Refresh token (if backend supports it)
    */
   refreshToken(refreshToken: string): Observable<any> {
@@ -250,7 +259,7 @@ export class AuthService {
         tap((response: any) => {
           // Handle both wrapped and direct responses
           const updatedUser = response.data || response.user || response;
-          
+
           if (updatedUser && updatedUser.id) {
             this.setUserInStorage(updatedUser);
             this.currentUserSubject.next(updatedUser);
@@ -279,6 +288,45 @@ export class AuthService {
           return throwError(() => error);
         })
       );
+  }
+
+  /**
+   * Check if access token is expired
+   * @param bufferSeconds Buffer time in seconds to check expiration before actual expiry
+   */
+  isTokenExpired(bufferSeconds: number = 0): boolean {
+    const token = this.getToken();
+    return JwtUtility.isTokenExpired(token, bufferSeconds);
+  }
+
+  /**
+   * Check if refresh token is expired
+   * @param bufferSeconds Buffer time in seconds to check expiration before actual expiry
+   */
+  isRefreshTokenExpired(bufferSeconds: number = 0): boolean {
+    if (typeof window !== 'undefined') {
+      const refreshToken = localStorage.getItem('refreshToken');
+      return JwtUtility.isTokenExpired(refreshToken, bufferSeconds);
+    }
+    return true;
+  }
+
+  /**
+   * Get remaining seconds until token expiration
+   */
+  getTokenRemainingSeconds(): number {
+    const token = this.getToken();
+    return JwtUtility.getTokenRemainingSeconds(token);
+  }
+
+  /**
+   * Get refresh token from storage
+   */
+  getRefreshToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('refreshToken');
+    }
+    return null;
   }
 }
 

@@ -22,7 +22,7 @@ public class UserSubject extends BaseEntity{
     @Column(name = "subject_id")
     private Long subjectId;
 
-    @Column(name = "total")  // Tổng số buổi học hoặc số tháng sử dụng
+    @Column(name = "total")  // Tổng số buổi học
     private Long total;
 
     @Column(name = "is_coach")

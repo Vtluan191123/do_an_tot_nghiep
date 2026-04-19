@@ -7,8 +7,11 @@ import com.dntn.datn_be.dto.request.UserUpdateRequest;
 import com.dntn.datn_be.dto.request.AssignCoachRoleRequest;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
+import com.dntn.datn_be.dto.response.EnrolledSubjectResponse;
 import com.dntn.datn_be.service.UserService;
+import com.dntn.datn_be.service.UserEnrolledSubjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -20,6 +23,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserEnrolledSubjectService userEnrolledSubjectService;
 
     // ================== CREATE ==================
     @PostMapping
@@ -81,5 +85,17 @@ public class UserController {
     @GetMapping("/coaches/all")
     public ResponseGlobalDto<?> getAllCoachesWithSubjects() {
         return userService.getAllCoachesWithSubjects();
+    }
+
+    // ================== GET USER ENROLLED SUBJECTS ==================
+    @GetMapping("/{userId}/enrolled-subjects")
+    public ResponseGlobalDto<List<EnrolledSubjectResponse>> getUserEnrolledSubjects(@PathVariable Long userId) {
+        List<EnrolledSubjectResponse> enrolledSubjects = userEnrolledSubjectService.getEnrolledSubjects(userId);
+        return ResponseGlobalDto.<List<EnrolledSubjectResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .data(enrolledSubjects)
+                .count((long) enrolledSubjects.size())
+                .message("Get enrolled subjects successfully")
+                .build();
     }
 }

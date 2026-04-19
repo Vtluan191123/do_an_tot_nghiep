@@ -1,0 +1,459 @@
+/* Student Enrolled Subjects Styles */
+
+/* Breadcrumb section */
+.breadcrumb-section {
+  position: relative;
+  z-index: 5;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Content Section */
+.content-section {
+  padding: 60px 0;
+  background-color: #f9f9f9;
+}
+
+/* Section Header */
+.section-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #667eea;
+
+  .header-title {
+    margin: 0;
+    font-size: 28px;
+    color: #000;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-subtitle {
+    margin: 8px 0 0 0;
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+/* Statistics Cards Styles */
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+  }
+
+  .stat-content {
+    flex: 1;
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0 0 6px 0;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  &.stat-card-primary {
+    border-left-color: #667eea;
+
+    .stat-icon {
+      background-color: #667eea;
+    }
+
+    .stat-content .stat-label {
+      color: #667eea;
+    }
+
+    .stat-content .stat-value {
+      color: #333;
+    }
+  }
+
+  &.stat-card-success {
+    border-left-color: #27ae60;
+
+    .stat-icon {
+      background-color: #27ae60;
+    }
+
+    .stat-content .stat-label {
+      color: #27ae60;
+    }
+
+    .stat-content .stat-value {
+      color: #333;
+    }
+  }
+
+  &.stat-card-info {
+    border-left-color: #17a2b8;
+
+    .stat-icon {
+      background-color: #17a2b8;
+    }
+
+    .stat-content .stat-label {
+      color: #17a2b8;
+    }
+
+    .stat-content .stat-value {
+      color: #333;
+    }
+  }
+
+  &.stat-card-warning {
+    border-left-color: #ffc107;
+
+    .stat-icon {
+      background-color: #ffc107;
+      color: #333 !important;
+    }
+
+    .stat-content .stat-label {
+      color: #ffc107;
+    }
+
+    .stat-content .stat-value {
+      color: #333;
+    }
+  }
+}
+
+/* Table Card Styles */
+.table-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+
+  .table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+
+    .table-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .table-body {
+    padding: 0;
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+
+      .empty-icon {
+        font-size: 48px;
+        color: #ccc;
+        margin-bottom: 16px;
+      }
+
+      .empty-text {
+        font-size: 16px;
+        color: #666;
+        margin: 0 0 8px 0;
+        font-weight: 500;
+      }
+
+      .empty-subtext {
+        font-size: 13px;
+        color: #999;
+        margin: 0;
+      }
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+
+      .table {
+        margin-bottom: 0;
+
+        thead {
+          .table-header-row {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+            th {
+              border: none;
+              padding: 16px 12px;
+              text-align: left;
+              font-weight: 600;
+              font-size: 14px;
+              white-space: nowrap;
+              color: white;
+            }
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+              background-color: #f8f7ff;
+            }
+
+            td {
+              padding: 14px 12px;
+              vertical-align: middle;
+              font-size: 14px;
+
+              .subject-cell {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                .subject-icon {
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 6px;
+                  background-color: #f0f1ff;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: #667eea;
+                  font-size: 18px;
+                }
+
+                .subject-name {
+                  margin: 0;
+                  font-weight: 600;
+                  color: #333;
+                  font-size: 14px;
+                }
+
+                .subject-id {
+                  color: #999;
+                  font-size: 12px;
+                  display: block;
+                  margin-top: 2px;
+                }
+              }
+
+              .progress-cell {
+                padding: 8px 0;
+
+                .progress {
+                  height: 20px;
+                  background-color: #e9ecef;
+                  border-radius: 4px;
+                  overflow: hidden;
+
+                  .progress-bar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: width 0.3s ease;
+
+                    .progress-text {
+                      color: white;
+                      font-weight: 600;
+                      font-size: 11px;
+                    }
+                  }
+                }
+              }
+
+              .enrollment-date {
+                color: #999;
+                font-size: 13px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Badge Styles */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.badge-primary {
+    background-color: #667eea;
+    color: white;
+  }
+
+  &.badge-info {
+    background-color: #17a2b8;
+    color: white;
+  }
+
+  &.badge-success {
+    background-color: #27ae60;
+    color: white;
+  }
+
+  &.badge-warning {
+    background-color: #ffc107;
+    color: #333;
+  }
+
+  &.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+}
+
+/* Empty Card */
+.empty-card {
+  background: white;
+  border-radius: 8px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .empty-icon-large {
+    font-size: 64px;
+    color: #ccc;
+    margin-bottom: 20px;
+  }
+
+  .empty-card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .empty-card-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .btn-primary {
+    background-color: #667eea;
+    border-color: #667eea;
+    padding: 10px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #5568d3;
+      border-color: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+  }
+}
+
+/* Loading Spinner */
+.spinner-border {
+  color: #667eea;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .section-header {
+    .header-title {
+      font-size: 24px;
+    }
+  }
+
+  .stat-card {
+    padding: 16px;
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+
+    .stat-content {
+      .stat-label {
+        font-size: 12px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+    }
+  }
+
+  .table-card {
+    .table-body {
+      .table-responsive {
+        font-size: 13px;
+
+        .table tbody tr td {
+          padding: 10px 8px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .section-header {
+    .header-title {
+      font-size: 20px;
+    }
+
+    .header-subtitle {
+      font-size: 12px;
+    }
+  }
+
+  .empty-card {
+    padding: 40px 16px;
+
+    .empty-icon-large {
+      font-size: 48px;
+    }
+
+    .empty-card-title {
+      font-size: 18px;
+    }
+
+    .empty-card-text {
+      font-size: 13px;
+    }
+  }
+}
+
+

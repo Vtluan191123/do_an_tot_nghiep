@@ -5,13 +5,11 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.VNPayService;
+import com.dntn.datn_be.service.OrderService;
 import com.dntn.datn_be.model.Order;
-import com.dntn.datn_be.model.UserSubject;
 import com.dntn.datn_be.repository.OrderRepository;
-import com.dntn.datn_be.repository.UserSubjectRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +26,8 @@ public class PaymentController {
 
     private final VNPayService vnPayService;
     private final OrderRepository orderRepository;
-    private final UserSubjectRepository userSubjectRepository;
     private final AuthService authService;
+    private final OrderService orderService;
 
     /**
      * Create VNPay payment URL
@@ -98,7 +96,7 @@ public class PaymentController {
     /**
      * VNPay return callback endpoint
      * @param request HTTP request with VNPay response
-     * @param session HTTP session
+     * @param httpServletResponse HTTP response
      * @return Payment result
      */
     @GetMapping("/vnpay-payment")
@@ -116,16 +114,22 @@ public class PaymentController {
         String redirectUrl;
 
         if (paymentStatus == 1 && orderId != null) {
-            // Payment successful - update Order status
+            // Payment successful - update Order status and create UserSubject
             try {
                 Order order = orderRepository.findById(orderId).orElse(null);
                 if (order != null) {
                     order.setPaymentStatus("SUCCESS");
                     order.setTransactionId(request.getParameter("vnp_TransactionNo"));
                     orderRepository.save(order);
+
+                    // ✅ Process order to create UserSubject record
+                    Map<String, Object> paymentData = new HashMap<>();
+                    paymentData.put("orderType", order.getOrderType());
+                    orderService.processOrderAfterPayment(orderId, paymentData);
                 }
             } catch (Exception e) {
                 System.err.println("Error updating order: " + e.getMessage());
+                e.printStackTrace();
             }
             redirectUrl = "http://localhost:4200/payment/success";
         } else {
