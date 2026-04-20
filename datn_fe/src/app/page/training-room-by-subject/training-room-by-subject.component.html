@@ -139,27 +139,45 @@
                   <!-- Subject Info -->
                   <div class="info-item">
                     <i class="fa fa-book"></i>
-                    <span><strong>Bộ Môn:</strong> {{ room.subjectId }}</span>
+                    <span><strong>Bộ Môn:</strong> {{ room.subjectName || 'N/A' }}</span>
                   </div>
 
                   <!-- Coach Info -->
                   <div class="info-item">
                     <i class="fa fa-user"></i>
-                    <span><strong>Huấn Luyện Viên:</strong> Coach #{{ room.coachId }}</span>
+                    <span><strong>Huấn Luyện Viên:</strong> {{ room.coachName || 'N/A' }}</span>
+                  </div>
+
+                  <!-- Date -->
+                  <div class="info-item" *ngIf="room.date">
+                    <i class="fa fa-calendar"></i>
+                    <span><strong>Ngày:</strong> {{ room.date | date:'dd/MM/yyyy' }}</span>
+                  </div>
+
+                  <!-- Time -->
+                  <div class="info-item" *ngIf="room.startTime && room.endTime">
+                    <i class="fa fa-clock-o"></i>
+                    <span><strong>Giờ:</strong> {{ room.startTime | date:'HH:mm' }} - {{ room.endTime | date:'HH:mm' }}</span>
+                  </div>
+
+                  <!-- Training Method -->
+                  <div class="info-item">
+                    <i class="fa fa-laptop"></i>
+                    <span><strong>Phương Thức:</strong> {{ room.trainingMethods === 'ONLINE' ? 'Trực Tuyến' : 'Trực Tiếp' }}</span>
                   </div>
 
                   <!-- Capacity Info -->
                   <div class="info-item">
                     <i class="fa fa-users"></i>
                     <span>
-                      <strong>Sức Chứa:</strong> {{ room.currentParticipants || 0 }}/{{ room.capacity }}
+                      <strong>Sức Chứa:</strong> {{ room.currentCapacity || 0 }}/{{ room.maxCapacity }}
                     </span>
                   </div>
 
                   <!-- Available Slots -->
                   <div class="info-item">
                     <i class="fa fa-check-circle"></i>
-                    <span><strong>Chỗ Còn Trống:</strong> {{ getAvailableSlots(room) }}</span>
+                    <span><strong>Chỗ Còn Trống:</strong> {{ (room.maxCapacity || 0) - (room.currentCapacity || 0) }}</span>
                   </div>
 
                   <!-- Description -->
@@ -180,7 +198,7 @@
                       [style.width.%]="getCapacityPercentage(room)">
                     </div>
                   </div>
-                  <small>{{ (room.currentParticipants || 0) }}/{{ room.capacity }} Thành Viên</small>
+                  <small>{{ (room.currentCapacity || 0) }}/{{ room.maxCapacity }} Thành Viên</small>
                 </div>
 
                 <!-- Join Button -->

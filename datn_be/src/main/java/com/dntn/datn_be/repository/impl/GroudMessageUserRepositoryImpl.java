@@ -27,7 +27,7 @@ public class GroudMessageUserRepositoryImpl implements GroudMessageUserRepositor
                 FROM groud_message_user
                 WHERE user_id = :userId
             )
-            AND u.id <> :userId and gmu.is_read = 0; 
+            AND u.id <> :userId and gmu.is_read = 0;
         """;
 
         Query query = entityManager.createNativeQuery(queryString);

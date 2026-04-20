@@ -1,0 +1,83 @@
+<div class="booking-modal-overlay" *ngIf="isOpen" (click)="closeModal()">
+  <div class="booking-modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Đặt Lịch Tập Luyện</h3>
+      <button class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        <span class="icon">✓</span>
+        {{ successMessage }}
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <span class="icon">✕</span>
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="timeSlotsSubjectData" class="booking-info">
+        <div class="info-row">
+          <label>Bộ Môn:</label>
+          <span>{{ timeSlotsSubjectData.subjectName }}</span>
+        </div>
+        <div class="info-row">
+          <label>Huấn Luyện Viên:</label>
+          <span>{{ timeSlotsSubjectData.coachFullName }}</span>
+        </div>
+        <div class="info-row">
+          <label>Thời Gian:</label>
+          <span>{{ timeSlotsSubjectData.timeSlotDate }} | {{ timeSlotsSubjectData.timeSlotTime }}</span>
+        </div>
+        <div class="info-row">
+          <label>Hình Thức:</label>
+          <span>{{ timeSlotsSubjectData.trainingMethods }}</span>
+        </div>
+        <div class="info-row capacity-info">
+          <label>Sức Chứa:</label>
+          <span>{{ timeSlotsSubjectData.currentCapacity }}/{{ timeSlotsSubjectData.maxCapacity }}</span>
+        </div>
+      </div>
+
+      <form class="booking-form" [ngClass]="{ 'disabled': isLoading }">
+        <div class="form-group">
+          <label for="userId">ID Người Dùng: <span class="required">*</span></label>
+          <input
+            type="number"
+            id="userId"
+            [(ngModel)]="formData.userId"
+            name="userId"
+            placeholder="Nhập ID của bạn"
+            [disabled]="isLoading"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Ghi Chú (Tùy Chọn):</label>
+          <textarea
+            id="notes"
+            name="notes"
+            placeholder="Ghi chú thêm nếu cần"
+            rows="3"
+            [disabled]="isLoading"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeModal()" [disabled]="isLoading">Hủy</button>
+      <button
+        class="btn-submit"
+        (click)="submitBooking()"
+        [disabled]="isLoading"
+      >
+        {{ isLoading ? 'Đang xử lý...' : 'Đặt Lịch' }}
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -21,7 +21,7 @@ public class TrainingRoomCreateRequest {
     
     private String description;
     
-    private Long capacity;
+    private Long maxCapacity;
     
     private String zoomLink;
     

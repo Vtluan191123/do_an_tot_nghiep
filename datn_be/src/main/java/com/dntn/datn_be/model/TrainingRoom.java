@@ -29,16 +29,16 @@ public class TrainingRoom extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
-    @Column(name = "capacity", nullable = false)
-    private Long capacity;
+    @Column(name = "max_capacity", nullable = false)
+    private Long maxCapacity;
+    
+    @Column(name = "current_capacity", columnDefinition = "bigint default 0")
+    private Long currentCapacity;
     
     @Column(name = "zoom_link")
     private String zoomLink;
     
     @Column(name = "status", nullable = false)
     private String status;  // ACTIVE, INACTIVE
-    
-    @Column(name = "current_participants", columnDefinition = "bigint default 0")
-    private Long currentParticipants;
 }
 

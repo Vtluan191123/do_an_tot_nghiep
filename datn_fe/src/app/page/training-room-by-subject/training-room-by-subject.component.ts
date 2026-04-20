@@ -193,7 +193,7 @@ export class TrainingRoomBySubjectComponent implements OnInit, OnDestroy {
    * Join a training room
    */
   onJoinRoom(room: TrainingRoom): void {
-    if (room.currentParticipants && room.currentParticipants >= room.capacity) {
+    if (room.currentCapacity && room.currentCapacity >= room.maxCapacity) {
       alert('Phòng tập đã đầy!');
       return;
     }
@@ -211,8 +211,8 @@ export class TrainingRoomBySubjectComponent implements OnInit, OnDestroy {
    * Get button text based on room capacity
    */
   getButtonText(room: TrainingRoom): string {
-    const currentParticipants = room.currentParticipants || 0;
-    if (currentParticipants >= room.capacity) {
+    const currentCapacity = room.currentCapacity || 0;
+    if (currentCapacity >= room.maxCapacity) {
       return 'Đã Đầy';
     }
     return 'Tham Gia';
@@ -222,32 +222,32 @@ export class TrainingRoomBySubjectComponent implements OnInit, OnDestroy {
    * Check if join button should be disabled
    */
   getButtonDisabled(room: TrainingRoom): boolean {
-    const currentParticipants = room.currentParticipants || 0;
-    return currentParticipants >= room.capacity;
+    const currentCapacity = room.currentCapacity || 0;
+    return currentCapacity >= room.maxCapacity;
   }
 
   /**
    * Get capacity percentage for progress bar
    */
   getCapacityPercentage(room: TrainingRoom): number {
-    const currentParticipants = room.currentParticipants || 0;
-    return (currentParticipants / room.capacity) * 100;
+    const currentCapacity = room.currentCapacity || 0;
+    return (currentCapacity / room.maxCapacity) * 100;
   }
 
   /**
    * Check if room is full
    */
   isRoomFull(room: TrainingRoom): boolean {
-    const currentParticipants = room.currentParticipants || 0;
-    return currentParticipants >= room.capacity;
+    const currentCapacity = room.currentCapacity || 0;
+    return currentCapacity >= room.maxCapacity;
   }
 
   /**
    * Get available slots count
    */
   getAvailableSlots(room: TrainingRoom): number {
-    const currentParticipants = room.currentParticipants || 0;
-    return Math.max(0, room.capacity - currentParticipants);
+    const currentCapacity = room.currentCapacity || 0;
+    return Math.max(0, room.maxCapacity - currentCapacity);
   }
 
   /**
@@ -256,6 +256,9 @@ export class TrainingRoomBySubjectComponent implements OnInit, OnDestroy {
   deduplicateRooms(rooms: TrainingRoom[]): TrainingRoom[] {
     const uniqueIds = new Set<number>();
     return rooms.filter(room => {
+      if (!room.id) {
+        return false;
+      }
       if (uniqueIds.has(room.id)) {
         return false;
       } else {

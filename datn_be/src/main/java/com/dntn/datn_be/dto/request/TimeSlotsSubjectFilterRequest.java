@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 public class TimeSlotsSubjectFilterRequest {
     private Long coachId;
     private Long subjectId;
+    private String subjectName;
     private String date;
     private String trainingMethods;
     private String status; // available, full, past

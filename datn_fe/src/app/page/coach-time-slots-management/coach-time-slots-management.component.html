@@ -44,6 +44,19 @@
                     style="border-radius: 6px; border: 1px solid #ddd;">
                 </div>
 
+                <!-- Search by Subject Name -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchSubjectName" class="form-label fw-500" style="color: #555; font-size: 14px;">Tên Môn Học</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchSubjectName"
+                    [(ngModel)]="searchSubjectName"
+                    name="searchSubjectName"
+                    placeholder="Tìm kiếm tên môn học..."
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
                 <!-- Filter by Training Method -->
                 <div class="col-lg-3 col-md-6">
                   <label for="searchMethod" class="form-label fw-500" style="color: #555; font-size: 14px;">Phương Thức Dạy</label>
@@ -71,7 +84,6 @@
                     <option value="">-- Tất Cả --</option>
                     <option value="available">Còn Chỗ</option>
                     <option value="full">Đầy</option>
-                    <option value="past">Đã Qua</option>
                   </select>
                 </div>
 
@@ -104,6 +116,7 @@
                 <th style="color: #495057; font-weight: 600;">Ngày</th>
                 <th style="color: #495057; font-weight: 600;">Thời Gian</th>
                 <th style="color: #495057; font-weight: 600;">Môn Học</th>
+                <th style="color: #495057; font-weight: 600;">Huấn Luyện Viên</th>
                 <th style="color: #495057; font-weight: 600;">Phương Thức</th>
                 <th style="color: #495057; font-weight: 600;">Sức Chứa</th>
                 <th style="color: #495057; font-weight: 600;">Trạng Thái</th>
@@ -115,6 +128,7 @@
                 <td><strong style="color: #333;">{{ slot.date | date:'dd/MM/yyyy' }}</strong></td>
                 <td><span style="color: #666; font-size: 13px;">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</span></td>
                 <td><strong style="color: #333;">{{ slot.subjectName || slot.subjectId }}</strong></td>
+                <td><span style="color: #666; font-size: 13px;">{{ slot.coachFullName || 'N/A' }}</span></td>
                 <td>
                   <span class="badge" [ngClass]="slot.trainingMethods === 'ONLINE' ? 'bg-info' : 'bg-warning'" style="font-size: 12px;">
                     {{ slot.trainingMethods === 'ONLINE' ? '🌐 Online' : '🏋️ Offline' }}

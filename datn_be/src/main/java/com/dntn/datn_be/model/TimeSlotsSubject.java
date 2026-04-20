@@ -28,9 +28,15 @@ public class TimeSlotsSubject extends BaseEntity{
     @Column(name = "current_capacity",columnDefinition = "bigint default 0")
     private Long currentCapacity;
 
-    @Column(name = "training methods")  //Online or offline
+    @Column(name = "training_methods")
     private String trainingMethods;
 
-    @Column(name = "coach_id")  //Online or offline
+    @Column(name = "coach_id")
     private Long coachId;
+
+    @Column(name = "coach_full_name")
+    private String coachFullName;
+
+    @Column(name = "subject_name")
+    private String subjectName;
 }

@@ -13,11 +13,13 @@ import java.time.LocalDateTime;
 public class TimeSlotsSubjectResponse {
     private Long id;
     private Long subjectId;
+    private String subjectName;
     private Long timeSlotsId;
     private Long maxCapacity;
     private Long currentCapacity;
     private String trainingMethods;  // Online or Offline
     private Long coachId;
+    private String coachFullName;
     private Long createdAt;
     private Long updatedAt;
     

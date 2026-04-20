@@ -27,10 +27,81 @@
   }
 }
 
-/* Combo Card Styles */
-.combo-card {
-  margin-bottom: 30px;
+//...existing code...
+
+/* Combo Card Styles - replaced with combo-card-item */
+
+//...existing code...
+
+/* Horizontal Scroll Container for Combos */
+.combos-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px 0;
+  margin: 0 -15px;
+  padding-left: 15px;
+  padding-right: 15px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  // Smooth scrolling
+  scroll-behavior: smooth;
+
+  // Hide scrollbar for Chrome, Safari and Opera
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+
+    &:hover {
+      background: #555;
+    }
+  }
+
+  // Dragging state
+  &.dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+}
+
+.combos-wrapper {
+  display: flex;
+  gap: 25px;
+  width: fit-content;
+  min-width: 100%;
+
+  @media (max-width: 1199px) {
+    min-width: calc(100% + 50px);
+  }
+}
+
+.combo-card-item {
+  flex: 0 0 calc(33.333% - 17px);
+  min-width: calc(33.333% - 17px);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  @media (max-width: 1199px) {
+    flex: 0 0 calc(50% - 13px);
+    min-width: calc(50% - 13px);
+  }
+
+  @media (max-width: 768px) {
+    flex: 0 0 calc(100% - 12px);
+    min-width: calc(100% - 12px);
+  }
 
   &:hover {
     transform: translateY(-5px);
@@ -43,6 +114,7 @@
   .ps-item {
     position: relative;
     transition: all 0.3s ease;
+    height: 100%;
 
     .combo-code {
       margin-bottom: 15px;

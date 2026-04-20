@@ -24,7 +24,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     @Override
     public List<GetListGroudsDto.UserDetailGroudDto> userDetailGroudDtos(Long userId) {
         String queryString = """
-            SELECT 
+            SELECT
                 u.id,
                 u.username,
                 u.email,
@@ -58,19 +58,19 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         for (Object[] row : results) {
             String groudId = (String) row[10];
-            
+
             // Lấy thông tin tin nhắn cuối cùng từ MongoDB
             String latestMessageContent = null;
             String latestMessageType = null;
-            
+
             // Lấy tin nhắn mới nhất được sort theo date
             List<BaseMongoMessage> latestMessages = baseMongoMessageRepository.findByGroudIdOrderByCreateTimeDesc(groudId);
-            
+
             if (!latestMessages.isEmpty()) {
                 BaseMongoMessage latestMsg = latestMessages.get(0);
                 if (latestMsg.getMessageDetail() != null) {
                     Object messageDetail = latestMsg.getMessageDetail();
-                    
+
                     try {
                         // Lấy type từ messageDetail - hỗ trợ cả Map (LinkedHashMap từ MongoDB) và MessageDetailDto
                         if (messageDetail instanceof java.util.Map) {
@@ -90,7 +90,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                             }
                         } else if (messageDetail instanceof com.dntn.datn_be.dto.common.MessageDetailDto) {
                             // Trường hợp là MessageDetailDto object
-                            com.dntn.datn_be.dto.common.MessageDetailDto dto = 
+                            com.dntn.datn_be.dto.common.MessageDetailDto dto =
                                     (com.dntn.datn_be.dto.common.MessageDetailDto) messageDetail;
                             latestMessageType = dto.getType();
                             Object contentObj = dto.getContent();

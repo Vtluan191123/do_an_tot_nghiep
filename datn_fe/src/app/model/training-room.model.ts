@@ -2,13 +2,19 @@ export interface TrainingRoom {
   id?: number;
   timeSlotsSubjectId: number;
   coachId: number;
+  coachName?: string;  // Tên huấn luyện viên
   subjectId: number;
+  subjectName?: string;  // Tên bộ môn
   name: string;
   description?: string;
-  capacity: number;
+  maxCapacity: number;      // Sức chứa tối đa
+  currentCapacity: number;  // Số học viên đã đăng ký
+  trainingMethods?: string;  // Online or Offline
+  date?: string;  // Ngày (YYYY-MM-DD)
+  startTime?: string;  // Giờ bắt đầu (ISO 8601)
+  endTime?: string;  // Giờ kết thúc (ISO 8601)
   zoomLink?: string;
   status: string;  // ACTIVE, INACTIVE
-  currentParticipants?: number;
   createdAt?: string;
   updatedAt?: string;
 }

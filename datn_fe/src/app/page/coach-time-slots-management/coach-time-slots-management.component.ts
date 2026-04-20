@@ -44,6 +44,7 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
 
   // Search and filter
   searchDate: string = '';
+  searchSubjectName: string = '';
   searchMethod: string = '';
   searchStatus: string = '';
 
@@ -123,6 +124,7 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
       page: this.currentPage,
       size: this.pageSize,
       date: this.searchDate || undefined,
+      subjectName: this.searchSubjectName || undefined,
       trainingMethods: this.searchMethod || undefined,
       status: this.searchStatus || undefined
     };
@@ -133,10 +135,11 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response && response.data) {
             this.timetableData = response.data;
+            // Data is already filtered by API, no need for client-side filtering
+            this.filteredTimeSlots = response.data;
             this.totalElements = response.count || 0;
             this.totalPages = Math.ceil(this.totalElements / this.pageSize);
             this.buildTimetable(response.data);
-            this.applyFilters();
           }
           this.isLoading = false;
         },
@@ -388,12 +391,9 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get slot status (available, full, past)
+   * Get slot status (available or full) - based on capacity only
    */
   getSlotStatus(slot: TimeSlotsSubjectWithTimeSlot): string {
-    if (this.isSlotPast(slot)) {
-      return 'Đã Qua';
-    }
     if (slot.currentCapacity >= slot.maxCapacity) {
       return 'Đầy';
     }
@@ -414,12 +414,9 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get CSS class for status badge
+   * Get CSS class for status badge - based on capacity only
    */
   getStatusBadgeClass(slot: TimeSlotsSubjectWithTimeSlot): string {
-    if (this.isSlotPast(slot)) {
-      return 'bg-secondary';
-    }
     if (slot.currentCapacity >= slot.maxCapacity) {
       return 'bg-danger';
     }
@@ -427,74 +424,48 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Search and filter time slots
+   * Search and filter time slots - Calls API with current filters
    */
   onSearch(): void {
-    this.applyFilters();
+    // Reset to first page when searching with new filters
+    this.currentPage = 0;
+    // Call API to fetch filtered data
+    this.loadCoachTimeSlots();
   }
 
   /**
-   * Reset all filters
+   * Reset all filters and reload from API
    */
   onReset(): void {
     this.searchDate = '';
+    this.searchSubjectName = '';
     this.searchMethod = '';
     this.searchStatus = '';
-    this.applyFilters();
+    this.currentPage = 0;
+    this.loadCoachTimeSlots();
   }
 
   /**
-   * Apply all filters to time slots
+   * Apply filters - Now mostly handled by API
+   * This method can be used for client-side sorting if needed
    */
   applyFilters(): void {
-    this.filteredTimeSlots = this.timetableData.filter(slot => {
-      // Filter by date
-      if (this.searchDate) {
-        const slotDate = new Date(slot.date || '').toISOString().split('T')[0];
-        if (slotDate !== this.searchDate) {
-          return false;
+    // All filtering is now done by API call in loadCoachTimeSlots()
+    // This method is kept for potential client-side sorting enhancements
+
+    // Optional: Sort by date and time if needed
+    if (this.filteredTimeSlots && this.filteredTimeSlots.length > 0) {
+      this.filteredTimeSlots.sort((a, b) => {
+        const dateA = new Date(a.date || '').getTime();
+        const dateB = new Date(b.date || '').getTime();
+        if (dateA !== dateB) {
+          return dateA - dateB;
         }
-      }
-
-      // Filter by training method
-      if (this.searchMethod) {
-        if (slot.trainingMethods !== this.searchMethod) {
-          return false;
-        }
-      }
-
-      // Filter by status
-      if (this.searchStatus) {
-        const status = this.getSlotStatus(slot);
-        let matchStatus = false;
-
-        if (this.searchStatus === 'available' && status === 'Còn Chỗ') {
-          matchStatus = true;
-        } else if (this.searchStatus === 'full' && status === 'Đầy') {
-          matchStatus = true;
-        } else if (this.searchStatus === 'past' && status === 'Đã Qua') {
-          matchStatus = true;
-        }
-
-        if (!matchStatus) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    // Sort by date and time
-    this.filteredTimeSlots.sort((a, b) => {
-      const dateA = new Date(a.date || '').getTime();
-      const dateB = new Date(b.date || '').getTime();
-      if (dateA !== dateB) {
-        return dateA - dateB;
-      }
-      const timeA = new Date(a.startTime || '').getTime();
-      const timeB = new Date(b.startTime || '').getTime();
-      return timeA - timeB;
-    });
+        const timeA = new Date(a.startTime || '').getTime();
+        const timeB = new Date(b.startTime || '').getTime();
+        return timeA - timeB;
+      });
+    }
   }
 
   /**

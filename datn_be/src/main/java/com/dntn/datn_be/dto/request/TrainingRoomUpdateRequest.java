@@ -17,12 +17,12 @@ public class TrainingRoomUpdateRequest {
     
     private String description;
     
-    private Long capacity;
+    private Long maxCapacity;
+    
+    private Long currentCapacity;
     
     private String zoomLink;
     
     private String status;
-    
-    private Long currentParticipants;
 }
 

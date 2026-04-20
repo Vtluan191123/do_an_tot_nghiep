@@ -45,6 +45,12 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
   loadingSubjects: boolean = true;
   errorSubjects: string = '';
 
+  // Drag properties
+  isDragging: boolean = false;
+  dragStartX: number = 0;
+  dragStartScrollLeft: number = 0;
+  scrollContainer: HTMLElement | null = null;
+
   // Cleanup
   private destroy$ = new Subject<void>();
 
@@ -78,7 +84,7 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
   loadCombos(): void {
     const filter: ComboFilterRequest = {
       page: 0,
-      size: 3,
+      size: 12,
       sortBy: 'id',
       sortDirection: 'desc'
     };
@@ -167,6 +173,71 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
     this.initBackground();
     this.initMenu();
     this.initCarousel();
+    this.initDragScroll();
+  }
+
+  /**
+   * Initialize drag scroll for combos
+   */
+  initDragScroll(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.scrollContainer = document.querySelector('.combos-scroll-container') as HTMLElement;
+
+    if (!this.scrollContainer) return;
+
+    this.scrollContainer.addEventListener('mousedown', (e) => this.onMouseDown(e));
+    this.scrollContainer.addEventListener('mouseleave', () => this.onMouseLeave());
+    this.scrollContainer.addEventListener('mouseup', () => this.onMouseUp());
+    this.scrollContainer.addEventListener('mousemove', (e) => this.onMouseMove(e));
+  }
+
+  /**
+   * Handle mouse down - start dragging
+   */
+  private onMouseDown(e: MouseEvent): void {
+    this.isDragging = true;
+    this.dragStartX = e.pageX - (this.scrollContainer?.offsetLeft || 0);
+    this.dragStartScrollLeft = this.scrollContainer?.scrollLeft || 0;
+
+    if (this.scrollContainer) {
+      this.scrollContainer.style.cursor = 'grabbing';
+      this.scrollContainer.style.userSelect = 'none';
+    }
+  }
+
+  /**
+   * Handle mouse up - stop dragging
+   */
+  private onMouseUp(): void {
+    this.isDragging = false;
+    if (this.scrollContainer) {
+      this.scrollContainer.style.cursor = 'grab';
+      this.scrollContainer.style.userSelect = 'auto';
+    }
+  }
+
+  /**
+   * Handle mouse leave - stop dragging
+   */
+  private onMouseLeave(): void {
+    this.isDragging = false;
+    if (this.scrollContainer) {
+      this.scrollContainer.style.cursor = 'grab';
+      this.scrollContainer.style.userSelect = 'auto';
+    }
+  }
+
+  /**
+   * Handle mouse move - drag scroll
+   */
+  private onMouseMove(e: MouseEvent): void {
+    if (!this.isDragging || !this.scrollContainer) return;
+
+    e.preventDefault();
+    const x = e.pageX - (this.scrollContainer?.offsetLeft || 0);
+    const walk = (x - this.dragStartX) * 1; // Multiply for faster/slower drag
+    this.scrollContainer.scrollLeft = this.dragStartScrollLeft - walk;
   }
 
   /* Preloader */

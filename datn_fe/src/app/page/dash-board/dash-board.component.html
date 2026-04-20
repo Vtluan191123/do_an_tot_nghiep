@@ -70,30 +70,32 @@
     </div>
 
     <!-- Combos List -->
-    <div *ngIf="!loadingCombos && !errorCombos" class="row justify-content-center">
-      <div *ngFor="let combo of combos" class="col-lg-4 col-md-6 combo-card">
-        <div class="ps-item">
-          <h3>{{ combo.name }}</h3>
-          <div class="combo-code">
-            <span class="badge">Mã: {{ combo.code }}</span>
+    <div *ngIf="!loadingCombos && !errorCombos" class="combos-scroll-container" [style.cursor]="'grab'">
+      <div class="combos-wrapper" [style.user-select]="isDragging ? 'none' : 'auto'">
+        <div *ngFor="let combo of combos" class="combo-card-item" style="pointer-events: none;">
+          <div class="ps-item" style="pointer-events: auto;">
+            <h3>{{ combo.name }}</h3>
+            <div class="combo-code">
+              <span class="badge">Mã: {{ combo.code }}</span>
+            </div>
+            <div class="pi-price">
+              <h2>{{ formatPrice(combo.prices) }}</h2>
+              <span>/ GỐI TẬP</span>
+            </div>
+            <p class="combo-description">{{ combo.description }}</p>
+            <ul>
+              <li>Truy cập không giới hạn</li>
+              <li>Huấn luyện viên cá nhân</li>
+              <li>Dinh dưỡng hoàn chỉnh</li>
+              <li>Hỗ trợ 24/7</li>
+              <li>Cơ sở vật chất hiện đại</li>
+              <li>Cộng đồng tập luyện</li>
+            </ul>
+            <button (click)="viewComboDetail(combo.id)" class="primary-btn pricing-btn">
+              Xem chi tiết
+            </button>
+            <a href="#" class="thumb-icon"><i class="fa fa-picture-o"></i></a>
           </div>
-          <div class="pi-price">
-            <h2>{{ formatPrice(combo.prices) }}</h2>
-            <span>/ GỐI TẬP</span>
-          </div>
-          <p class="combo-description">{{ combo.description }}</p>
-          <ul>
-            <li>Truy cập không giới hạn</li>
-            <li>Huấn luyện viên cá nhân</li>
-            <li>Dinh dưỡng hoàn chỉnh</li>
-            <li>Hỗ trợ 24/7</li>
-            <li>Cơ sở vật chất hiện đại</li>
-            <li>Cộng đồng tập luyện</li>
-          </ul>
-          <button (click)="viewComboDetail(combo.id)" class="primary-btn pricing-btn">
-            Xem chi tiết
-          </button>
-          <a href="#" class="thumb-icon"><i class="fa fa-picture-o"></i></a>
         </div>
       </div>
     </div>

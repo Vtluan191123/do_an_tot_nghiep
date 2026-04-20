@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,19 +20,30 @@ public class TrainingRoomResponse {
     
     private Long coachId;
     
+    private String coachName;  // Tên huấn luyện viên
+    
     private Long subjectId;
+    
+    private String subjectName;  // Tên bộ môn
     
     private String name;
     
     private String description;
     
-    private Long capacity;
+    private Long maxCapacity;  // Sức chứa tối đa
+    
+    private Long currentCapacity;  // Số học viên đã đăng ký
+    
+    private String trainingMethods;  // Online or Offline
     
     private String zoomLink;
     
     private String status;
     
-    private Long currentParticipants;
+    // TimeSlots information
+    private LocalDate date;        // Ngày
+    private LocalDateTime startTime;  // Giờ bắt đầu
+    private LocalDateTime endTime;    // Giờ kết thúc
     
     private LocalDateTime createdAt;
     

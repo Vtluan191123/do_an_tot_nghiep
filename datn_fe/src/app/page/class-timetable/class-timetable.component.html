@@ -28,140 +28,111 @@
         </div>
       </div>
       <div class="col-lg-6">
+        <!-- Subject Filter Buttons -->
         <div class="table-controls">
+          <h5 class="filter-label">Chọn Môn Học:</h5>
           <ul>
-            <li class="active" data-tsfilter="all">All event</li>
-            <li data-tsfilter="fitness">Fitness tips</li>
-            <li data-tsfilter="motivation">Motivation</li>
-            <li data-tsfilter="workout">Workout</li>
+            <li
+              *ngFor="let subject of filterSubjects"
+              class="filter-subject"
+              [ngClass]="{ 'active': selectedSubjectId === subject.subjectId }"
+              (click)="onSubjectFilterClick(subject.subjectId)"
+            >
+              {{ subject.subjectName }}
+            </li>
+            <li
+              *ngIf="filterSubjects.length === 0 && !isLoading"
+              class="filter-subject disabled"
+            >
+              Chưa đăng ký môn nào
+            </li>
           </ul>
+        </div>
+
+        <!-- Week Navigation -->
+        <div class="week-navigation" *ngIf="selectedSubjectId && !isLoading">
+          <button class="btn-week-prev" (click)="previousWeek()">
+            <i class="fa fa-chevron-left"></i> Tuần Trước
+          </button>
+          <span class="week-label">{{ weekLabel }}</span>
+          <button class="btn-week-next" (click)="nextWeek()">
+            Tuần Sau <i class="fa fa-chevron-right"></i>
+          </button>
         </div>
       </div>
     </div>
     <div class="row">
       <div class="col-lg-12">
         <div class="class-timetable">
-          <table>
+          <div *ngIf="isLoading" class="loading-message">
+            <p>Đang tải dữ liệu...</p>
+          </div>
+
+          <div *ngIf="errorMessage && !isLoading" class="error-message">
+            <p>{{ errorMessage }}</p>
+            <button (click)="loadEnrolledSubjects()" class="btn-retry">Thử Lại</button>
+          </div>
+
+          <table *ngIf="!isLoading && !errorMessage">
             <thead>
               <tr>
                 <th></th>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-                <th>Saturday</th>
-                <th>Sunday</th>
+                <th *ngFor="let day of daysOfWeek">{{ day }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="class-time">6.00am - 8.00am</td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>WEIGHT LOOSE</h5>
-                  <span>RLefew D. Loee</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Cardio</h5>
-                  <span>RLefew D. Loee</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>Yoga</h5>
-                  <span>Keaf Shen</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Fitness</h5>
-                  <span>Kimberly Stone</span>
-                </td>
-                <td class="dark-bg blank-td"></td>
-                <td class="hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Boxing</h5>
-                  <span>Rachel Adam</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>Body Building</h5>
-                  <span>Robert Cage</span>
-                </td>
-              </tr>
-              <tr>
-                <td class="class-time">10.00am - 12.00am</td>
-                <td class="blank-td"></td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Fitness</h5>
-                  <span>Kimberly Stone</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>WEIGHT LOOSE</h5>
-                  <span>RLefew D. Loee</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Cardio</h5>
-                  <span>RLefew D. Loee</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>Body Building</h5>
-                  <span>Robert Cage</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Karate</h5>
-                  <span>Donald Grey</span>
-                </td>
-                <td class="blank-td"></td>
-              </tr>
-              <tr>
-                <td class="class-time">5.00pm - 7.00pm</td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Boxing</h5>
-                  <span>Rachel Adam</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Karate</h5>
-                  <span>Donald Grey</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>Body Building</h5>
-                  <span>Robert Cage</span>
-                </td>
-                <td class="blank-td"></td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>Yoga</h5>
-                  <span>Keaf Shen</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Cardio</h5>
-                  <span>RLefew D. Loee</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Fitness</h5>
-                  <span>Kimberly Stone</span>
-                </td>
-              </tr>
-              <tr>
-                <td class="class-time">7.00pm - 9.00pm</td>
-                <td class="hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Cardio</h5>
-                  <span>RLefew D. Loee</span>
-                </td>
-                <td class="dark-bg blank-td"></td>
-                <td class="hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Boxing</h5>
-                  <span>Rachel Adam</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>Yoga</h5>
-                  <span>Keaf Shen</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="motivation">
-                  <h5>Karate</h5>
-                  <span>Donald Grey</span>
-                </td>
-                <td class="dark-bg hover-bg ts-meta" data-tsmeta="fitness">
-                  <h5>Boxing</h5>
-                  <span>Rachel Adam</span>
-                </td>
-                <td class="hover-bg ts-meta" data-tsmeta="workout">
-                  <h5>WEIGHT LOOSE</h5>
-                  <span>RLefew D. Loee</span>
+              <tr *ngFor="let row of timetableRows">
+                <td class="class-time">{{ row.timeSlot }}</td>
+                <td
+                  *ngFor="let cell of row.cells; let dayIndex = index"
+                  class="ts-meta"
+                  [ngClass]="{
+                    'dark-bg': dayIndex % 2 === 0,
+                    'hover-bg': cell,
+                    'blank-td': !cell,
+                    'clickable': cell
+                  }"
+                  (click)="cell && onTimeslotClick(cell)"
+                >
+                  <ng-container *ngIf="cell">
+                    <div class="timeslot-content">
+                      <h5>{{ cell.subjectName }}</h5>
+                      <span class="coach-name">{{ cell.coachFullName }}</span>
+                      <div class="capacity-badge" [ngClass]="getCapacityClass(cell.currentCapacity, cell.maxCapacity)">
+                        <span class="capacity-text">{{ cell.currentCapacity }}/{{ cell.maxCapacity }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Hover Tooltip -->
+                    <div class="hover-tooltip">
+                      <div class="tooltip-title">Chi Tiết Lớp Học</div>
+                      <div class="tooltip-row">
+                        <span class="label">Bộ Môn:</span>
+                        <span class="value">{{ cell.subjectName }}</span>
+                      </div>
+                      <div class="tooltip-row">
+                        <span class="label">Huấn Luyện Viên:</span>
+                        <span class="value">{{ cell.coachFullName }}</span>
+                      </div>
+                      <div class="tooltip-row">
+                        <span class="label">Ngày:</span>
+                        <span class="value">{{ cell.timeSlotDate }}</span>
+                      </div>
+                      <div class="tooltip-row">
+                        <span class="label">Giờ:</span>
+                        <span class="value">{{ cell.timeSlotTime }}</span>
+                      </div>
+                      <div class="tooltip-row">
+                        <span class="label">Hình Thức:</span>
+                        <span class="value">{{ cell.trainingMethods }}</span>
+                      </div>
+                      <div class="tooltip-row capacity">
+                        <span class="label">Sức Chứa:</span>
+                        <span class="value">{{ cell.currentCapacity }}/{{ cell.maxCapacity }} ({{ getCapacityPercentage(cell.currentCapacity, cell.maxCapacity) }}%)</span>
+                      </div>
+                      <div class="tooltip-footer">Nhấp để đặt lịch</div>
+                    </div>
+                  </ng-container>
                 </td>
               </tr>
             </tbody>
@@ -203,4 +174,11 @@
 </div>
 <!-- Get In Touch Section End -->
 
-
+<!-- Booking Modal -->
+<app-booking-modal
+  [isOpen]="isBookingModalOpen"
+  [timeSlotsSubjectData]="selectedTimeslot"
+  (close)="closeBookingModal()"
+  (success)="onBookingSuccess()"
+></app-booking-modal>
+<!-- Booking Modal End -->

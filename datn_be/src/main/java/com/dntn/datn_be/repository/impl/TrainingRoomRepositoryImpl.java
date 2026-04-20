@@ -72,7 +72,7 @@ public class TrainingRoomRepositoryImpl implements TrainingRoomRepositoryCustom 
         }
 
         // ===== sort (anti SQL injection) =====
-        List<String> allowedSortFields = List.of("id", "name", "capacity", "status", "created_at", "updated_at", "coach_id", "subject_id");
+        List<String> allowedSortFields = List.of("id", "name", "max_capacity", "current_capacity", "status", "created_at", "updated_at", "coach_id", "subject_id");
         String sortBy = allowedSortFields.contains(request.getSortBy())
                 ? request.getSortBy()
                 : "created_at";

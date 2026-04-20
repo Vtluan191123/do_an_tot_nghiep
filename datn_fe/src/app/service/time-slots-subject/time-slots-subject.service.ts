@@ -6,11 +6,13 @@ import { environment } from '../../../environments/environment';
 export interface TimeSlotsSubject {
   id?: number;
   subjectId: number;
+  subjectName?: string;
   timeSlotsId: number;
   maxCapacity: number;
   currentCapacity: number;
   trainingMethods: string; // Online or Offline
   coachId: number;
+  coachFullName?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -85,10 +87,11 @@ export class TimeSlotsSubjectService {
    * Get time slots for coach with pagination and filtering
    */
   getCoachTimeSlotsWithPagination(request: {
-    coachId: number;
+    coachId?: number;
     page?: number;
     size?: number;
     date?: string;
+    subjectName?: string;
     trainingMethods?: string;
     status?: string;
     subjectId?: number;

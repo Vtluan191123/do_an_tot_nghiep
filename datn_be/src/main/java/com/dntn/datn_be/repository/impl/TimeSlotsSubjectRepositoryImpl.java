@@ -4,7 +4,8 @@ import com.dntn.datn_be.dto.request.TimeSlotsSubjectFilterRequest;
 import com.dntn.datn_be.model.TimeSlotsSubject;
 import com.dntn.datn_be.repository.TimeSlotsSubjectRepositoryCustom;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -12,8 +13,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,111 +24,90 @@ public class TimeSlotsSubjectRepositoryImpl implements TimeSlotsSubjectRepositor
 
     @Override
     public Page<TimeSlotsSubject> filter(TimeSlotsSubjectFilterRequest request) {
-        StringBuilder sql = new StringBuilder("""
-        SELECT tss.*
-        FROM time_slots_subject tss
-        LEFT JOIN time_slots ts ON tss.time_slots_id = ts.id
-        LEFT JOIN subject s ON tss.subject_id = s.id
-        WHERE 1=1
-    """);
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        
+        // Build main query
+        CriteriaQuery<TimeSlotsSubject> query = cb.createQuery(TimeSlotsSubject.class);
+        Root<TimeSlotsSubject> root = query.from(TimeSlotsSubject.class);
+        
+        List<Predicate> predicates = buildPredicates(cb, root, request);
+        query.where(predicates.toArray(new Predicate[0]));
 
-        StringBuilder countSql = new StringBuilder("""
-        SELECT COUNT(*)
-        FROM time_slots_subject tss
-        LEFT JOIN time_slots ts ON tss.time_slots_id = ts.id
-        LEFT JOIN subject s ON tss.subject_id = s.id
-        WHERE 1=1
-    """);
+        // ===== sorting =====
+        String sortBy = getSortField(request.getSortBy());
+        Order order = "asc".equalsIgnoreCase(request.getSortDirection()) 
+            ? cb.asc(root.get(sortBy)) 
+            : cb.desc(root.get(sortBy));
+        query.orderBy(order);
 
-        List<Object> params = new ArrayList<>();
-
-        // ===== filter by coachId (required) =====
-        if (request.getCoachId() != null) {
-            sql.append(" AND tss.coach_id = ? ");
-            countSql.append(" AND tss.coach_id = ? ");
-            params.add(request.getCoachId());
-        } else {
-            throw new IllegalArgumentException("Coach ID is required");
-        }
-
-        // ===== filter by subjectId =====
-        if (request.getSubjectId() != null) {
-            sql.append(" AND tss.subject_id = ? ");
-            countSql.append(" AND tss.subject_id = ? ");
-            params.add(request.getSubjectId());
-        }
-
-        // ===== filter by trainingMethods =====
-        if (request.getTrainingMethods() != null && !request.getTrainingMethods().isEmpty()) {
-            sql.append(" AND tss.training_methods = ? ");
-            countSql.append(" AND tss.training_methods = ? ");
-            params.add(request.getTrainingMethods());
-        }
-
-        // ===== filter by date =====
-        if (request.getDate() != null && !request.getDate().isEmpty()) {
-            sql.append(" AND ts.date = ? ");
-            countSql.append(" AND ts.date = ? ");
-            params.add(LocalDate.parse(request.getDate()));
-        }
-
-        // ===== filter by status =====
-        if (request.getStatus() != null && !request.getStatus().isEmpty()) {
-            LocalDate today = LocalDate.now();
-
-            if (request.getStatus().equals("past")) {
-                sql.append(" AND ts.date < ? ");
-                countSql.append(" AND ts.date < ? ");
-                params.add(today);
-            } else if (request.getStatus().equals("available")) {
-                sql.append(" AND ts.date >= ? AND tss.current_capacity < tss.max_capacity ");
-                countSql.append(" AND ts.date >= ? AND tss.current_capacity < tss.max_capacity ");
-                params.add(today);
-            } else if (request.getStatus().equals("full")) {
-                sql.append(" AND ts.date >= ? AND tss.current_capacity >= tss.max_capacity ");
-                countSql.append(" AND ts.date >= ? AND tss.current_capacity >= tss.max_capacity ");
-                params.add(today);
-            }
-        }
-
-        // ===== sort (anti SQL injection) =====
-        List<String> allowedSortFields = List.of("date", "start_time", "training_methods", "max_capacity", "current_capacity");
-
-        String sortBy = allowedSortFields.contains(request.getSortBy())
-                ? request.getSortBy()
-                : "date";
-
-        String sortDir = "asc".equalsIgnoreCase(request.getSortDirection()) ? "ASC" : "DESC";
-
-        sql.append(" ORDER BY ").append(sortBy).append(" ").append(sortDir);
-
-        // ===== create query =====
-        Query query = entityManager.createNativeQuery(sql.toString(), TimeSlotsSubject.class);
-        Query countQuery = entityManager.createNativeQuery(countSql.toString());
-
-        // ===== set params =====
-        for (int i = 0; i < params.size(); i++) {
-            query.setParameter(i + 1, params.get(i));
-            countQuery.setParameter(i + 1, params.get(i));
-        }
-
-        // ===== get total count =====
-        Number totalCount = (Number) countQuery.getSingleResult();
-        long total = totalCount.longValue();
-
+        // ===== get results =====
+        TypedQuery<TimeSlotsSubject> typedQuery = entityManager.createQuery(query);
+        
         // ===== pagination =====
         int page = request.getPage() != null ? request.getPage() : 0;
         int size = request.getSize() != null ? request.getSize() : 10;
         int offset = page * size;
 
-        query.setFirstResult(offset);
-        query.setMaxResults(size);
+        typedQuery.setFirstResult(offset);
+        typedQuery.setMaxResults(size);
 
-        List<TimeSlotsSubject> resultList = query.getResultList();
+        List<TimeSlotsSubject> resultList = typedQuery.getResultList();
+
+        // Build count query separately with new root
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<TimeSlotsSubject> countRoot = countQuery.from(TimeSlotsSubject.class);
+        List<Predicate> countPredicates = buildPredicates(cb, countRoot, request);
+        countQuery.select(cb.count(countRoot));
+        countQuery.where(countPredicates.toArray(new Predicate[0]));
+        long total = entityManager.createQuery(countQuery).getSingleResult();
 
         Pageable pageable = PageRequest.of(page, size);
-
         return new PageImpl<>(resultList, pageable, total);
+    }
+
+    private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<TimeSlotsSubject> root, TimeSlotsSubjectFilterRequest request) {
+        List<Predicate> predicates = new ArrayList<>();
+
+        // ===== filter by coachId (optional) =====
+        // If coachId is provided, filter by that coach
+        // If not provided, show all time slots (public view)
+        if (request.getCoachId() != null) {
+            predicates.add(cb.equal(root.get("coachId"), request.getCoachId()));
+        }
+
+        // ===== filter by subjectId =====
+        if (request.getSubjectId() != null) {
+            predicates.add(cb.equal(root.get("subjectId"), request.getSubjectId()));
+        }
+
+        // ===== filter by subjectName =====
+        if (request.getSubjectName() != null && !request.getSubjectName().isEmpty()) {
+            predicates.add(cb.like(
+                cb.lower(root.get("subjectName")),
+                "%" + request.getSubjectName().toLowerCase() + "%"
+            ));
+        }
+
+        // ===== filter by trainingMethods =====
+        if (request.getTrainingMethods() != null && !request.getTrainingMethods().isEmpty()) {
+            predicates.add(cb.equal(root.get("trainingMethods"), request.getTrainingMethods()));
+        }
+
+        // ===== filter by status (based on capacity) =====
+        if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+            if (request.getStatus().equals("available")) {
+                predicates.add(cb.lt(root.get("currentCapacity"), root.get("maxCapacity")));
+            } else if (request.getStatus().equals("full")) {
+                predicates.add(cb.ge(root.get("currentCapacity"), root.get("maxCapacity")));
+            }
+        }
+
+        return predicates;
+    }
+
+    private String getSortField(String sortBy) {
+        List<String> allowedFields = List.of("id", "createdAt", "updatedAt", "trainingMethods", "maxCapacity", "currentCapacity");
+        return allowedFields.contains(sortBy) ? sortBy : "createdAt";
     }
 }
 
