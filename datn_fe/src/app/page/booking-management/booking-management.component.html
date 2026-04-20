@@ -4,10 +4,10 @@
     <div class="row">
       <div class="col-lg-12 text-center">
         <div class="breadcrumb-text">
-          <h2>Quản Lý Đặt Lịch</h2>
+          <h2>Tìm Thời Gian Của Bạn</h2>
           <div class="bt-option">
             <a href="/">Home</a>
-            <span>Booking Management</span>
+            <span>Booking Classes</span>
           </div>
         </div>
       </div>
@@ -16,74 +16,209 @@
 </section>
 <!-- Breadcrumb Section End -->
 
-<!-- Management Section Begin -->
-<section class="management-section spad">
+<!-- Booking Timetable Section Begin -->
+<section class="booking-timetable-section spad">
   <div class="container">
-    <div class="row">
+    <!-- Header & Controls -->
+    <div class="row mb-5">
       <div class="col-lg-12">
-        <!-- Header with Add Button -->
-        <div class="management-header">
-          <h3>Danh Sách Đặt Lịch</h3>
-          <button class="btn btn-primary" (click)="openForm()">
-            <i class="fa fa-plus"></i> Thêm Đặt Lịch
-          </button>
+        <div class="timetable-header">
+          <div class="header-title">
+            <h3>TÌM THỜI GIAN CỦA BẠN</h3>
+            <p>Chọn khóa học yêu thích của bạn và đặt lịch</p>
+          </div>
+          <div class="header-filter">
+            <button class="filter-tab active" (click)="viewMode = 'timetable'" [class.active]="viewMode === 'timetable'">
+              <i class="fa fa-calendar"></i> Lịch Biểu
+            </button>
+            <button class="filter-tab" (click)="viewMode = 'list'" [class.active]="viewMode === 'list'">
+              <i class="fa fa-list"></i> Danh Sách
+            </button>
+            <button class="filter-tab btn-add" (click)="openForm()">
+              <i class="fa fa-plus"></i> Thêm Lịch
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="row">
+      <div class="col-lg-12 text-center py-5">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timetable View -->
+    <div *ngIf="!isLoading && viewMode === 'timetable'" class="row">
+      <div class="col-lg-12">
+        <div class="booking-timetable-wrapper">
+          <div class="timetable-container">
+            <table class="booking-timetable">
+              <thead>
+                <tr>
+                  <th class="time-header"></th>
+                  <th *ngFor="let day of daysOfWeek">{{ day }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let timeSlot of timeSlots">
+                  <td class="time-slot-cell">
+                    <span class="time-text">{{ timeSlot }}</span>
+                  </td>
+                  <td *ngFor="let day of daysOfWeek"
+                      class="booking-cell"
+                      [ngClass]="getBookingClass(day, timeSlot)"
+                      (click)="selectTimeSlot(day, timeSlot)">
+                    <div class="booking-content" *ngIf="getBookingForSlot(day, timeSlot) as booking">
+                      <h6>{{ booking.className }}</h6>
+                      <span class="trainer-name">{{ booking.trainer }}</span>
+                      <span class="booking-status" [ngClass]="'status-' + booking.status">
+                        {{ getStatusBadge(booking.status) }}
+                      </span>
+                    </div>
+                    <div class="empty-slot" *ngIf="!getBookingForSlot(day, timeSlot)"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- Loading State -->
-        <div *ngIf="isLoading" class="text-center py-5">
-          <div class="spinner-border" role="status">
-            <span class="sr-only">Loading...</span>
+        <!-- Status Legend -->
+        <div class="row mt-4">
+          <div class="col-lg-12">
+            <div class="status-legend">
+              <div class="legend-item">
+                <span class="legend-badge status-0"></span>
+                <span>Chưa Xác Nhận</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-badge status-1"></span>
+                <span>Đã Xác Nhận</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-badge status-2"></span>
+                <span>Đã Hoàn Thành</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-badge status-3"></span>
+                <span>Đã Hủy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="!isLoading && viewMode === 'list'" class="row">
+      <div class="col-lg-12">
+        <!-- Filters -->
+        <div class="filter-controls mb-4">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Lọc Theo Trạng Thái</label>
+                <select class="form-control" [(ngModel)]="selectedStatus" (change)="filterBookings()">
+                  <option value="">Tất Cả Trạng Thái</option>
+                  <option *ngFor="let option of statusOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Tìm Kiếm User ID</label>
+                <input type="text" class="form-control" [(ngModel)]="searchUserId" (input)="filterBookings()"
+                       placeholder="Nhập User ID">
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Bookings Table -->
-        <div *ngIf="!isLoading && bookings.length > 0" class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-header">
-              <tr>
-                <th>ID</th>
-                <th>User ID</th>
-                <th>Subject ID</th>
-                <th>Time Slot ID</th>
-                <th>Trạng Thái</th>
-                <th>Ngày Tạo</th>
-                <th>Hành Động</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let booking of bookings">
-                <td>{{ booking.id }}</td>
-                <td><span class="badge badge-primary">{{ booking.userId }}</span></td>
-                <td><span class="badge badge-info">{{ booking.subjectId }}</span></td>
-                <td><span class="badge badge-secondary">{{ booking.timeSlotId }}</span></td>
-                <td>
-                  <span class="badge" [ngClass]="getStatusClass(booking.status)">
-                    {{ getStatusLabel(booking.status) }}
-                  </span>
-                </td>
-                <td>{{ booking.createdAt | date:'short' }}</td>
-                <td>
-                  <button class="btn btn-sm btn-warning" (click)="openForm(booking)" title="Edit">
-                    <i class="fa fa-edit"></i> Sửa
-                  </button>
-                  <button class="btn btn-sm btn-danger" (click)="deleteBooking(booking.id!)" title="Delete">
-                    <i class="fa fa-trash"></i> Xóa
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div *ngIf="filteredBookings.length > 0" class="booking-list-wrapper">
+          <div class="table-responsive">
+            <table class="table table-hover booking-list-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Môn Học</th>
+                  <th>Khung Giờ</th>
+                  <th>Trạng Thái</th>
+                  <th>Ngày Tạo</th>
+                  <th>Hành Động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let booking of filteredBookings" class="booking-row" [ngClass]="'status-' + booking.status">
+                  <td><span class="badge badge-primary">{{ booking.userId }}</span></td>
+                  <td><span class="badge badge-info">{{ booking.subjectId }}</span></td>
+                  <td><span class="badge badge-secondary">{{ booking.timeSlotId }}</span></td>
+                  <td>
+                    <span class="badge" [ngClass]="getStatusClass(booking.status)">
+                      {{ getStatusLabel(booking.status) }}
+                    </span>
+                  </td>
+                  <td>{{ booking.createdAt | date:'short' }}</td>
+                  <td class="actions">
+                    <button class="btn btn-sm btn-warning" (click)="openForm(booking)" title="Chỉnh sửa">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="deleteBooking(booking.id!)" title="Xóa">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!isLoading && bookings.length === 0" class="alert alert-info text-center">
+        <div *ngIf="filteredBookings.length === 0" class="alert alert-info text-center py-5">
+          <i class="fa fa-inbox fa-3x mb-3"></i>
           <p>Không có đặt lịch nào. <a href="#" (click)="openForm()">Thêm đặt lịch mới</a></p>
         </div>
       </div>
     </div>
   </div>
 </section>
-<!-- Management Section End -->
+<!-- Booking Timetable Section End -->
+
+<!-- Get In Touch Section Begin -->
+<div class="gettouch-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="gt-text">
+          <i class="fa fa-map-marker"></i>
+          <p>333 Middle Winchendon Rd, Rindge,<br /> NH 03461</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gt-text">
+          <i class="fa fa-mobile"></i>
+          <ul>
+            <li>125-711-811</li>
+            <li>125-668-886</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gt-text email">
+          <i class="fa fa-envelope"></i>
+          <p>Support.gymcentergmail.com</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Get In Touch Section End -->
 
 <!-- Form Modal -->
 <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">

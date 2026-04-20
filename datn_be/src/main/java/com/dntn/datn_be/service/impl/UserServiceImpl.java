@@ -11,6 +11,7 @@ import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.dto.response.CoachDetailResponse;
+import com.dntn.datn_be.dto.response.UserSearchWithCurrentUserResponse;
 import com.dntn.datn_be.model.GroudMessageUser;
 import com.dntn.datn_be.model.NotificationType;
 import com.dntn.datn_be.model.Roles;
@@ -24,12 +25,16 @@ import com.dntn.datn_be.repository.RoleRepository;
 import com.dntn.datn_be.repository.UserRepository;
 import com.dntn.datn_be.repository.UserSubjectRepository;
 import com.dntn.datn_be.repository.SubjectRepository;
+import com.dntn.datn_be.repository.TimeSlotsRepository;
+import com.dntn.datn_be.repository.TimeSlotsSubjectRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoAddFriendRepository;
 import com.dntn.datn_be.repository.mongo.BaseMongoGroudRepository;
 import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.NotificationService;
 import com.dntn.datn_be.service.UserService;
 import com.dntn.datn_be.service.WebSocketService;
+import com.dntn.datn_be.model.TimeSlots;
+import com.dntn.datn_be.model.TimeSlotsSubject;
 import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
@@ -60,6 +65,8 @@ public class UserServiceImpl implements UserService{
     private final RoleRepository roleRepository;
     private final UserSubjectRepository userSubjectRepository;
     private final SubjectRepository subjectRepository;
+    private final TimeSlotsRepository timeSlotsRepository;
+    private final TimeSlotsSubjectRepository timeSlotsSubjectRepository;
 
 
     @Override
@@ -95,6 +102,12 @@ public class UserServiceImpl implements UserService{
         Users currentUser = authService.getCurrentUser();
         Long currentUserId = currentUser.getId();
         boolean isAdmin = request.isAdmin();
+        
+        // If not admin and excludeUserId not set, exclude current user
+        if (!isAdmin && request.getExcludeUserId() == null) {
+            request.setExcludeUserId(currentUserId);
+        }
+        
         Page<Users> page = userRepository.filter(request);
         List<Users> usersList = page.getContent();
         List<UserResponse> userResponses = new ArrayList<>();
@@ -138,9 +151,9 @@ public class UserServiceImpl implements UserService{
             }
         }
 
-        // Convert all users to UserResponse with statusFriend and sentByMe, excluding current user
+        // Convert all users to UserResponse with statusFriend and sentByMe
+        // Note: Current user is already excluded via SQL query in repository
          userResponses = usersList.stream()
-                .filter(user -> !user.getId().equals(currentUserId))
                 .map(user -> {
                     UserResponse userResponse = new UserResponse();
                     BeanUtils.copyProperties(user, userResponse);
@@ -153,7 +166,16 @@ public class UserServiceImpl implements UserService{
                     return userResponse;
                 })
                 .collect(Collectors.toList());
-}
+} else {
+            // Admin mode: include all users without filtering
+            userResponses = usersList.stream()
+                    .map(user -> {
+                        UserResponse userResponse = new UserResponse();
+                        BeanUtils.copyProperties(user, userResponse);
+                        return userResponse;
+                    })
+                    .collect(Collectors.toList());
+        }
         return ResponseGlobalDto.<List<UserResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .data(userResponses)
@@ -427,8 +449,7 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional
     public ResponseGlobalDto<Boolean> assignCoachRole(AssignCoachRoleRequest request) {
-        try {
-            Users user = userRepository.findById(request.getUserId())
+        try {Users user = userRepository.findById(request.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             // Set the new role
@@ -443,6 +464,7 @@ public class UserServiceImpl implements UserService{
             // If the new role is NOT Coach (roleId 3), delete all UserSubject records for this user
             if (!newRoleId.equals(3L)) {
                 userSubjectRepository.deleteByUserId(request.getUserId());
+                timeSlotsSubjectRepository.deleteByCoachId(request.getUserId());
                 return ResponseGlobalDto.<Boolean>builder()
                         .status(HttpStatus.OK.value())
                         .data(true)
@@ -456,6 +478,8 @@ public class UserServiceImpl implements UserService{
             for (UserSubject existingSubject : existingCoachSubjects) {
                 if (request.getSubjectIds() == null || !request.getSubjectIds().contains(existingSubject.getSubjectId())) {
                     userSubjectRepository.delete(existingSubject);
+                    // Also delete TimeSlotsSubject for this subject
+                    timeSlotsSubjectRepository.deleteBySubjectId(existingSubject.getSubjectId());
                 }
             }
 
@@ -482,6 +506,9 @@ public class UserServiceImpl implements UserService{
                         existingUserSubject.setIsCoach(true);
                         userSubjectRepository.save(existingUserSubject);
                     }
+                    
+                    // Auto-generate TimeSlotsSubject for each subject
+                    createTimeSlotsSubjectForCoach(request.getUserId(), subjectId);
                 }
             }
 
@@ -588,5 +615,59 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    @Override
+    public ResponseGlobalDto<UserSearchWithCurrentUserResponse> searchWithCurrentUser(UserFilterRequest request) {
+        // Get current user
+        Users currentUser = authService.getCurrentUser();
+        UserResponse currentUserResponse = new UserResponse();
+        BeanUtils.copyProperties(currentUser, currentUserResponse);
+        currentUserResponse.setStatusFriend(null);
+        currentUserResponse.setSentByMe(null);
+
+        // Get search results WITHOUT excluding current user (we handle it in gets())
+        // Make sure to exclude current user in the query
+        request.setExcludeUserId(currentUser.getId());
+        ResponseGlobalDto<List<UserResponse>> searchResults = this.gets(request);
+
+        // Build response with both current user and search results
+        UserSearchWithCurrentUserResponse response = UserSearchWithCurrentUserResponse.builder()
+                .currentUser(currentUserResponse)
+                .users(searchResults.getData())
+                .build();
+
+        return ResponseGlobalDto.<UserSearchWithCurrentUserResponse>builder()
+                .status(HttpStatus.OK.value())
+                .data(response)
+                .count(searchResults.getCount())
+                .message("Get current user with search results successfully")
+                .build();
+    }
+    
+    /**
+     * Helper method to create TimeSlotsSubject records for a coach and subject
+     */
+    private void createTimeSlotsSubjectForCoach(Long coachId, Long subjectId) {
+        try {
+            List<TimeSlots> allTimeSlots = timeSlotsRepository.findAllOrderByDateAndTime();
+            
+            for (TimeSlots timeSlot : allTimeSlots) {
+                // Check if already exists
+                if (timeSlotsSubjectRepository.findBySubjectIdAndTimeSlotId(subjectId, timeSlot.getId()).isEmpty()) {
+                    TimeSlotsSubject newSlot = TimeSlotsSubject.builder()
+                            .subjectId(subjectId)
+                            .timeSlotsId(timeSlot.getId())
+                            .maxCapacity(0L)
+                            .currentCapacity(0L)
+                            .trainingMethods("OFFLINE")
+                            .coachId(coachId)
+                            .build();
+                    timeSlotsSubjectRepository.save(newSlot);
+                }
+            }
+        } catch (Exception e) {
+            // Log error but don't fail the entire operation
+            System.err.println("Error creating TimeSlotsSubject for coach " + coachId + ": " + e.getMessage());
+        }
+    }
 }
 

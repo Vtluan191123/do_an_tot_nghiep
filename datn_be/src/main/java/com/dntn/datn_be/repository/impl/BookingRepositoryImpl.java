@@ -73,8 +73,8 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
         sql.append(" ORDER BY b.").append(request.getSortBy())
                 .append(" ").append(request.getSortDirection());
 
-        // ===== add pagination =====
-        sql.append(" LIMIT ? OFFSET ? ");
+        // ===== add pagination (SQL Server compatible) =====
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
 
         // Create count query
         Query countQuery = entityManager.createNativeQuery(countSql.toString());
@@ -83,9 +83,10 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
         }
         Long total = ((Number) countQuery.getSingleResult()).longValue();
 
-        // Add pagination parameters
+        // Add pagination parameters (offset, then rows count)
+        long offset = (long) request.getPage() * request.getSize();
+        params.add(offset);
         params.add(request.getSize());
-        params.add((long) request.getPage() * request.getSize());
 
         // Create main query
         Query query = entityManager.createNativeQuery(sql.toString(), Bookings.class);

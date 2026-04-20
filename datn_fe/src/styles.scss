@@ -1252,6 +1252,8 @@ ul, li {
 .breadcrumb-section {
   height: 500px;
   padding-top: 230px;
+  position: relative;
+  z-index: 1;
 }
 
 .breadcrumb-text h2 {

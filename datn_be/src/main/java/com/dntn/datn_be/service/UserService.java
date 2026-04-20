@@ -6,6 +6,7 @@ import com.dntn.datn_be.dto.response.GetListGroudsDto;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.dto.response.CoachDetailResponse;
+import com.dntn.datn_be.dto.response.UserSearchWithCurrentUserResponse;
 
 import java.util.List;
 
@@ -18,4 +19,5 @@ public interface UserService extends BaseGlobalService<UserResponse, UserCreateR
     ResponseGlobalDto<Boolean> assignCoachRole(AssignCoachRoleRequest request);
     ResponseGlobalDto<List<Long>> getUserCoachSubjects(Long userId);
     ResponseGlobalDto<List<CoachDetailResponse>> getAllCoachesWithSubjects();
+    ResponseGlobalDto<UserSearchWithCurrentUserResponse> searchWithCurrentUser(UserFilterRequest request);
 }

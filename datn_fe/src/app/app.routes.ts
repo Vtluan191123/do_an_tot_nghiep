@@ -19,6 +19,8 @@ import { BookingManagementComponent } from './page/booking-management/booking-ma
 import { UserManagementComponent } from './page/user-management/user-management.component';
 import { StatisticsComponent } from './page/statistics/statistics.component';
 import { StudentEnrolledSubjectsComponent } from './page/student-enrolled-subjects/student-enrolled-subjects.component';
+import { CoachTimeSlotsManagementComponent } from './page/coach-time-slots-management/coach-time-slots-management.component';
+import { TrainingRoomBySubjectComponent } from './page/training-room-by-subject/training-room-by-subject.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -30,10 +32,9 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashBoardComponent, canActivate: [authGuard] },
   { path: 'call', component: VideoCallComponent, canActivate: [authGuard] },
   { path: 'room-subject', component: VideoConferenceClientComponent, canActivate: [authGuard] },
-  { path: 'category', component: CategoryComponent, canActivate: [authGuard] },
-  { path: 'gym-room', component: GymRoomComponent, canActivate: [authGuard] },
-  { path: 'friend-search', component: FriendSearchComponent, canActivate: [authGuard] },
   { path: 'class-timetable', component: ClassTimetableComponent, canActivate: [authGuard] },
+  { path: 'gym-room', component: GymRoomComponent, canActivate: [authGuard] },
+  { path: 'training-room-by-subject', component: TrainingRoomBySubjectComponent, canActivate: [authGuard] },
   { path: 'class-detail', component: ClassDetailComponent, canActivate: [authGuard] },
   { path: 'combo-detail/:id', component: ComboDetailComponent, canActivate: [authGuard] },
   { path: 'subject-detail/:id', component: SubjectDetailComponent, canActivate: [authGuard] },
@@ -41,6 +42,7 @@ export const routes: Routes = [
   { path: 'combo-management', component: ComboManagementComponent, canActivate: [authGuard] },
   { path: 'subject-management', component: SubjectManagementComponent, canActivate: [authGuard] },
   { path: 'booking-management', component: BookingManagementComponent, canActivate: [authGuard] },
+  { path: 'coach-time-slots-management', component: CoachTimeSlotsManagementComponent, canActivate: [authGuard] },
   { path: 'user-management', component: UserManagementComponent, canActivate: [authGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [authGuard] },
   { path: 'student-enrolled-subjects', component: StudentEnrolledSubjectsComponent, canActivate: [authGuard] },

@@ -175,6 +175,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             params.add(request.getIsActive());
         }
 
+        // ===== exclude specific user =====
+        if (request.getExcludeUserId() != null) {
+            sql.append(" AND u.id <> ? ");
+            countSql.append(" AND u.id <> ? ");
+            params.add(request.getExcludeUserId());
+        }
+
         // ===== keyword - LIKE with OR in username, email, fullName =====
         if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
             sql.append("""

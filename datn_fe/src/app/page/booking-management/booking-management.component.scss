@@ -1,139 +1,479 @@
-/* Booking Management Styles - Green theme */
+/* Booking Timetable Section Styles */
 
-.management-section {
+.booking-timetable-section {
   padding: 60px 0;
-  background-color: #f9f9f9;
+  background-color: #1a1a1a;
+  min-height: 100vh;
 }
 
-.management-header {
+/* Header Styles */
+.timetable-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #00a86b;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.management-header h3 {
+.header-title {
+  flex: 1;
+  min-width: 300px;
+}
+
+.header-title h3 {
+  color: #ff6b35;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: 1px;
+}
+
+.header-title p {
+  color: #999;
+  font-size: 14px;
   margin: 0;
-  font-size: 28px;
-  color: #000;
-  font-weight: 600;
 }
 
-.management-header .btn-primary {
-  background-color: #00a86b;
-  border-color: #00a86b;
-  padding: 8px 20px;
+.header-filter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.filter-tab {
+  padding: 10px 20px;
+  border: 1px solid #ff6b35;
+  background-color: transparent;
+  color: #fff;
   border-radius: 5px;
+  cursor: pointer;
   transition: all 0.3s ease;
-}
-
-.management-header .btn-primary:hover {
-  background-color: #008855;
-  border-color: #008855;
-  transform: translateY(-2px);
-}
-
-/* Table Styles */
-.table {
-  background-color: white;
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.table-header {
-  background: linear-gradient(135deg, #00a86b 0%, #33cc99 100%);
-  color: white;
+  font-size: 13px;
   font-weight: 600;
 }
 
-.table thead th {
-  border: none;
-  padding: 15px;
-  text-align: left;
+.filter-tab:hover {
+  background-color: #ff6b35;
+  color: #fff;
 }
 
-.table tbody tr {
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.3s ease;
+.filter-tab.active {
+  background-color: #ff6b35;
+  color: #fff;
 }
 
-.table tbody tr:hover {
-  background-color: #f5f5f5;
-}
-
-.table tbody td {
-  padding: 15px;
-  vertical-align: middle;
-}
-
-.badge-primary {
-  background-color: #00a86b;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-.badge-info {
-  background-color: #0099cc;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-.badge-secondary {
-  background-color: #6c757d;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-.badge-success {
-  background-color: #28a745;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-.badge-warning {
-  background-color: #ffc107;
-  color: #000;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-.badge-danger {
-  background-color: #dc3545;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-/* Button Styles */
-.btn-warning {
-  background-color: #ffc107;
-  border-color: #ffc107;
-  color: #000;
+.filter-tab i {
   margin-right: 5px;
 }
 
+.btn-add {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
+  color: #fff;
+}
+
+/* Timetable Wrapper */
+.booking-timetable-wrapper {
+  background-color: #000;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  overflow-x: auto;
+}
+
+.timetable-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Timetable Styles */
+.booking-timetable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #111;
+}
+
+.booking-timetable thead {
+  background: linear-gradient(90deg, #ff6b35 0%, #ff8c5a 100%);
+}
+
+.booking-timetable thead tr {
+  background: linear-gradient(90deg, #ff6b35 0%, #ff8c5a 100%);
+}
+
+.booking-timetable th {
+  padding: 15px 10px;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 2px solid #ff6b35;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.booking-timetable th.time-header {
+  background-color: #1a1a1a;
+  border-bottom: 2px solid #333;
+}
+
+/* Time Slot Cell */
+.time-slot-cell {
+  background-color: #1a1a1a;
+  padding: 15px 10px;
+  font-weight: 600;
+  color: #ff6b35;
+  text-align: center;
+  border-right: 2px solid #333;
+  border-bottom: 1px solid #222;
+  font-size: 12px;
+  min-width: 110px;
+}
+
+.time-text {
+  display: block;
+  line-height: 1.4;
+}
+
+/* Booking Cell */
+.booking-cell {
+  padding: 0;
+  border: 1px solid #222;
+  min-height: 100px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #111;
+  position: relative;
+}
+
+.booking-cell:hover {
+  background-color: #1a1a1a;
+  box-shadow: inset 0 0 10px rgba(255, 107, 53, 0.2);
+}
+
+.booking-cell.empty {
+  background-color: #0a0a0a;
+}
+
+.booking-cell.empty:hover {
+  background-color: #1a1a1a;
+}
+
+/* Booking Content */
+.booking-content {
+  padding: 12px 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0.05) 100%);
+  border-left: 3px solid #ff6b35;
+}
+
+.booking-content h6 {
+  color: #fff;
+  margin: 0 0 5px 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trainer-name {
+  display: block;
+  color: #ff6b35;
+  font-size: 11px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.booking-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booking-status.status-0 {
+  background-color: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+  border: 1px solid #ffc107;
+}
+
+.booking-status.status-1 {
+  background-color: rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.booking-status.status-2 {
+  background-color: rgba(33, 150, 243, 0.3);
+  color: #2196f3;
+  border: 1px solid #2196f3;
+}
+
+.booking-status.status-3 {
+  background-color: rgba(244, 67, 54, 0.3);
+  color: #f44336;
+  border: 1px solid #f44336;
+}
+
+.empty-slot {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+}
+
+/* Status Legend */
+.status-legend {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+  background-color: rgba(255, 107, 53, 0.1);
+  border-radius: 5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #999;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.legend-badge {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-badge.status-0 {
+  background-color: #ffc107;
+}
+
+.legend-badge.status-1 {
+  background-color: #4caf50;
+}
+
+.legend-badge.status-2 {
+  background-color: #2196f3;
+}
+
+.legend-badge.status-3 {
+  background-color: #f44336;
+}
+
+/* List View Styles */
+.filter-controls {
+  background-color: #000;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #222;
+}
+
+.filter-controls .form-group label {
+  color: #ff6b35;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-controls .form-control {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.filter-controls .form-control:focus {
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+.booking-list-wrapper {
+  background-color: #000;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #222;
+}
+
+.booking-list-table {
+  background-color: #000;
+  color: #fff;
+  margin: 0;
+}
+
+.booking-list-table thead {
+  background: linear-gradient(90deg, #ff6b35 0%, #ff8c5a 100%);
+}
+
+.booking-list-table thead th {
+  border: none;
+  padding: 15px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booking-list-table tbody tr {
+  border-bottom: 1px solid #222;
+  transition: background-color 0.3s ease;
+}
+
+.booking-list-table tbody tr:hover {
+  background-color: #1a1a1a;
+}
+
+.booking-list-table tbody td {
+  padding: 15px;
+  color: #ccc;
+  border: none;
+  vertical-align: middle;
+}
+
+.booking-row.status-0 {
+  border-left: 3px solid #ffc107;
+}
+
+.booking-row.status-1 {
+  border-left: 3px solid #4caf50;
+}
+
+.booking-row.status-2 {
+  border-left: 3px solid #2196f3;
+}
+
+.booking-row.status-3 {
+  border-left: 3px solid #f44336;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-primary {
+  background-color: rgba(255, 107, 53, 0.3);
+  color: #ff6b35;
+  border: 1px solid #ff6b35;
+}
+
+.badge-info {
+  background-color: rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.badge-secondary {
+  background-color: rgba(155, 155, 155, 0.3);
+  color: #9b9b9b;
+  border: 1px solid #9b9b9b;
+}
+
+.badge-success {
+  background-color: rgba(33, 150, 243, 0.3);
+  color: #2196f3;
+  border: 1px solid #2196f3;
+}
+
+.badge-warning {
+  background-color: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+  border: 1px solid #ffc107;
+}
+
+.badge-danger {
+  background-color: rgba(244, 67, 54, 0.3);
+  color: #f44336;
+  border: 1px solid #f44336;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions .btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 3px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.btn-warning {
+  background-color: transparent;
+  border-color: #ffc107;
+  color: #ffc107;
+}
+
 .btn-warning:hover {
-  background-color: #e0a800;
-  border-color: #e0a800;
+  background-color: #ffc107;
+  color: #000;
 }
 
 .btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
-  color: white;
+  background-color: transparent;
+  border-color: #f44336;
+  color: #f44336;
 }
 
 .btn-danger:hover {
-  background-color: #c82333;
-  border-color: #c82333;
+  background-color: #f44336;
+  color: #fff;
+}
+
+/* Empty State */
+.alert-info {
+  background-color: rgba(33, 150, 243, 0.15);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  color: #2196f3;
+  border-radius: 5px;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.alert-info i {
+  color: #2196f3;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.alert-info p {
+  margin: 0;
+  color: #9b9b9b;
+}
+
+.alert-info a {
+  color: #ff6b35;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.alert-info a:hover {
+  color: #ff8c5a;
+  text-decoration: underline;
 }
 
 /* Modal Styles */
@@ -143,7 +483,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,129 +508,285 @@
 }
 
 .modal-content {
-  background-color: white;
+  background-color: #1a1a1a;
   border-radius: 8px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #00a86b 0%, #33cc99 100%);
-  color: white;
+  background: linear-gradient(90deg, #ff6b35 0%, #ff8c5a 100%);
+  color: #fff;
   padding: 20px;
   border-radius: 8px 8px 0 0;
   border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .modal-header .modal-title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .modal-header .btn-close {
+  background-color: transparent;
+  border: none;
+  color: #fff;
   opacity: 0.8;
-  filter: brightness(0) invert(1);
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.modal-header .btn-close:hover {
+  opacity: 1;
 }
 
 .modal-body {
   padding: 25px;
 }
 
-.form-group label {
+.modal-body .form-group {
+  margin-bottom: 20px;
+}
+
+.modal-body .form-label {
+  color: #ff6b35;
+  font-size: 13px;
   font-weight: 600;
-  color: #333;
   margin-bottom: 8px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.form-control {
-  border: 1px solid #ddd;
-  border-radius: 5px;
+.modal-body .form-control {
+  background-color: #111;
+  border: 1px solid #333;
+  color: #fff;
   padding: 10px 12px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
+  border-radius: 5px;
+  font-size: 13px;
+  transition: all 0.3s ease;
 }
 
-.form-control:focus {
-  border-color: #00a86b;
-  box-shadow: 0 0 0 0.2rem rgba(0, 168, 107, 0.25);
+.modal-body .form-control:focus {
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+  background-color: #111;
+  color: #fff;
 }
 
 .text-danger {
-  color: #dc3545;
+  color: #f44336;
 }
 
 .modal-footer {
   padding: 15px 25px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #333;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  background-color: #111;
+  border-radius: 0 0 8px 8px;
+}
+
+.modal-footer .btn {
+  padding: 8px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
 }
 
 .modal-footer .btn-secondary {
-  background-color: #6c757d;
-  border-color: #6c757d;
+  background-color: #333;
+  color: #fff;
 }
 
 .modal-footer .btn-secondary:hover {
-  background-color: #5a6268;
+  background-color: #444;
 }
 
 .modal-footer .btn-primary {
-  background-color: #00a86b;
-  border-color: #00a86b;
+  background-color: #ff6b35;
+  color: #fff;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #ff8c5a;
 }
 
 /* Loading State */
 .spinner-border {
-  color: #00a86b;
+  color: #ff6b35;
   width: 3rem;
   height: 3rem;
 }
 
-/* Empty State */
-.alert-info {
-  background-color: #d1ecf1;
-  border-color: #bee5eb;
-  color: #0c5460;
-  padding: 20px;
-  border-radius: 5px;
-}
-
-.alert-info a {
-  color: #00a86b;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.alert-info a:hover {
-  text-decoration: underline;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
-  .management-header {
+  .booking-timetable-section {
+    padding: 30px 0;
+  }
+
+  .timetable-header {
     flex-direction: column;
+    align-items: stretch;
     gap: 15px;
-    align-items: flex-start;
   }
 
-  .table-responsive {
-    font-size: 14px;
+  .header-title h3 {
+    font-size: 24px;
   }
 
-  .table thead th,
-  .table tbody td {
-    padding: 10px;
+  .header-filter {
+    width: 100%;
+    justify-content: flex-start;
   }
 
-  .btn-warning, .btn-danger {
-    padding: 5px 8px;
+  .booking-timetable th {
+    padding: 10px 5px;
+    font-size: 11px;
+  }
+
+  .time-slot-cell {
+    padding: 10px 5px;
+    font-size: 10px;
+    min-width: 80px;
+  }
+
+  .booking-cell {
+    min-height: 80px;
+  }
+
+  .booking-content {
+    padding: 8px;
+  }
+
+  .booking-content h6 {
+    font-size: 10px;
+  }
+
+  .trainer-name {
+    font-size: 9px;
+  }
+
+  .status-legend {
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .legend-item {
     font-size: 12px;
+    gap: 8px;
   }
 
   .modal-dialog {
     width: 95%;
   }
+}
+
+@media (max-width: 480px) {
+  .booking-timetable-section {
+    padding: 15px 0;
+  }
+
+  .timetable-header {
+    gap: 10px;
+  }
+
+  .header-title h3 {
+    font-size: 20px;
+  }
+
+  .header-title p {
+    font-size: 12px;
+  }
+
+  .filter-tab {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .booking-timetable {
+    font-size: 12px;
+  }
+
+  .booking-timetable th {
+    padding: 8px 3px;
+    font-size: 10px;
+  }
+
+  .time-slot-cell {
+    padding: 8px 3px;
+    font-size: 9px;
+    min-width: 60px;
+  }
+
+  .booking-cell {
+    min-height: 70px;
+  }
+
+  .status-legend {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .legend-item {
+    justify-content: center;
+  }
+}
+
+/* Scrollbar Styling */
+.timetable-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.timetable-container::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.timetable-container::-webkit-scrollbar-thumb {
+  background: #ff6b35;
+  border-radius: 4px;
+}
+
+.timetable-container::-webkit-scrollbar-thumb:hover {
+  background: #ff8c5a;
+}
+
+/* Additional Utilities */
+.py-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-5 {
+  margin-bottom: 3rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
 }
 

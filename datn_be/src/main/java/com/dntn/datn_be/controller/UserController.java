@@ -8,6 +8,7 @@ import com.dntn.datn_be.dto.request.AssignCoachRoleRequest;
 import com.dntn.datn_be.dto.response.RoleResponse;
 import com.dntn.datn_be.dto.response.UserResponse;
 import com.dntn.datn_be.dto.response.EnrolledSubjectResponse;
+import com.dntn.datn_be.dto.response.UserSearchWithCurrentUserResponse;
 import com.dntn.datn_be.service.UserService;
 import com.dntn.datn_be.service.UserEnrolledSubjectService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,12 @@ public class UserController {
     @PostMapping("/search")
     public ResponseGlobalDto<List<UserResponse>> gets(@RequestBody UserFilterRequest request) throws IOException {
         return userService.gets(request);
+    }
+
+    // ================== GET LIST WITH CURRENT USER ==================
+    @PostMapping("/search-with-current-user")
+    public ResponseGlobalDto<UserSearchWithCurrentUserResponse> searchWithCurrentUser(@RequestBody UserFilterRequest request) throws IOException {
+        return userService.searchWithCurrentUser(request);
     }
 
     // ================== GET ROLES FOR FILTER ==================

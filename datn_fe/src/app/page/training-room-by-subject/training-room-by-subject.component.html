@@ -1,0 +1,214 @@
+<div class="training-room-page">
+  <!-- Header -->
+  <app-nav></app-nav>
+
+  <!-- Breadcrumb Section Begin -->
+  <section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div class="breadcrumb-text">
+            <h2>Lớp Tập Trực Tuyến</h2>
+            <div class="bt-option">
+              <a routerLink="/">Trang Chủ</a>
+              <a href="#">Trang</a>
+              <span>Phòng Tập Trực Tuyến</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Breadcrumb Section End -->
+
+  <!-- Training Rooms List Section -->
+  <section class="training-rooms-section spad">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="section-title">
+            <span>Các Lớp Tập Trực Tuyến</span>
+            <h2>Chọn Lớp & Tham Gia</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      @if(!isLoading && rooms.length > 0) {
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="filter-section">
+              <div class="row align-items-end">
+                <!-- Search Input -->
+                <div class="col-md-6 mb-3">
+                  <label for="searchKeyword" class="form-label">Tìm Kiếm</label>
+                  <input
+                    type="text"
+                    id="searchKeyword"
+                    class="form-control"
+                    [(ngModel)]="searchKeyword"
+                    (input)="onSearchChange()"
+                    placeholder="Tìm kiếm tên lớp...">
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-4 mb-3">
+                  <label for="statusFilter" class="form-label">Trạng Thái</label>
+                  <select
+                    id="statusFilter"
+                    class="form-control"
+                    [(ngModel)]="selectedStatus"
+                    (change)="onFilterChange()">
+                    @for(status of availableStatuses; track status.value) {
+                      <option [value]="status.value">{{ status.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <!-- Reset Button -->
+                <div class="col-md-2 mb-3">
+                  <button class="btn btn-secondary w-100" (click)="resetFilters()">
+                    <i class="fa fa-refresh"></i> Đặt Lại
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Loading State -->
+      @if(isLoading) {
+        <div class="row">
+          <div class="col-lg-12">
+            <p class="text-center" style="padding: 40px 0; font-size: 16px;">
+              <i class="fa fa-spinner fa-spin"></i> Đang tải dữ liệu...
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Error Message -->
+      @if(errorMessage && !isLoading) {
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="alert alert-danger" role="alert">
+              <i class="fa fa-exclamation-circle"></i> {{ errorMessage }}
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if(!isLoading && !errorMessage && filteredRooms.length === 0) {
+        <div class="row">
+          <div class="col-lg-12">
+            <p class="text-center" style="padding: 40px 0; font-size: 16px;">
+              @if(rooms.length > 0) {
+                Không tìm thấy lớp tập phù hợp với điều kiện lọc.
+              } @else {
+                Hiện chưa có lớp tập trực tuyến nào cho bộ môn của bạn.
+              }
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Rooms List -->
+      @if(!isLoading && !errorMessage && filteredRooms.length > 0) {
+        <div class="row">
+          <!-- Results Count -->
+          <div class="col-lg-12 mb-3">
+            <p class="results-count">Tìm thấy <strong>{{ filteredRooms.length }}</strong> lớp tập</p>
+          </div>
+
+          <!-- Room Cards -->
+          @for(room of filteredRooms; track room.id) {
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="training-room-card" [class.full]="isRoomFull(room)">
+                <!-- Room Header -->
+                <div class="room-header">
+                  <h4 class="room-name">{{ room.name }}</h4>
+                  <span class="room-status" [ngClass]="room.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
+                    {{ room.status === 'ACTIVE' ? 'Hoạt Động' : 'Không Hoạt Động' }}
+                  </span>
+                </div>
+
+                <!-- Room Info -->
+                <div class="room-info">
+                  <!-- Subject Info -->
+                  <div class="info-item">
+                    <i class="fa fa-book"></i>
+                    <span><strong>Bộ Môn:</strong> {{ room.subjectId }}</span>
+                  </div>
+
+                  <!-- Coach Info -->
+                  <div class="info-item">
+                    <i class="fa fa-user"></i>
+                    <span><strong>Huấn Luyện Viên:</strong> Coach #{{ room.coachId }}</span>
+                  </div>
+
+                  <!-- Capacity Info -->
+                  <div class="info-item">
+                    <i class="fa fa-users"></i>
+                    <span>
+                      <strong>Sức Chứa:</strong> {{ room.currentParticipants || 0 }}/{{ room.capacity }}
+                    </span>
+                  </div>
+
+                  <!-- Available Slots -->
+                  <div class="info-item">
+                    <i class="fa fa-check-circle"></i>
+                    <span><strong>Chỗ Còn Trống:</strong> {{ getAvailableSlots(room) }}</span>
+                  </div>
+
+                  <!-- Description -->
+                  @if(room.description) {
+                    <div class="info-item description">
+                      <i class="fa fa-info-circle"></i>
+                      <span>{{ room.description }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Capacity Progress Bar -->
+                <div class="capacity-bar">
+                  <div class="progress">
+                    <div
+                      class="progress-bar"
+                      [ngClass]="isRoomFull(room) ? 'bg-danger' : 'bg-success'"
+                      [style.width.%]="getCapacityPercentage(room)">
+                    </div>
+                  </div>
+                  <small>{{ (room.currentParticipants || 0) }}/{{ room.capacity }} Thành Viên</small>
+                </div>
+
+                <!-- Join Button -->
+                <button
+                  class="join-btn primary-btn"
+                  (click)="onJoinRoom(room)"
+                  [disabled]="getButtonDisabled(room)">
+                  <i class="fa fa-play-circle"></i> {{ getButtonText(room) }}
+                </button>
+
+                <!-- Room Meta Info -->
+                <div class="room-meta">
+                  @if(room.createdAt) {
+                    <small class="text-muted">
+                      <i class="fa fa-calendar"></i> Tạo: {{ room.createdAt | date:'dd/MM/yyyy' }}
+                    </small>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>
+
+

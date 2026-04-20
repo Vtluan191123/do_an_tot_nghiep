@@ -1,0 +1,363 @@
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" [style.backgroundImage]="'url(assets/img/breadcrumb-bg.jpg)'">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="breadcrumb-text">
+          <h2>Quản Lý Khung Giờ Dạy</h2>
+          <div class="bt-option">
+            <a href="/">Home</a>
+            <span>Coach Time Slots Management</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Management Section Begin -->
+<section class="management-section spad">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Header with Title -->
+        <div class="management-header d-flex justify-content-between align-items-center mb-4">
+          <h3>Danh Sách Khung Giờ Dạy</h3>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="card mb-4 shadow-sm" style="border: none; border-radius: 8px;">
+          <div class="card-body">
+            <h5 class="card-title mb-4" style="font-weight: 600; color: #333;">Tìm Kiếm & Lọc</h5>
+            <form (ngSubmit)="onSearch()">
+              <div class="row g-3">
+                <!-- Search by Date -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchDate"
+                    [(ngModel)]="searchDate"
+                    name="searchDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Filter by Training Method -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchMethod" class="form-label fw-500" style="color: #555; font-size: 14px;">Phương Thức Dạy</label>
+                  <select
+                    class="form-select"
+                    id="searchMethod"
+                    [(ngModel)]="searchMethod"
+                    name="searchMethod"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    <option value="">-- Tất Cả --</option>
+                    <option value="ONLINE">Online</option>
+                    <option value="OFFLINE">Offline</option>
+                  </select>
+                </div>
+
+                <!-- Filter by Status -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>
+                  <select
+                    class="form-select"
+                    id="searchStatus"
+                    [(ngModel)]="searchStatus"
+                    name="searchStatus"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    <option value="">-- Tất Cả --</option>
+                    <option value="available">Còn Chỗ</option>
+                    <option value="full">Đầy</option>
+                    <option value="past">Đã Qua</option>
+                  </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-3 col-md-12 d-flex gap-2 align-items-end">
+                  <button type="submit" class="btn flex-grow-1" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 500;">
+                    <i class="fa fa-search"></i> Tìm
+                  </button>
+                  <button type="button" class="btn flex-grow-1" style="background-color: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 500;" (click)="onReset()">
+                    <i class="fa fa-redo"></i> Reset
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Time Slots Table -->
+        <div *ngIf="!isLoading && filteredTimeSlots.length > 0" class="table-responsive shadow-sm" style="border-radius: 8px; overflow: hidden;">
+          <table class="table table-hover mb-0">
+            <thead class="table-header" style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+              <tr>
+                <th style="color: #495057; font-weight: 600;">Ngày</th>
+                <th style="color: #495057; font-weight: 600;">Thời Gian</th>
+                <th style="color: #495057; font-weight: 600;">Môn Học</th>
+                <th style="color: #495057; font-weight: 600;">Phương Thức</th>
+                <th style="color: #495057; font-weight: 600;">Sức Chứa</th>
+                <th style="color: #495057; font-weight: 600;">Trạng Thái</th>
+                <th style="color: #495057; font-weight: 600;">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let slot of filteredTimeSlots" style="transition: background-color 0.3s ease;">
+                <td><strong style="color: #333;">{{ slot.date | date:'dd/MM/yyyy' }}</strong></td>
+                <td><span style="color: #666; font-size: 13px;">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</span></td>
+                <td><strong style="color: #333;">{{ slot.subjectName || slot.subjectId }}</strong></td>
+                <td>
+                  <span class="badge" [ngClass]="slot.trainingMethods === 'ONLINE' ? 'bg-info' : 'bg-warning'" style="font-size: 12px;">
+                    {{ slot.trainingMethods === 'ONLINE' ? '🌐 Online' : '🏋️ Offline' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getCapacityBadgeClass(slot)" style="font-size: 12px;">
+                    {{ slot.currentCapacity }}/{{ slot.maxCapacity }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadgeClass(slot)" style="font-size: 12px;">
+                    {{ getSlotStatus(slot) }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm" style="background-color: #ffc107; color: #333; border: none; border-radius: 4px; padding: 5px 10px;" (click)="openEditModal(slot)" [disabled]="isSlotPast(slot)" title="Edit">
+                    <i class="fa fa-edit"></i> Sửa
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Section -->
+        <div *ngIf="!isLoading && filteredTimeSlots.length > 0" class="pagination-section mt-4" style="padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+          <div class="row align-items-center">
+            <!-- Left: Pagination Info -->
+            <div class="col-md-4">
+              <div class="pagination-info">
+                <span style="color: #495057; font-weight: 500; font-size: 14px;">
+                  Tổng cộng: <strong style="color: #17a2b8;">{{ totalElements }}</strong> khung giờ | Trang <strong style="color: #17a2b8;">{{ currentPage + 1 }} / {{ totalPages }}</strong>
+                </span>
+              </div>
+            </div>
+
+            <!-- Center: Pagination Buttons -->
+            <div class="col-md-8" *ngIf="totalPages > 1">
+              <nav aria-label="Page navigation">
+                <ul class="pagination mb-0 justify-content-end" style="gap: 3px;">
+                  <!-- First Page -->
+                  <li class="page-item" [class.disabled]="currentPage === 0">
+                    <button
+                      type="button"
+                      class="page-link"
+                      (click)="firstPage()"
+                      [disabled]="currentPage === 0"
+                      title="Trang đầu tiên"
+                      style="border-radius: 4px; border: 1px solid #dee2e6;">
+                      <i class="fa fa-step-backward"></i>
+                    </button>
+                  </li>
+
+                  <!-- Previous Page -->
+                  <li class="page-item" [class.disabled]="currentPage === 0">
+                    <button
+                      type="button"
+                      class="page-link"
+                      (click)="previousPage()"
+                      [disabled]="currentPage === 0"
+                      title="Trang trước"
+                      style="border-radius: 4px; border: 1px solid #dee2e6;">
+                      <i class="fa fa-chevron-left"></i> Trước
+                    </button>
+                  </li>
+
+                  <!-- Page Numbers -->
+                  <li
+                    *ngFor="let page of getPaginationNumbers()"
+                    class="page-item"
+                    [class.active]="currentPage === page">
+                    <button
+                      type="button"
+                      class="page-link"
+                      (click)="goToPage(page)"
+                      [style.background-color]="currentPage === page ? '#17a2b8' : 'white'"
+                      [style.color]="currentPage === page ? 'white' : '#495057'"
+                      [style.border-color]="currentPage === page ? '#17a2b8' : '#dee2e6'"
+                      style="border-radius: 4px; border: 1px solid; font-weight: 500;">
+                      {{ page + 1 }}
+                    </button>
+                  </li>
+
+                  <!-- Next Page -->
+                  <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                    <button
+                      type="button"
+                      class="page-link"
+                      (click)="nextPage()"
+                      [disabled]="currentPage === totalPages - 1"
+                      title="Trang sau"
+                      style="border-radius: 4px; border: 1px solid #dee2e6;">
+                      Sau <i class="fa fa-chevron-right"></i>
+                    </button>
+                  </li>
+
+                  <!-- Last Page -->
+                  <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                    <button
+                      type="button"
+                      class="page-link"
+                      (click)="lastPage()"
+                      [disabled]="currentPage === totalPages - 1"
+                      title="Trang cuối cùng"
+                      style="border-radius: 4px; border: 1px solid #dee2e6;">
+                      <i class="fa fa-step-forward"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <!-- Page Size Selector -->
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <label style="color: #495057; font-weight: 500; margin: 0;">Khung giờ trên trang:</label>
+                <select
+                  [(ngModel)]="pageSize"
+                  (change)="changePageSize(pageSize)"
+                  name="pageSize"
+                  style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; background-color: white;">
+                  <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && filteredTimeSlots.length === 0" class="alert alert-info text-center">
+          <p>Không tìm thấy khung giờ dạy nào. Vui lòng liên hệ admin để thiết lập.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Management Section End -->
+
+<!-- Edit Modal -->
+<div *ngIf="showEditModal" class="modal fade" [class.show]="showEditModal" style="display: block; background-color: rgba(0,0,0,0.5);" (click)="closeEditModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+        <h5 class="modal-title" style="color: #333; font-weight: 600;">Cập Nhật Khung Giờ Dạy</h5>
+        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      </div>
+
+      <form (ngSubmit)="saveChanges()">
+        <div class="modal-body">
+          <!-- Time Display -->
+          <div class="alert alert-light mb-4" *ngIf="selectedSlot" style="border: 1px solid #ddd; border-radius: 6px;">
+            <div class="row">
+              <div class="col-md-6">
+                <div>
+                  <small style="color: #666;">Ngày</small>
+                  <p class="value" style="color: #333; font-weight: 500; margin: 5px 0 0 0;">{{ selectedSlot.date | date: 'dd/MM/yyyy' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div>
+                  <small style="color: #666;">Thời Gian</small>
+                  <p class="value" style="color: #333; font-weight: 500; margin: 5px 0 0 0;">{{ formatTime(selectedSlot.startTime) }} - {{ formatTime(selectedSlot.endTime) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject Display -->
+          <div class="form-group mb-3" *ngIf="selectedSlot">
+            <label class="form-label" style="color: #555; font-weight: 500;">Môn Học</label>
+            <input type="text" class="form-control" [value]="selectedSlot.subjectName || selectedSlot.subjectId" disabled style="background-color: #f8f9fa;">
+          </div>
+
+          <!-- Max Capacity -->
+          <div class="form-group mb-3">
+            <label for="maxCapacity" class="form-label" style="color: #555; font-weight: 500;">
+              Sức Chứa Tối Đa <span class="text-danger">*</span>
+            </label>
+            <input
+              type="number"
+              class="form-control"
+              id="maxCapacity"
+              [(ngModel)]="editFormData.maxCapacity"
+              name="maxCapacity"
+              min="0"
+              placeholder="Nhập số học viên tối đa"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+            <small class="form-text text-muted">
+              Lớp hiện tại: {{ selectedSlot?.currentCapacity || 0 }} học viên
+            </small>
+          </div>
+
+          <!-- Current Capacity (Already Registered) -->
+          <div class="form-group mb-3">
+            <label for="currentCapacity" class="form-label" style="color: #555; font-weight: 500;">
+              Số Học Viên Đã Đăng Ký <span class="text-danger">*</span>
+            </label>
+            <input
+              type="number"
+              class="form-control"
+              id="currentCapacity"
+              [(ngModel)]="editFormData.currentCapacity"
+              name="currentCapacity"
+              min="0"
+              [max]="editFormData.maxCapacity"
+              placeholder="Nhập số học viên đã đăng ký"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+            <small class="form-text text-muted">
+              Không được vượt quá sức chứa tối đa: {{ editFormData.maxCapacity }}
+            </small>
+          </div>
+
+          <!-- Training Method -->
+          <div class="form-group mb-3">
+            <label for="trainingMethods" class="form-label" style="color: #555; font-weight: 500;">
+              Phương Thức Dạy <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select"
+              id="trainingMethods"
+              [(ngModel)]="editFormData.trainingMethods"
+              name="trainingMethods"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+              <option *ngFor="let option of trainingMethodOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6;">
+          <button type="button" class="btn btn-secondary" style="border-radius: 6px; background-color: #6c757d;" (click)="closeEditModal()">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="border-radius: 6px; background-color: #007bff;">
+            <i class="fa fa-save"></i> Cập Nhật
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

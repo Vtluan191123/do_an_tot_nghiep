@@ -25,16 +25,38 @@ interface Booking {
 })
 export class BookingManagementComponent implements OnInit, OnDestroy {
   bookings: Booking[] = [];
+  filteredBookings: Booking[] = [];
   isLoading = false;
   showForm = false;
   isEditing = false;
   selectedBooking: Booking | null = null;
+
+  // View mode
+  viewMode: 'timetable' | 'list' = 'timetable';
+
+  // Timetable data
+  daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  timeSlots = ['6.00am - 8.00am', '10.00am - 12.00am', '5.00pm - 7.00pm', '7.00pm - 9.00pm'];
+
+  // Filter properties
+  selectedStatus: any = '';
+  searchUserId: string = '';
 
   statusOptions = [
     { value: 0, label: 'Chưa Xác Nhận' },
     { value: 1, label: 'Đã Xác Nhận' },
     { value: 2, label: 'Đã Hoàn Thành' },
     { value: 3, label: 'Đã Hủy' }
+  ];
+
+  // Mock timetable data
+  private timetableData: any[] = [
+    { day: 'Monday', timeSlot: '6.00am - 8.00am', className: 'WEIGHT LOOSE', trainer: 'RLefew D. Loee', status: 1 },
+    { day: 'Tuesday', timeSlot: '6.00am - 8.00am', className: 'Cardio', trainer: 'RLefew D. Loee', status: 0 },
+    { day: 'Wednesday', timeSlot: '6.00am - 8.00am', className: 'Yoga', trainer: 'Keaf Shen', status: 1 },
+    { day: 'Thursday', timeSlot: '6.00am - 8.00am', className: 'Fitness', trainer: 'Kimberly Stone', status: 1 },
+    { day: 'Saturday', timeSlot: '6.00am - 8.00am', className: 'Boxing', trainer: 'Rachel Adam', status: 2 },
+    { day: 'Sunday', timeSlot: '6.00am - 8.00am', className: 'Body Building', trainer: 'Robert Cage', status: 1 }
   ];
 
   formData: Booking = {
@@ -75,6 +97,7 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response && response.data) {
             this.bookings = response.data;
+            this.filterBookings(); // Apply filters after loading
           }
           this.isLoading = false;
         },
@@ -84,6 +107,25 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         }
       });
+  }
+
+  filterBookings(): void {
+    this.filteredBookings = this.bookings.filter(booking => {
+      let statusMatch = true;
+      let userIdMatch = true;
+
+      // Check status filter
+      if (this.selectedStatus !== '') {
+        statusMatch = booking.status === parseInt(this.selectedStatus, 10);
+      }
+
+      // Check userId search
+      if (this.searchUserId) {
+        userIdMatch = booking.userId.toString().includes(this.searchUserId);
+      }
+
+      return statusMatch && userIdMatch;
+    });
   }
 
   openForm(booking?: Booking): void {
@@ -193,5 +235,43 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
         return 'badge-secondary';
     }
   }
-}
 
+
+  // Timetable helper methods
+  getBookingForSlot(day: string, timeSlot: string): any {
+    return this.timetableData.find(item => item.day === day && item.timeSlot === timeSlot);
+  }
+
+  getBookingClass(day: string, timeSlot: string): string {
+    const booking = this.getBookingForSlot(day, timeSlot);
+    if (!booking) {
+      return 'empty';
+    }
+
+    const classes = ['has-booking'];
+    if (booking.status === 0) {
+      classes.push('unconfirmed');
+    } else if (booking.status === 1) {
+      classes.push('confirmed');
+    } else if (booking.status === 2) {
+      classes.push('completed');
+    } else if (booking.status === 3) {
+      classes.push('cancelled');
+    }
+
+    return classes.join(' ');
+  }
+
+  selectTimeSlot(day: string, timeSlot: string): void {
+    const booking = this.getBookingForSlot(day, timeSlot);
+    if (booking) {
+      console.log('Selected booking:', booking);
+      // Can open a modal to edit or view details
+    }
+  }
+
+  getStatusBadge(status: number): string {
+    const option = this.statusOptions.find(o => o.value === status);
+    return option ? option.label : 'N/A';
+  }
+}

@@ -11,6 +11,7 @@ public class UserFilterRequest extends BaseFilterRequest {
     private Long roleId;
     private Boolean isActive;
     private boolean isAdmin;
+    private Long excludeUserId;  // Exclude specific user from results (for pagination fix)
 
     // Tìm kiếm theo keyword (kế thừa từ BaseFilterRequest)
     // Backend sẽ tìm kiếm trong username, email, fullName, v.v với LIKE và OR

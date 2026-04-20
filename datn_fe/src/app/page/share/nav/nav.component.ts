@@ -64,6 +64,7 @@ export class NavComponent implements OnInit, OnDestroy {
     { label: 'Quản Lý Combo', route: '/combo-management' },
     { label: 'Quản Lý Môn Học', route: '/subject-management' },
     { label: 'Quản Lý Đặt Lịch', route: '/booking-management' },
+    { label: 'Quản Lý Khung Giờ Dạy', route: '/coach-time-slots-management' },
     { label: 'Quản Lý User', route: '/user-management' },
     { label: 'Thống Kê & Báo Cáo', route: '/statistics' }
   ];

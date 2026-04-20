@@ -24,17 +24,17 @@ public class BaseFilterRequest {
     private String toDate;
 
     public Pageable toPageable() {
-        // Convert 1-based page from frontend to 0-based for Spring PageRequest
-        // Frontend sends page = 1, 2, 3, ...
-        // Spring PageRequest expects 0, 1, 2, ...
-        int pageZeroBased = page > 0 ? page - 1 : 0;
-        
+        // Frontend expects:
+        // - page: 0 = first page (0-based)
+        // - page: 1 = second page (0-based)
+        // Spring PageRequest expects 0-based page numbers
+        // So use page directly without conversion
         Sort sort = Sort.by(
                 sortDirection.equalsIgnoreCase("asc")
                         ? Sort.Direction.ASC
                         : Sort.Direction.DESC,
                 sortBy
         );
-        return PageRequest.of(pageZeroBased, size, sort);
+        return PageRequest.of(page, size, sort);
     }
 }
