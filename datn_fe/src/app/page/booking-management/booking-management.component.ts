@@ -7,13 +7,16 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 interface Booking {
+  timeSlotName?: string;
   id?: number;
   userId: number;
+  userName?: string;
   subjectId: number;
   timeSlotSubjectId: number;
   status: number;
   createdAt?: string;
   updatedAt?: string;
+  subjectName?: string;
 }
 
 @Component({
@@ -27,20 +30,20 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   bookings: Booking[] = [];
   filteredBookings: Booking[] = [];
   isLoading = false;
-  showForm = false;
-  isEditing = false;
+  showEditForm = false;
   selectedBooking: Booking | null = null;
 
-  // View mode
-  viewMode: 'timetable' | 'list' = 'timetable';
-
-  // Timetable data
-  daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  timeSlots = ['6.00am - 8.00am', '10.00am - 12.00am', '5.00pm - 7.00pm', '7.00pm - 9.00pm'];
-
   // Filter properties
-  selectedStatus: any = '';
-  searchUserId: string = '';
+  searchUsername: string = '';
+  searchStatus: string = '';
+  searchFromDate: string = '';
+  searchToDate: string = '';
+
+  // Form data
+  formData = {
+    id: 0,
+    status: 0
+  };
 
   statusOptions = [
     { value: 0, label: 'Chưa Xác Nhận' },
@@ -48,22 +51,11 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
     { value: 2, label: 'Đã Hủy' }
   ];
 
-  // Mock timetable data
-  private timetableData: any[] = [
-    { day: 'Monday', timeSlot: '6.00am - 8.00am', className: 'WEIGHT LOOSE', trainer: 'RLefew D. Loee', status: 1 },
-    { day: 'Tuesday', timeSlot: '6.00am - 8.00am', className: 'Cardio', trainer: 'RLefew D. Loee', status: 0 },
-    { day: 'Wednesday', timeSlot: '6.00am - 8.00am', className: 'Yoga', trainer: 'Keaf Shen', status: 1 },
-    { day: 'Thursday', timeSlot: '6.00am - 8.00am', className: 'Fitness', trainer: 'Kimberly Stone', status: 1 },
-    { day: 'Saturday', timeSlot: '6.00am - 8.00am', className: 'Boxing', trainer: 'Rachel Adam', status: 2 },
-    { day: 'Sunday', timeSlot: '6.00am - 8.00am', className: 'Body Building', trainer: 'Robert Cage', status: 1 }
-  ];
-
-  formData: Booking = {
-    userId: 0,
-    subjectId: 0,
-    timeSlotSubjectId: 0,
-    status: 0
-  };
+  // Pagination properties
+  currentPage = 0;
+  pageSize = 10;
+  totalElements = 0;
+  totalPages = 0;
 
   private destroy$ = new Subject<void>();
 
@@ -84,19 +76,22 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   loadBookings(): void {
     this.isLoading = true;
     const filter = {
-      page: 0,
-      size: 100,
+      page: this.currentPage,
+      size: this.pageSize,
       sortBy: 'id',
       sortDirection: 'DESC'
     };
 
-    this.bookingService.getAllBookings(filter)
+    // Use the new API endpoint with joined data
+    this.bookingService.getAllBookingsWithJoin(filter)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           if (response && response.data) {
             this.bookings = response.data;
-            this.filterBookings(); // Apply filters after loading
+            this.totalElements = response.count || 0;
+            this.totalPages = response.totalPages || 0;
+            this.filterBookings();
           }
           this.isLoading = false;
         },
@@ -108,94 +103,56 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
       });
   }
 
+  onSearch(): void {
+    this.currentPage = 0;
+    this.filterBookings();
+  }
+
+  onReset(): void {
+    this.searchUsername = '';
+    this.searchStatus = '';
+    this.searchFromDate = '';
+    this.searchToDate = '';
+    this.currentPage = 0;
+    this.filterBookings();
+  }
+
   filterBookings(): void {
     this.filteredBookings = this.bookings.filter(booking => {
+      let usernameMatch = true;
       let statusMatch = true;
-      let userIdMatch = true;
+      let dateMatch = true;
+
+      // Check username filter
+      if (this.searchUsername && this.searchUsername.trim()) {
+        const username = (booking.userName || '').toLowerCase();
+        usernameMatch = username.includes(this.searchUsername.toLowerCase());
+      }
 
       // Check status filter
-      if (this.selectedStatus !== '') {
-        statusMatch = booking.status === parseInt(this.selectedStatus, 10);
+      if (this.searchStatus !== '') {
+        statusMatch = booking.status === parseInt(this.searchStatus, 10);
       }
 
-      // Check userId search
-      if (this.searchUserId) {
-        userIdMatch = booking.userId.toString().includes(this.searchUserId);
+      // Check date range filter
+      if (this.searchFromDate || this.searchToDate) {
+        const bookingDate = booking.createdAt ? new Date(booking.createdAt) : null;
+
+        if (this.searchFromDate) {
+          const fromDate = new Date(this.searchFromDate);
+          fromDate.setHours(0, 0, 0, 0);
+          dateMatch = bookingDate ? bookingDate >= fromDate : false;
+        }
+
+        if (this.searchToDate && dateMatch) {
+          const toDate = new Date(this.searchToDate);
+          toDate.setHours(23, 59, 59, 999);
+          dateMatch = bookingDate ? bookingDate <= toDate : false;
+        }
       }
 
-      return statusMatch && userIdMatch;
+      return usernameMatch && statusMatch && dateMatch;
     });
-  }
-
-  openForm(booking?: Booking): void {
-    this.showForm = true;
-    if (booking) {
-      this.isEditing = true;
-      this.selectedBooking = booking;
-      this.formData = { ...booking };
-    } else {
-      this.isEditing = false;
-      this.selectedBooking = null;
-      this.formData = {
-        userId: 0,
-        subjectId: 0,
-        timeSlotSubjectId: 0,
-        status: 0
-      };
-    }
-  }
-
-  closeForm(): void {
-    this.showForm = false;
-    this.isEditing = false;
-    this.selectedBooking = null;
-    this.formData = {
-      userId: 0,
-      subjectId: 0,
-      timeSlotSubjectId: 0,
-      status: 0
-    };
-  }
-
-  saveBooking(): void {
-    if (!this.formData.userId || !this.formData.subjectId || !this.formData.timeSlotSubjectId) {
-      this.toastr.warning('Vui lòng điền đủ các trường bắt buộc');
-      return;
-    }
-
-    if (this.isEditing && this.selectedBooking?.id) {
-      const updateRequest = {
-        id: this.selectedBooking.id,
-        ...this.formData
-      };
-      this.bookingService.updateBooking(updateRequest)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.toastr.success('Cập nhật đặt lịch thành công');
-            this.closeForm();
-            this.loadBookings();
-          },
-          error: (error) => {
-            console.error('Error updating booking:', error);
-            this.toastr.error('Lỗi cập nhật đặt lịch');
-          }
-        });
-    } else {
-      this.bookingService.createBooking(this.formData)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.toastr.success('Thêm đặt lịch thành công');
-            this.closeForm();
-            this.loadBookings();
-          },
-          error: (error) => {
-            console.error('Error creating booking:', error);
-            this.toastr.error('Lỗi thêm đặt lịch');
-          }
-        });
-    }
   }
 
   deleteBooking(id: number): void {
@@ -215,62 +172,115 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  openEditForm(booking: Booking): void {
+    this.selectedBooking = booking;
+    this.formData = {
+      id: booking.id || 0,
+      status: booking.status
+    };
+    this.showEditForm = true;
+  }
+
+  closeEditForm(): void {
+    this.showEditForm = false;
+    this.selectedBooking = null;
+    this.formData = {
+      id: 0,
+      status: 0
+    };
+  }
+
+  updateBookingStatus(): void {
+    if (!this.formData.id) {
+      this.toastr.warning('Vui lòng chọn đặt lịch');
+      return;
+    }
+
+    const updateRequest = {
+      id: this.formData.id,
+      status: this.formData.status,
+      userId: this.selectedBooking?.userId,
+      subjectId: this.selectedBooking?.subjectId,
+      timeSlotSubjectId: this.selectedBooking?.timeSlotSubjectId
+    };
+
+    this.bookingService.updateBooking(updateRequest)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Cập nhật trạng thái đặt lịch thành công');
+          this.closeEditForm();
+          this.loadBookings();
+        },
+        error: (error) => {
+          console.error('Error updating booking:', error);
+          this.toastr.error('Lỗi cập nhật trạng thái đặt lịch');
+        }
+      });
+  }
+
   getStatusLabel(status: number): string {
     const option = this.statusOptions.find(o => o.value === status);
     return option ? option.label : 'Không xác định';
   }
 
-  getStatusClass(status: number): string {
+  getStatusBadgeClass(status: number): string {
     switch (status) {
       case 0:
-        return 'badge-warning';
+        return 'badge bg-warning text-dark';
       case 1:
-        return 'badge-info';
+        return 'badge bg-info text-white';
       case 2:
-        return 'badge-success';
-      case 3:
-        return 'badge-danger';
+        return 'badge bg-danger text-white';
       default:
-        return 'badge-secondary';
+        return 'badge bg-secondary text-white';
     }
   }
 
-
-  // Timetable helper methods
-  getBookingForSlot(day: string, timeSlot: string): any {
-    return this.timetableData.find(item => item.day === day && item.timeSlot === timeSlot);
+  // Pagination methods
+  firstPage(): void {
+    this.currentPage = 0;
+    this.loadBookings();
   }
 
-  getBookingClass(day: string, timeSlot: string): string {
-    const booking = this.getBookingForSlot(day, timeSlot);
-    if (!booking) {
-      return 'empty';
-    }
-
-    const classes = ['has-booking'];
-    if (booking.status === 0) {
-      classes.push('unconfirmed');
-    } else if (booking.status === 1) {
-      classes.push('confirmed');
-    } else if (booking.status === 2) {
-      classes.push('completed');
-    } else if (booking.status === 3) {
-      classes.push('cancelled');
-    }
-
-    return classes.join(' ');
-  }
-
-  selectTimeSlot(day: string, timeSlot: string): void {
-    const booking = this.getBookingForSlot(day, timeSlot);
-    if (booking) {
-      console.log('Selected booking:', booking);
-      // Can open a modal to edit or view details
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadBookings();
     }
   }
 
-  getStatusBadge(status: number): string {
-    const option = this.statusOptions.find(o => o.value === status);
-    return option ? option.label : 'N/A';
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadBookings();
+    }
+  }
+
+  lastPage(): void {
+    this.currentPage = this.totalPages - 1;
+    this.loadBookings();
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.loadBookings();
+  }
+
+  getPaginationNumbers(): number[] {
+    const pages: number[] = [];
+    const maxDisplayPages = 5;
+    let startPage = Math.max(0, this.currentPage - Math.floor(maxDisplayPages / 2));
+    const endPage = Math.min(this.totalPages, startPage + maxDisplayPages);
+
+    if (endPage - startPage < maxDisplayPages) {
+      startPage = Math.max(0, endPage - maxDisplayPages);
+    }
+
+    for (let i = startPage; i < endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 }

@@ -103,10 +103,9 @@ public class UserServiceImpl implements UserService{
         Long currentUserId = currentUser.getId();
         boolean isAdmin = request.isAdmin();
         
-        // If not admin and excludeUserId not set, exclude current user
-        if (!isAdmin && request.getExcludeUserId() == null) {
-            request.setExcludeUserId(currentUserId);
-        }
+        // Note: excludeUserId is now set by the caller (e.g., searchWithCurrentUser for friend-search)
+        // This allows gets() to be flexible: exclude current user only when needed (friend-search)
+        // For other cases, lấy all users
         
         Page<Users> page = userRepository.filter(request);
         List<Users> usersList = page.getContent();
@@ -507,8 +506,8 @@ public class UserServiceImpl implements UserService{
                         userSubjectRepository.save(existingUserSubject);
                     }
                     
-                    // Auto-generate TimeSlotsSubject for each subject
-                    createTimeSlotsSubjectForCoach(request.getUserId(), subjectId);
+                    // NOTE: TimeSlotsSubject will be created manually by coach in coach-time-slots-management
+                    // No auto-generation here anymore
                 }
             }
 
@@ -642,32 +641,4 @@ public class UserServiceImpl implements UserService{
                 .message("Get current user with search results successfully")
                 .build();
     }
-    
-    /**
-     * Helper method to create TimeSlotsSubject records for a coach and subject
-     */
-    private void createTimeSlotsSubjectForCoach(Long coachId, Long subjectId) {
-        try {
-            List<TimeSlots> allTimeSlots = timeSlotsRepository.findAllOrderByDateAndTime();
-            
-            for (TimeSlots timeSlot : allTimeSlots) {
-                // Check if already exists
-                if (timeSlotsSubjectRepository.findBySubjectIdAndTimeSlotId(subjectId, timeSlot.getId()).isEmpty()) {
-                    TimeSlotsSubject newSlot = TimeSlotsSubject.builder()
-                            .subjectId(subjectId)
-                            .timeSlotsId(timeSlot.getId())
-                            .maxCapacity(0L)
-                            .currentCapacity(0L)
-                            .trainingMethods("OFFLINE")
-                            .coachId(coachId)
-                            .build();
-                    timeSlotsSubjectRepository.save(newSlot);
-                }
-            }
-        } catch (Exception e) {
-            // Log error but don't fail the entire operation
-            System.err.println("Error creating TimeSlotsSubject for coach " + coachId + ": " + e.getMessage());
-        }
-    }
 }
-

@@ -5,8 +5,10 @@ import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TimeSlotsSubjectService, TimeSlotsSubject } from '../../service/time-slots-subject/time-slots-subject.service';
+import { TimeSlotsService } from '../../service/time-slots/time-slots.service';
 import { AuthService } from '../../service/auth/auth.service';
 import { SubjectService } from '../../service/subject/subject.service';
+import { UserManagementService } from '../../service/user/user-management.service';
 
 interface TimetableSlot {
   timeRange: string;
@@ -35,12 +37,24 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
   isLoading = false;
   selectedSlot: TimeSlotsSubjectWithTimeSlot | null = null;
   showEditModal = false;
+  showCreateModal = false;
+  isCreatingTimeSlots = false;
   editFormData = {
     id: 0,
     maxCapacity: 0,
     currentCapacity: 0,
     trainingMethods: 'OFFLINE'
   };
+  createFormData = {
+    subjectId: 0,
+    date: '',
+    timeSlotsId: 0,
+    maxCapacity: 0,
+    trainingMethods: 'OFFLINE'
+  };
+
+  // Time slots for create form
+  availableTimeSlots: any[] = [];
 
   // Search and filter
   searchDate: string = '';
@@ -83,7 +97,9 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
     private timeSlotsSubjectService: TimeSlotsSubjectService,
     private authService: AuthService,
     private subjectService: SubjectService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private timeSlotsService: TimeSlotsService,
+    private userService: UserManagementService
   ) {}
 
   ngOnInit(): void {
@@ -99,20 +115,43 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
   }
 
   loadCoachSubjects(): void {
-    this.subjectService.getAllSubjects({page: 0, size: 1000})
+    // Get only coach's teaching subjects
+    this.userService.getUserCoachSubjects(this.currentCoachId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          if (response && response.data) {
-            this.coachSubjects = response.data;
-            // Build subject map for quick lookup
-            response.data.forEach((subject: any) => {
-              this.subjectMap.set(subject.id, subject.name);
-            });
+          if (response && response.data && response.data.length > 0) {
+            // Get subject IDs from coach
+            const coachSubjectIds: number[] = response.data;
+
+            // Load all subjects
+            this.subjectService.getAllSubjects({ page: 0, size: 1000 })
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (subjectsResponse: any) => {
+                  if (subjectsResponse && subjectsResponse.data) {
+                    // Filter to only include coach's subjects
+                    this.coachSubjects = subjectsResponse.data.filter((subject: any) =>
+                      coachSubjectIds.includes(subject.id)
+                    );
+                    // Build subject map
+                    this.coachSubjects.forEach((subject: any) => {
+                      this.subjectMap.set(subject.id, subject.name);
+                    });
+                  }
+                },
+                error: (error) => {
+                  console.error('Error loading subjects:', error);
+                }
+              });
+          } else {
+            this.coachSubjects = [];
+            this.toastr.warning('Bạn chưa được gán bất kỳ môn học nào');
           }
         },
         error: (error) => {
-          console.error('Error loading subjects:', error);
+          console.error('Error loading coach subjects:', error);
+          this.toastr.error('Lỗi tải danh sách môn học');
         }
       });
   }
@@ -279,6 +318,9 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
     this.showEditModal = true;
   }
 
+  /**
+   * Close edit modal
+   */
   closeEditModal(): void {
     this.showEditModal = false;
     this.selectedSlot = null;
@@ -288,6 +330,144 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
       currentCapacity: 0,
       trainingMethods: 'OFFLINE'
     };
+  }
+
+  /**
+   * Open create time slots modal
+   */
+  openCreateModal(): void {
+    this.createFormData = {
+      subjectId: 0,
+      date: '',
+      timeSlotsId: 0,
+      maxCapacity: 0,
+      trainingMethods: 'OFFLINE'
+    };
+    this.loadAvailableTimeSlots();
+    this.showCreateModal = true;
+  }
+
+  /**
+   * Close create time slots modal
+   */
+  closeCreateModal(): void {
+    this.showCreateModal = false;
+    this.createFormData = {
+      subjectId: 0,
+      date: '',
+      timeSlotsId: 0,
+      maxCapacity: 0,
+      trainingMethods: 'OFFLINE'
+    };
+  }
+
+  /**
+   * Get subject name by ID
+   */
+  getSubjectNameById(subjectId: number): string {
+    const subject = this.coachSubjects.find(s => s.id === subjectId);
+    return subject ? subject.name : 'Unknown';
+  }
+
+  /**
+   * Load available time slots for the create form
+   */
+  loadAvailableTimeSlots(): void {
+    this.timeSlotsService.getAllTimeSlots()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.availableTimeSlots = response.data;
+          }
+        },
+        error: (error) => {
+          console.error('Error loading time slots:', error);
+        }
+      });
+  }
+
+  /**
+   * Load time slots for the selected date
+   */
+  loadTimeSlotsByDate(): void {
+    if (!this.createFormData.date) {
+      this.availableTimeSlots = [];
+      return;
+    }
+
+    this.timeSlotsService.getByDate(this.createFormData.date)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.availableTimeSlots = response.data;
+            // Reset selected time slot when date changes
+            this.createFormData.timeSlotsId = 0;
+          } else {
+            this.availableTimeSlots = [];
+            this.toastr.warning('Không có khung giờ nào cho ngày được chọn');
+          }
+        },
+        error: (error) => {
+          console.error('Error loading time slots by date:', error);
+          this.toastr.error('Lỗi tải khung giờ cho ngày này');
+        }
+      });
+  }
+
+  /**
+   * Create time slots for the selected subject
+   */
+  createTimeSlotsForSubject(): void {
+    if (!this.createFormData.subjectId || this.createFormData.subjectId <= 0) {
+      this.toastr.warning('Vui lòng chọn một môn học');
+      return;
+    }
+
+    if (!this.createFormData.date) {
+      this.toastr.warning('Vui lòng chọn ngày');
+      return;
+    }
+
+    if (!this.createFormData.timeSlotsId || this.createFormData.timeSlotsId <= 0) {
+      this.toastr.warning('Vui lòng chọn khung giờ');
+      return;
+    }
+
+    if (this.createFormData.maxCapacity < 0) {
+      this.toastr.warning('Sức chứa phải >= 0');
+      return;
+    }
+
+    this.isCreatingTimeSlots = true;
+    this.timeSlotsSubjectService.createSingleTimeSlot(
+      this.currentCoachId,
+      this.createFormData.subjectId,
+      this.createFormData.timeSlotsId,
+      this.createFormData.maxCapacity,
+      this.createFormData.trainingMethods
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.toastr.success('Tạo khung giờ dạy thành công!');
+            this.closeCreateModal();
+            // Reload time slots
+            this.loadCoachTimeSlots();
+          } else {
+            this.toastr.info('Không thể tạo khung giờ dạy');
+          }
+          this.isCreatingTimeSlots = false;
+        },
+        error: (error) => {
+          console.error('Error creating time slots:', error);
+          const errorMessage = error.error?.message || 'Lỗi tạo khung giờ dạy';
+          this.toastr.error(errorMessage);
+          this.isCreatingTimeSlots = false;
+        }
+      });
   }
 
   saveChanges(): void {

@@ -21,9 +21,12 @@
   <div class="container">
     <div class="row">
       <div class="col-lg-12">
-        <!-- Header with Title -->
+        <!-- Header with Title and Create Button -->
         <div class="management-header d-flex justify-content-between align-items-center mb-4">
           <h3>Danh Sách Khung Giờ Dạy</h3>
+          <button type="button" class="btn" style="background-color: #28a745; color: white; border: none; border-radius: 6px; font-weight: 500; padding: 8px 16px;" (click)="openCreateModal()">
+            <i class="fa fa-plus"></i> Tạo Khung Giờ Dạy
+          </button>
         </div>
 
         <!-- Search and Filter Section -->
@@ -375,3 +378,135 @@
     </div>
   </div>
 </div>
+
+<!-- Create Time Slots Modal -->
+<div class="modal fade" id="createTimeSlotModal" [class.show]="showCreateModal" [style.display]="showCreateModal ? 'block' : 'none'" role="dialog" tabindex="-1">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content" style="border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+      <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+        <h5 class="modal-title" style="font-weight: 600; color: #333;">
+          <i class="fa fa-plus"></i> Tạo Khung Giờ Dạy Mới
+        </h5>
+        <button type="button" class="btn-close" (click)="closeCreateModal()"></button>
+      </div>
+      <form (ngSubmit)="createTimeSlotsForSubject()" *ngIf="showCreateModal">
+        <div class="modal-body" style="padding: 20px; background-color: #fff;">
+
+          <!-- Select Subject -->
+          <div class="form-group mb-4">
+            <label for="selectSubject" class="form-label" style="color: #555; font-weight: 500;">
+              Chọn Môn Học <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select"
+              id="selectSubject"
+              [(ngModel)]="createFormData.subjectId"
+              name="subjectId"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+              <option value="">-- Chọn Môn Học --</option>
+              <option *ngFor="let subject of coachSubjects" [value]="subject.id">
+                {{ subject.name }}
+              </option>
+            </select>
+            <small class="form-text text-muted" *ngIf="coachSubjects.length === 0">
+              Bạn chưa được gán bất kỳ môn học nào. Vui lòng liên hệ với admin.
+            </small>
+          </div>
+
+          <!-- Select Date -->
+          <div class="form-group mb-4">
+            <label for="selectDate" class="form-label" style="color: #555; font-weight: 500;">
+              Chọn Ngày <span class="text-danger">*</span>
+            </label>
+            <input
+              type="date"
+              class="form-control"
+              id="selectDate"
+              [(ngModel)]="createFormData.date"
+              name="date"
+              (change)="loadTimeSlotsByDate()"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+          </div>
+
+          <!-- Select Time Slot -->
+          <div class="form-group mb-4">
+            <label for="selectTimeSlot" class="form-label" style="color: #555; font-weight: 500;">
+              Chọn Khung Giờ <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select"
+              id="selectTimeSlot"
+              [(ngModel)]="createFormData.timeSlotsId"
+              name="timeSlotsId"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+              <option value="">-- Chọn Khung Giờ --</option>
+              <option *ngFor="let slot of availableTimeSlots" [value]="slot.id">
+                {{ slot.startTime | date:'HH:mm' }} - {{ slot.endTime | date:'HH:mm' }}
+              </option>
+            </select>
+            <small class="form-text text-muted">
+              Các khung giờ có sẵn trong hệ thống
+            </small>
+          </div>
+
+          <!-- Select Training Method -->
+          <div class="form-group mb-4">
+            <label for="selectTrainingMethod" class="form-label" style="color: #555; font-weight: 500;">
+              Phương Thức Dạy <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select"
+              id="selectTrainingMethod"
+              [(ngModel)]="createFormData.trainingMethods"
+              name="trainingMethods"
+              required
+              style="border: 1px solid #ddd; border-radius: 6px;">
+              <option value="OFFLINE">🏋️ Offline (Trực tiếp)</option>
+              <option value="ONLINE">🌐 Online (Trực tuyến)</option>
+            </select>
+          </div>
+
+          <!-- Max Capacity -->
+          <div class="form-group mb-4">
+            <label for="maxCapacity" class="form-label" style="color: #555; font-weight: 500;">
+              Sức Chứa Tối Đa <span class="text-danger">*</span>
+            </label>
+            <input
+              type="number"
+              class="form-control"
+              id="maxCapacity"
+              [(ngModel)]="createFormData.maxCapacity"
+              name="maxCapacity"
+              min="0"
+              required
+              placeholder="Nhập số học viên tối đa"
+              style="border: 1px solid #ddd; border-radius: 6px;">
+            <small class="form-text text-muted">
+              Số lượng học viên tối đa có thể đăng ký cho khung giờ này
+            </small>
+          </div>
+
+        </div>
+
+        <div class="modal-footer" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6;">
+          <button type="button" class="btn btn-secondary" style="border-radius: 6px; background-color: #6c757d;" (click)="closeCreateModal()">Hủy</button>
+          <button type="submit" class="btn btn-success" style="border-radius: 6px; background-color: #28a745;" [disabled]="!createFormData.subjectId || !createFormData.date || !createFormData.timeSlotsId || isCreatingTimeSlots">
+            <i class="fa fa-check"></i>
+            <span *ngIf="!isCreatingTimeSlots">Tạo Khung Giờ</span>
+            <span *ngIf="isCreatingTimeSlots">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Đang tạo...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showCreateModal" [style.display]="showCreateModal ? 'block' : 'none'"></div>
+

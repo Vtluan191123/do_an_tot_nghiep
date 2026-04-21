@@ -4,9 +4,12 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.BookingCreateRequest;
 import com.dntn.datn_be.dto.request.BookingFilterRequest;
 import com.dntn.datn_be.dto.request.BookingUpdateRequest;
+import com.dntn.datn_be.dto.response.BookingResponseDto;
 import com.dntn.datn_be.model.Bookings;
 import com.dntn.datn_be.service.BookingService;
+import com.dntn.datn_be.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -18,6 +21,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final BookingRepository bookingRepository;
 
     // ================== CREATE ==================
     /**
@@ -39,6 +43,23 @@ public class BookingController {
     @PostMapping("/search")
     public ResponseGlobalDto<List<Bookings>> gets(@RequestBody BookingFilterRequest request) {
         return bookingService.gets(request);
+    }
+
+    // ================== GET LIST WITH JOIN ==================
+    /**
+     * Get list of bookings with joined data from user, subject, and timeslot tables
+     * @param request Filter request with pagination
+     * @return List of BookingResponseDto with joined data
+     */
+    @PostMapping("/search-with-join")
+    public ResponseGlobalDto<List<BookingResponseDto>> getsWithJoin(@RequestBody BookingFilterRequest request) {
+        Page<BookingResponseDto> page = bookingRepository.filterWithJoin(request);
+
+        return ResponseGlobalDto.<List<BookingResponseDto>>builder()
+                .status(200)
+                .data(page.getContent())
+                .count(page.getTotalElements())
+                .build();
     }
 
     // ================== GET BY ID ==================
@@ -87,5 +108,3 @@ public class BookingController {
         return bookingService.deletes(ids);
     }
 }
-
-

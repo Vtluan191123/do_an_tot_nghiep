@@ -41,6 +41,11 @@ public interface TimeSlotsSubjectService {
     ResponseGlobalDto<List<TimeSlotsSubjectResponse>> createForCoachAndSubject(Long coachId, Long subjectId);
     
     /**
+     * Create a single time slot for coach and subject with specific details
+     */
+    ResponseGlobalDto<TimeSlotsSubjectResponse> createSingleTimeSlot(Long coachId, Long subjectId, Long timeSlotId, Long maxCapacity, String trainingMethods);
+    
+    /**
      * Delete time slots for a coach
      */
     ResponseGlobalDto<Boolean> deleteByCoachId(Long coachId);

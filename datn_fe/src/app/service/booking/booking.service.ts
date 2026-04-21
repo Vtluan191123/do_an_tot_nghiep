@@ -19,6 +19,13 @@ export class BookingService {
   }
 
   /**
+   * Get all bookings with joined data (user, subject, timeslot information)
+   */
+  getAllBookingsWithJoin(filter: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/search-with-join`, filter);
+  }
+
+  /**
    * Get booking by ID
    */
   getBookingById(id: number): Observable<any> {

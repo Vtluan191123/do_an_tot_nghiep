@@ -47,6 +47,7 @@ export const routes: Routes = [
   { path: 'statistics', component: StatisticsComponent, canActivate: [authGuard] },
   { path: 'student-enrolled-subjects', component: StudentEnrolledSubjectsComponent, canActivate: [authGuard] },
   { path: 'team', component: OutTeamComponent, canActivate: [authGuard] },
+  { path: 'friend-search', component: FriendSearchComponent, canActivate: [authGuard] },
 
   // Catch-all route
   { path: '**', redirectTo: '', pathMatch: 'full' }

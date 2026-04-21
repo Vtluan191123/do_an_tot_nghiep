@@ -4,10 +4,10 @@
     <div class="row">
       <div class="col-lg-12 text-center">
         <div class="breadcrumb-text">
-          <h2>Tìm Thời Gian Của Bạn</h2>
+          <h2>Quản Lý Đặt Lịch</h2>
           <div class="bt-option">
             <a href="/">Home</a>
-            <span>Booking Classes</span>
+            <span>Booking Management</span>
           </div>
         </div>
       </div>
@@ -16,179 +16,249 @@
 </section>
 <!-- Breadcrumb Section End -->
 
-<!-- Booking Timetable Section Begin -->
-<section class="booking-timetable-section spad">
+<!-- Management Section Begin -->
+<section class="management-section spad">
   <div class="container">
-    <!-- Header & Controls -->
-    <div class="row mb-5">
+    <div class="row">
       <div class="col-lg-12">
-        <div class="timetable-header">
-          <div class="header-title">
-            <h3>TÌM THỜI GIAN CỦA BẠN</h3>
-            <p>Chọn khóa học yêu thích của bạn và đặt lịch</p>
-          </div>
-          <div class="header-filter">
-            <button class="filter-tab active" (click)="viewMode = 'timetable'" [class.active]="viewMode === 'timetable'">
-              <i class="fa fa-calendar"></i> Lịch Biểu
-            </button>
-            <button class="filter-tab" (click)="viewMode = 'list'" [class.active]="viewMode === 'list'">
-              <i class="fa fa-list"></i> Danh Sách
-            </button>
-            <button class="filter-tab btn-add" (click)="openForm()">
-              <i class="fa fa-plus"></i> Thêm Lịch
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="row">
-      <div class="col-lg-12 text-center py-5">
-        <div class="spinner-border" role="status">
-          <span class="sr-only">Loading...</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Timetable View -->
-    <div *ngIf="!isLoading && viewMode === 'timetable'" class="row">
-      <div class="col-lg-12">
-        <div class="booking-timetable-wrapper">
-          <div class="timetable-container">
-            <table class="booking-timetable">
-              <thead>
-                <tr>
-                  <th class="time-header"></th>
-                  <th *ngFor="let day of daysOfWeek">{{ day }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let timeSlot of timeSlots">
-                  <td class="time-slot-cell">
-                    <span class="time-text">{{ timeSlot }}</span>
-                  </td>
-                  <td *ngFor="let day of daysOfWeek"
-                      class="booking-cell"
-                      [ngClass]="getBookingClass(day, timeSlot)"
-                      (click)="selectTimeSlot(day, timeSlot)">
-                    <div class="booking-content" *ngIf="getBookingForSlot(day, timeSlot) as booking">
-                      <h6>{{ booking.className }}</h6>
-                      <span class="trainer-name">{{ booking.trainer }}</span>
-                      <span class="booking-status" [ngClass]="'status-' + booking.status">
-                        {{ getStatusBadge(booking.status) }}
-                      </span>
-                    </div>
-                    <div class="empty-slot" *ngIf="!getBookingForSlot(day, timeSlot)"></div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <!-- Header -->
+        <div class="management-header d-flex justify-content-between align-items-center mb-4">
+          <h3>Danh Sách Đặt Lịch</h3>
         </div>
 
-        <!-- Status Legend -->
-        <div class="row mt-4">
-          <div class="col-lg-12">
-            <div class="status-legend">
-              <div class="legend-item">
-                <span class="legend-badge status-0"></span>
-                <span>Chưa Xác Nhận</span>
+        <!-- Search and Filter Section -->
+        <div class="card mb-4 shadow-sm" style="border: none; border-radius: 8px;">
+          <div class="card-body">
+            <h5 class="card-title mb-4" style="font-weight: 600; color: #333;">Tìm Kiếm & Lọc</h5>
+            <form (ngSubmit)="onSearch()">
+              <div class="row g-3">
+                <!-- Search by Username -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchUsername" class="form-label fw-500" style="color: #555; font-size: 14px;">Tên Người Dùng</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchUsername"
+                    [(ngModel)]="searchUsername"
+                    name="searchUsername"
+                    placeholder="Nhập tên người dùng"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search by Status -->
+                <div class="col-lg-3 col-md-6">
+                  <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>
+                  <select
+                    class="form-control"
+                    id="searchStatus"
+                    [(ngModel)]="searchStatus"
+                    name="searchStatus"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    <option value="">-- Tất Cả Trạng Thái --</option>
+                    <option *ngFor="let option of statusOptions" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Search from Date -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchFromDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Từ Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchFromDate"
+                    [(ngModel)]="searchFromDate"
+                    name="searchFromDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Search to Date -->
+                <div class="col-lg-2 col-md-6">
+                  <label for="searchToDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Đến Ngày</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="searchToDate"
+                    [(ngModel)]="searchToDate"
+                    name="searchToDate"
+                    style="border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-2 col-md-12 d-flex gap-2 align-items-end">
+                  <button type="submit" class="btn flex-grow-1" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 500;">
+                    <i class="fa fa-search"></i> Tìm
+                  </button>
+                  <button type="button" class="btn flex-grow-1" style="background-color: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 500;" (click)="onReset()">
+                    <i class="fa fa-redo"></i> Reset
+                  </button>
+                </div>
               </div>
-              <div class="legend-item">
-                <span class="legend-badge status-1"></span>
-                <span>Đã Xác Nhận</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-badge status-2"></span>
-                <span>Đã Hoàn Thành</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-badge status-3"></span>
-                <span>Đã Hủy</span>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- List View -->
-    <div *ngIf="!isLoading && viewMode === 'list'" class="row">
-      <div class="col-lg-12">
-        <!-- Filters -->
-        <div class="filter-controls mb-4">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Lọc Theo Trạng Thái</label>
-                <select class="form-control" [(ngModel)]="selectedStatus" (change)="filterBookings()">
-                  <option value="">Tất Cả Trạng Thái</option>
-                  <option *ngFor="let option of statusOptions" [value]="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Tìm Kiếm User ID</label>
-                <input type="text" class="form-control" [(ngModel)]="searchUserId" (input)="filterBookings()"
-                       placeholder="Nhập User ID">
-              </div>
-            </div>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
           </div>
         </div>
 
         <!-- Bookings Table -->
-        <div *ngIf="filteredBookings.length > 0" class="booking-list-wrapper">
-          <div class="table-responsive">
-            <table class="table table-hover booking-list-table">
-              <thead>
-                <tr>
-                  <th>User ID</th>
-                  <th>Môn Học</th>
-                  <th>Khung Giờ</th>
-                  <th>Trạng Thái</th>
-                  <th>Ngày Tạo</th>
-                  <th>Hành Động</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let booking of filteredBookings" class="booking-row" [ngClass]="'status-' + booking.status">
-                  <td><span class="badge badge-primary">{{ booking.userId }}</span></td>
-                  <td><span class="badge badge-info">{{ booking.subjectId }}</span></td>
-                  <td><span class="badge badge-secondary">{{ booking.timeSlotSubjectId }}</span></td>
-                  <td>
-                    <span class="badge" [ngClass]="getStatusClass(booking.status)">
-                      {{ getStatusLabel(booking.status) }}
-                    </span>
-                  </td>
-                  <td>{{ booking.createdAt | date:'short' }}</td>
-                  <td class="actions">
-                    <button class="btn btn-sm btn-warning" (click)="openForm(booking)" title="Chỉnh sửa">
-                      <i class="fa fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" (click)="deleteBooking(booking.id!)" title="Xóa">
-                      <i class="fa fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div *ngIf="!isLoading && filteredBookings.length > 0" class="table-responsive shadow-sm" style="border-radius: 8px; overflow: hidden;">
+          <table class="table table-hover mb-0">
+            <thead class="table-header" style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+              <tr>
+                <th style="color: #495057; font-weight: 600;">ID</th>
+                <th style="color: #495057; font-weight: 600;">Tên Người Dùng</th>
+                <th style="color: #495057; font-weight: 600;">Môn Học</th>
+                <th style="color: #495057; font-weight: 600;">Khung Giờ</th>
+                <th style="color: #495057; font-weight: 600;">Trạng Thái</th>
+                <th style="color: #495057; font-weight: 600;">Ngày Tạo</th>
+                <th style="color: #495057; font-weight: 600;">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let booking of filteredBookings" style="transition: background-color 0.3s ease;">
+                <td><strong>{{ booking.id }}</strong></td>
+                <td><strong style="color: #333;">{{ booking.userName || 'N/A' }}</strong></td>
+                <td><span class="badge" style="background-color: #e3f2fd; color: #1976d2; font-weight: 500;">{{ booking.subjectName || 'N/A' }}</span></td>
+                <td><span class="badge" style="background-color: #f3e5f5; color: #7b1fa2; font-weight: 500;">{{ booking.timeSlotName || 'N/A' }}</span></td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadgeClass(booking.status)">
+                    {{ getStatusLabel(booking.status) }}
+                  </span>
+                </td>
+                <td><span style="color: #666; font-size: 13px;">{{ booking.createdAt | date:'short' }}</span></td>
+                <td>
+                  <button class="btn btn-sm" style="background-color: #ffc107; color: #333; border: none; border-radius: 4px; padding: 5px 10px; margin-right: 5px;" (click)="openEditForm(booking)" title="Sửa">
+                    <i class="fa fa-edit"></i> Sửa
+                  </button>
+                  <button class="btn btn-sm" style="background-color: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px;" (click)="deleteBooking(booking.id!)" title="Xóa">
+                    <i class="fa fa-trash"></i> Xóa
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="filteredBookings.length === 0" class="alert alert-info text-center py-5">
-          <i class="fa fa-inbox fa-3x mb-3"></i>
-          <p>Không có đặt lịch nào. <a href="#" (click)="openForm()">Thêm đặt lịch mới</a></p>
+        <div *ngIf="!isLoading && filteredBookings.length === 0" class="text-center py-5">
+          <i class="fa fa-inbox fa-3x mb-3" style="color: #dee2e6;"></i>
+          <p style="color: #666;">Không có đặt lịch nào</p>
         </div>
       </div>
     </div>
   </div>
 </section>
-<!-- Booking Timetable Section End -->
+<!-- Management Section End -->
+
+<!-- Edit Form Modal -->
+<div *ngIf="showEditForm" class="modal-overlay" (click)="closeEditForm()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="max-width: 500px;">
+    <div class="modal-content" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);">
+      <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 15px 20px;">
+        <h5 class="modal-title" style="margin: 0; color: #333; font-weight: 600;">Cập Nhật Trạng Thái Đặt Lịch</h5>
+        <button type="button" class="btn-close" (click)="closeEditForm()"></button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px;">
+        <div *ngIf="selectedBooking" style="margin-bottom: 20px;">
+          <!-- Booking Info -->
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <div style="margin-bottom: 10px;">
+              <label style="font-weight: 500; color: #555;">Người Dùng:</label>
+              <p style="margin: 5px 0; color: #333;">{{ selectedBooking.userName || 'N/A' }}</p>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <label style="font-weight: 500; color: #555;">Môn Học:</label>
+              <p style="margin: 5px 0; color: #333;">{{ selectedBooking.subjectName || 'N/A' }}</p>
+            </div>
+            <div>
+              <label style="font-weight: 500; color: #555;">Khung Giờ:</label>
+              <p style="margin: 5px 0; color: #333;">{{ selectedBooking.timeSlotName || 'N/A' }}</p>
+            </div>
+          </div>
+
+          <!-- Status Form -->
+          <div class="form-group">
+            <label for="statusSelect" class="form-label fw-500" style="color: #555; font-size: 14px; display: block; margin-bottom: 8px;">Trạng Thái Mới <span style="color: #dc3545;">*</span></label>
+            <select
+              class="form-control"
+              id="statusSelect"
+              [(ngModel)]="formData.status"
+              style="border-radius: 6px; border: 1px solid #ddd; padding: 8px 12px; font-size: 14px;">
+              <option *ngFor="let option of statusOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6; padding: 15px 20px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn" style="background-color: #6c757d; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 500;" (click)="closeEditForm()">
+          Hủy
+        </button>
+        <button type="button" class="btn" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 500;" (click)="updateBookingStatus()">
+          Cập Nhật
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Overlay Styles -->
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-dialog {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    width: 90%;
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #495057;
+  }
+</style>
 
 <!-- Get In Touch Section Begin -->
 <div class="gettouch-section">
@@ -220,77 +290,5 @@
 </div>
 <!-- Get In Touch Section End -->
 
-<!-- Form Modal -->
-<div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
-  <div class="modal-dialog" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ isEditing ? 'Chỉnh Sửa' : 'Thêm' }} Đặt Lịch</h5>
-        <button type="button" class="btn-close" (click)="closeForm()"></button>
-      </div>
-      <form (ngSubmit)="saveBooking()">
-        <div class="modal-body">
-          <!-- User ID -->
-          <div class="form-group mb-3">
-            <label for="userId" class="form-label">User ID <span class="text-danger">*</span></label>
-            <input
-              type="number"
-              class="form-control"
-              id="userId"
-              [(ngModel)]="formData.userId"
-              name="userId"
-              placeholder="Nhập User ID"
-              required>
-          </div>
 
-          <!-- Subject ID -->
-          <div class="form-group mb-3">
-            <label for="subjectId" class="form-label">Subject ID <span class="text-danger">*</span></label>
-            <input
-              type="number"
-              class="form-control"
-              id="subjectId"
-              [(ngModel)]="formData.subjectId"
-              name="subjectId"
-              placeholder="Nhập Subject ID"
-              required>
-          </div>
-
-          <!-- Time Slot ID -->
-          <div class="form-group mb-3">
-            <label for="timeSlotId" class="form-label">Time Slot ID <span class="text-danger">*</span></label>
-            <input
-              type="number"
-              class="form-control"
-              id="timeSlotId"
-              [(ngModel)]="formData.timeSlotSubjectId"
-              name="timeSlotId"
-              placeholder="Nhập Time Slot ID"
-              required>
-          </div>
-
-          <!-- Status -->
-          <div class="form-group mb-3">
-            <label for="status" class="form-label">Trạng Thái <span class="text-danger">*</span></label>
-            <select
-              class="form-control"
-              id="status"
-              [(ngModel)]="formData.status"
-              name="status"
-              required>
-              <option *ngFor="let option of statusOptions" [value]="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Hủy</button>
-          <button type="submit" class="btn btn-primary">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 

@@ -68,6 +68,19 @@ public class TimeSlotsSubjectController {
             @PathVariable Long subjectId) {
         return timeSlotsSubjectService.createForCoachAndSubject(coachId, subjectId);
     }
+
+    /**
+     * Create a single time slot for coach and subject with specific details
+     */
+    @PostMapping("/coach/{coachId}/subject/{subjectId}/timeslot/{timeSlotId}")
+    public ResponseGlobalDto<TimeSlotsSubjectResponse> createSingleTimeSlot(
+            @PathVariable Long coachId,
+            @PathVariable Long subjectId,
+            @PathVariable Long timeSlotId,
+            @RequestParam(defaultValue = "0") Long maxCapacity,
+            @RequestParam(defaultValue = "OFFLINE") String trainingMethods) {
+        return timeSlotsSubjectService.createSingleTimeSlot(coachId, subjectId, timeSlotId, maxCapacity, trainingMethods);
+    }
     
     /**
      * Delete time slots for a coach

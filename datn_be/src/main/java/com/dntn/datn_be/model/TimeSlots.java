@@ -26,5 +26,9 @@ public class TimeSlots extends BaseEntity{
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Column(name = "norm_date") //chuyển ngày về dạng số để dễ so sánh, tìm kiếm, lọc,... (vd: 2024-06-01 -> 20240601)
+    private Long normDate;
+
+
     //từ 5H đến 12H ,mỗi khung giờ là 1 tiếng
 }

@@ -618,4 +618,82 @@ public class TimeSlotsSubjectServiceImpl implements TimeSlotsSubjectService {
 
         return response;
     }
+
+    @Override
+    @Transactional
+    public ResponseGlobalDto<TimeSlotsSubjectResponse> createSingleTimeSlot(Long coachId, Long subjectId, Long timeSlotId, Long maxCapacity, String trainingMethods) {
+        try {
+            // Get current logged-in user
+            Users currentUser = authService.getCurrentUser();
+
+            // Check if current user is authenticated
+            if (currentUser == null) {
+                return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
+                        .status(HttpStatus.UNAUTHORIZED.value())
+                        .message("Error: User is not authenticated")
+                        .build();
+            }
+
+            // Check if current user is the coach (security check)
+            if (!currentUser.getId().equals(coachId)) {
+                return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("Error: You don't have permission to create time slots for another coach")
+                        .build();
+            }
+
+            // Check if TimeSlot exists
+            TimeSlots timeSlot = timeSlotsRepository.findById(timeSlotId)
+                    .orElseThrow(() -> new RuntimeException("Time slot not found"));
+
+            // Check if already exists
+            if (!timeSlotsSubjectRepository.findBySubjectIdAndTimeSlotId(subjectId, timeSlotId).isEmpty()) {
+                return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message("Error: This time slot already exists for this subject")
+                        .build();
+            }
+
+            // Create the new TimeSlotsSubject
+            TimeSlotsSubject newSlot = TimeSlotsSubject.builder()
+                    .subjectId(subjectId)
+                    .timeSlotsId(timeSlotId)
+                    .maxCapacity(maxCapacity != null ? maxCapacity : 0L)
+                    .currentCapacity(0L)
+                    .trainingMethods(trainingMethods != null ? trainingMethods : "OFFLINE")
+                    .coachId(currentUser.getId())
+                    .build();
+            
+            TimeSlotsSubject saved = timeSlotsSubjectRepository.save(newSlot);
+
+            // Create TrainingRoom if training method is ONLINE
+            String finalTrainingMethod = trainingMethods != null ? trainingMethods : "OFFLINE";
+            if (finalTrainingMethod.equalsIgnoreCase("ONLINE")) {
+                String roomName = "Phòng Tập - " + saved.getId();
+                TrainingRoom room = TrainingRoom.builder()
+                        .timeSlotsSubjectId(saved.getId())
+                        .coachId(currentUser.getId())
+                        .subjectId(subjectId)
+                        .name(roomName)
+                        .description("Online training room for time slot subject " + saved.getId())
+                        .maxCapacity(maxCapacity != null ? maxCapacity : 0L)
+                        .currentCapacity(0L)
+                        .status("ACTIVE")
+                        .build();
+                trainingRoomRepository.save(room);
+                logger.info("Created training room for TimeSlotsSubject[id={}]", saved.getId());
+            }
+
+            return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
+                    .status(HttpStatus.CREATED.value())
+                    .data(mapToResponse(saved))
+                    .message("Create time slot successfully")
+                    .build();
+        } catch (Exception e) {
+            return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Error: " + e.getMessage())
+                    .build();
+        }
+    }
 }

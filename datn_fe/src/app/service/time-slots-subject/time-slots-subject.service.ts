@@ -74,6 +74,13 @@ export class TimeSlotsSubjectService {
   }
 
   /**
+   * Create a single time slot for coach and subject with specific details
+   */
+  createSingleTimeSlot(coachId: number, subjectId: number, timeSlotId: number, maxCapacity: number, trainingMethods: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/coach/${coachId}/subject/${subjectId}/timeslot/${timeSlotId}?maxCapacity=${maxCapacity}&trainingMethods=${trainingMethods}`, {});
+  }
+
+  /**
    * Delete time slots for a coach
    */
   deleteByCoachId(coachId: number): Observable<any> {

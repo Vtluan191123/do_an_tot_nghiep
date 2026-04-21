@@ -18,6 +18,11 @@ public interface TimeSlotsRepository extends JpaRepository<TimeSlots, Long> {
     List<TimeSlots> findByDate(LocalDate date);
     
     /**
+     * Find time slots by normalized date (YYYYMMDD format)
+     */
+    List<TimeSlots> findByNormDate(Long normDate);
+    
+    /**
      * Find all time slots for a date range
      */
     @Query("SELECT t FROM TimeSlots t WHERE t.date >= :startDate AND t.date <= :endDate ORDER BY t.date, t.startTime")
@@ -29,4 +34,3 @@ public interface TimeSlotsRepository extends JpaRepository<TimeSlots, Long> {
     @Query("SELECT t FROM TimeSlots t ORDER BY t.date, t.startTime")
     List<TimeSlots> findAllOrderByDateAndTime();
 }
-
