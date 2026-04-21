@@ -23,8 +23,8 @@ public class Bookings extends BaseEntity{
     @Column(name = "subject_id", nullable = false)
     private Long subjectId;
 
-    @Column(name = "time_slot_id", nullable = false)
-    private Long timeSlotId;
+    @Column(name = "time_slot_subject_id", nullable = false)
+    private Long timeSlotSubjectId;
 
     @Column(name = "status", nullable = false)
     private Integer status;

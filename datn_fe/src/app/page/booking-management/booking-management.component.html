@@ -158,7 +158,7 @@
                 <tr *ngFor="let booking of filteredBookings" class="booking-row" [ngClass]="'status-' + booking.status">
                   <td><span class="badge badge-primary">{{ booking.userId }}</span></td>
                   <td><span class="badge badge-info">{{ booking.subjectId }}</span></td>
-                  <td><span class="badge badge-secondary">{{ booking.timeSlotId }}</span></td>
+                  <td><span class="badge badge-secondary">{{ booking.timeSlotSubjectId }}</span></td>
                   <td>
                     <span class="badge" [ngClass]="getStatusClass(booking.status)">
                       {{ getStatusLabel(booking.status) }}
@@ -263,7 +263,7 @@
               type="number"
               class="form-control"
               id="timeSlotId"
-              [(ngModel)]="formData.timeSlotId"
+              [(ngModel)]="formData.timeSlotSubjectId"
               name="timeSlotId"
               placeholder="Nhập Time Slot ID"
               required>

@@ -17,8 +17,8 @@ public class BookingUpdateRequest {
     
     private Long subjectId;
     
-    private Long timeSlotId;
+    private Long timeSlotSubjectId;
     
-    private Integer status;
+    private Integer status; //0 khởi tạo -1 đã xác nhan - 2 dahuy
 }
 

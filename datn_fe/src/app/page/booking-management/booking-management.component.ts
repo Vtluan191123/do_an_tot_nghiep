@@ -10,7 +10,7 @@ interface Booking {
   id?: number;
   userId: number;
   subjectId: number;
-  timeSlotId: number;
+  timeSlotSubjectId: number;
   status: number;
   createdAt?: string;
   updatedAt?: string;
@@ -45,8 +45,7 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   statusOptions = [
     { value: 0, label: 'Chưa Xác Nhận' },
     { value: 1, label: 'Đã Xác Nhận' },
-    { value: 2, label: 'Đã Hoàn Thành' },
-    { value: 3, label: 'Đã Hủy' }
+    { value: 2, label: 'Đã Hủy' }
   ];
 
   // Mock timetable data
@@ -62,7 +61,7 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   formData: Booking = {
     userId: 0,
     subjectId: 0,
-    timeSlotId: 0,
+    timeSlotSubjectId: 0,
     status: 0
   };
 
@@ -140,7 +139,7 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
       this.formData = {
         userId: 0,
         subjectId: 0,
-        timeSlotId: 0,
+        timeSlotSubjectId: 0,
         status: 0
       };
     }
@@ -153,13 +152,13 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
     this.formData = {
       userId: 0,
       subjectId: 0,
-      timeSlotId: 0,
+      timeSlotSubjectId: 0,
       status: 0
     };
   }
 
   saveBooking(): void {
-    if (!this.formData.userId || !this.formData.subjectId || !this.formData.timeSlotId) {
+    if (!this.formData.userId || !this.formData.subjectId || !this.formData.timeSlotSubjectId) {
       this.toastr.warning('Vui lòng điền đủ các trường bắt buộc');
       return;
     }

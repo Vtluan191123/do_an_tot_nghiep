@@ -84,7 +84,7 @@ public class TimeSlotsSubjectRepositoryImpl implements TimeSlotsSubjectRepositor
         if (request.getSubjectName() != null && !request.getSubjectName().isEmpty()) {
             predicates.add(cb.like(
                 cb.lower(root.get("subjectName")),
-                "%" + request.getSubjectName().toLowerCase() + "%"
+                "%" + request.getSubjectName() + "%"
             ));
         }
 

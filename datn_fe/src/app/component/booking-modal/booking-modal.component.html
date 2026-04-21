@@ -9,72 +9,124 @@
       <!-- Success Message -->
       <div *ngIf="successMessage" class="alert alert-success">
         <span class="icon">✓</span>
-        {{ successMessage }}
+        <div class="alert-content">{{ successMessage }}</div>
       </div>
 
       <!-- Error Message -->
       <div *ngIf="errorMessage" class="alert alert-error">
         <span class="icon">✕</span>
-        {{ errorMessage }}
+        <div class="alert-content">{{ errorMessage }}</div>
       </div>
 
-      <div *ngIf="timeSlotsSubjectData" class="booking-info">
-        <div class="info-row">
-          <label>Bộ Môn:</label>
-          <span>{{ timeSlotsSubjectData.subjectName }}</span>
+      <!-- Timeslot Details -->
+      <div *ngIf="timeSlotSubjectData && !successMessage" class="booking-info">
+        <div class="info-section">
+          <h4 class="section-title">Chi Tiết Lớp Học</h4>
+
+          <div class="info-row">
+            <label>
+              <i class="fa fa-book"></i> Bộ Môn:
+            </label>
+            <span class="value subject-name">{{ timeSlotSubjectData.subjectName }}</span>
+          </div>
+
+          <div class="info-row">
+            <label>
+              <i class="fa fa-user"></i> Huấn Luyện Viên:
+            </label>
+            <span class="value coach-name">{{ timeSlotSubjectData.coachFullName || timeSlotSubjectData.coach }}</span>
+          </div>
+
+          <div class="info-row">
+            <label>
+              <i class="fa fa-calendar"></i> Ngày:
+            </label>
+            <span class="value">{{ timeSlotSubjectData.timeSlotDate || timeSlotSubjectData.date }}</span>
+          </div>
+
+          <div class="info-row">
+            <label>
+              <i class="fa fa-clock-o"></i> Giờ:
+            </label>
+            <span class="value">
+              {{ timeSlotSubjectData.startTime }}-{{ timeSlotSubjectData.endTime }}
+              <span class="time-detail">({{ timeSlotSubjectData.timeSlotTime || timeSlotSubjectData.time }})</span>
+            </span>
+          </div>
+
+          <!-- Hình Thức Học - Nổi bật -->
+          <div class="info-row training-method-row">
+            <label>
+              <i class="fa fa-laptop"></i> Hình Thức Học:
+            </label>
+            <span class="training-method-badge"
+              [ngClass]="{
+                'badge-online': (timeSlotSubjectData.trainingMethods || timeSlotSubjectData.trainingMethod) === 'Online',
+                'badge-offline': (timeSlotSubjectData.trainingMethods || timeSlotSubjectData.trainingMethod) === 'Offline'
+              }">
+              <i class="fa" [ngClass]="(timeSlotSubjectData.trainingMethods || timeSlotSubjectData.trainingMethod) === 'Online' ? 'fa-wifi' : 'fa-map-marker'"></i>
+              {{ timeSlotSubjectData.trainingMethods || timeSlotSubjectData.trainingMethod }}
+            </span>
+          </div>
+
+          <!-- Số Lượng - Nổi bật -->
+          <div class="info-row capacity-info-highlight">
+            <label>
+              <i class="fa fa-users"></i> Số Lượng Học Viên:
+            </label>
+            <div class="capacity-container">
+              <div class="capacity-stats">
+                <span class="capacity-current-large">{{ timeSlotSubjectData.currentCapacity }}</span>
+                <span class="capacity-divider">/</span>
+                <span class="capacity-max-large">{{ timeSlotSubjectData.maxCapacity }}</span>
+                <span class="capacity-percentage-large">
+                  ({{ ((timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) * 100) | number: '1.0-0' }}%)
+                </span>
+              </div>
+              <div class="progress-bar-large">
+                <div
+                  class="progress-fill"
+                  [style.width]="((timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) * 100) + '%'"
+                  [ngClass]="{
+                    'progress-low': (timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) < 0.5,
+                    'progress-medium': (timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) >= 0.5 && (timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) < 0.8,
+                    'progress-high': (timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) >= 0.8
+                  }"
+                ></div>
+              </div>
+              <div class="capacity-status">
+                <span *ngIf="(timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) < 0.5" class="status-available">
+                  <i class="fa fa-check-circle"></i> Còn chỗ
+                </span>
+                <span *ngIf="(timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) >= 0.5 && (timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) < 0.8" class="status-medium">
+                  <i class="fa fa-exclamation-circle"></i> Gần đầy
+                </span>
+                <span *ngIf="(timeSlotSubjectData.currentCapacity / timeSlotSubjectData.maxCapacity) >= 0.8" class="status-full">
+                  <i class="fa fa-times-circle"></i> Sắp đầy
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="info-row">
-          <label>Huấn Luyện Viên:</label>
-          <span>{{ timeSlotsSubjectData.coachFullName }}</span>
-        </div>
-        <div class="info-row">
-          <label>Thời Gian:</label>
-          <span>{{ timeSlotsSubjectData.timeSlotDate }} | {{ timeSlotsSubjectData.timeSlotTime }}</span>
-        </div>
-        <div class="info-row">
-          <label>Hình Thức:</label>
-          <span>{{ timeSlotsSubjectData.trainingMethods }}</span>
-        </div>
-        <div class="info-row capacity-info">
-          <label>Sức Chứa:</label>
-          <span>{{ timeSlotsSubjectData.currentCapacity }}/{{ timeSlotsSubjectData.maxCapacity }}</span>
+
+        <!-- Confirmation Message -->
+        <div class="confirmation-notice">
+          <i class="fa fa-info-circle"></i>
+          Bạn sẽ được xác nhận đặt lịch ngay khi nhấn nút "Đặt Lịch" bên dưới.
         </div>
       </div>
-
-      <form class="booking-form" [ngClass]="{ 'disabled': isLoading }">
-        <div class="form-group">
-          <label for="userId">ID Người Dùng: <span class="required">*</span></label>
-          <input
-            type="number"
-            id="userId"
-            [(ngModel)]="formData.userId"
-            name="userId"
-            placeholder="Nhập ID của bạn"
-            [disabled]="isLoading"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="notes">Ghi Chú (Tùy Chọn):</label>
-          <textarea
-            id="notes"
-            name="notes"
-            placeholder="Ghi chú thêm nếu cần"
-            rows="3"
-            [disabled]="isLoading"
-          ></textarea>
-        </div>
-      </form>
     </div>
 
     <div class="modal-footer">
-      <button class="btn-cancel" (click)="closeModal()" [disabled]="isLoading">Hủy</button>
+      <button class="btn-cancel" (click)="closeModal()" [disabled]="isLoading">
+        <i class="fa fa-times"></i> Hủy
+      </button>
       <button
         class="btn-submit"
         (click)="submitBooking()"
-        [disabled]="isLoading"
+        [disabled]="isLoading || !timeSlotSubjectData"
       >
+        <i class="fa" [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-check'"></i>
         {{ isLoading ? 'Đang xử lý...' : 'Đặt Lịch' }}
       </button>
     </div>

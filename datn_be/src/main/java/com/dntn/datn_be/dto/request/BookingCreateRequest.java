@@ -15,7 +15,7 @@ public class BookingCreateRequest {
     
     private Long subjectId;
     
-    private Long timeSlotId;
+    private Long timeSlotSubjectId;
     
     private Integer status;
 }

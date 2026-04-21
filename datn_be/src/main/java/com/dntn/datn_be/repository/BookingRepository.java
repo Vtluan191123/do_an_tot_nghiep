@@ -17,5 +17,7 @@ public interface BookingRepository extends JpaRepository<Bookings, Long>, Bookin
      */
     @Query("SELECT COUNT(b) FROM Bookings b WHERE b.userId = :userId AND b.subjectId = :subjectId AND b.status = :completedStatus")
     Long countCompletedBookings(Long userId, Long subjectId, Integer completedStatus);
+
+    Bookings findByUserIdAndTimeSlotSubjectId(Long userId, Long timeSlotSubjectId);
 }
 

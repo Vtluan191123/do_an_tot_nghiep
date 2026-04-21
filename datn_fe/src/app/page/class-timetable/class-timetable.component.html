@@ -48,19 +48,34 @@
             </li>
           </ul>
         </div>
+      </div>
+    </div>
 
-        <!-- Week Navigation -->
-        <div class="week-navigation" *ngIf="selectedSubjectId && !isLoading">
-          <button class="btn-week-prev" (click)="previousWeek()">
-            <i class="fa fa-chevron-left"></i> Tuần Trước
-          </button>
-          <span class="week-label">{{ weekLabel }}</span>
-          <button class="btn-week-next" (click)="nextWeek()">
-            Tuần Sau <i class="fa fa-chevron-right"></i>
-          </button>
+    <!-- Week Navigation - Right aligned -->
+    <div class="row" *ngIf="selectedSubjectId && !isLoading">
+      <div class="col-lg-12">
+        <div class="week-navigation-wrapper">
+          <div class="week-controls">
+            <button class="btn-week-nav btn-prev"
+                    (click)="previousWeek()"
+                    [disabled]="currentWeekIndex === 0"
+                    title="Không thể chuyển về tuần trước">
+              <i class="fa fa-chevron-left"></i> Trước
+            </button>
+            <div class="week-info">
+              <span class="week-label">{{ weekLabel }}</span>
+              <span class="week-dates" *ngIf="weekInfo">
+                {{ weekInfo.startDateStr }} - {{ weekInfo.endDateStr }}
+              </span>
+            </div>
+            <button class="btn-week-nav btn-next" (click)="nextWeek()" title="Tuần sau">
+              Sau <i class="fa fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
     <div class="row">
       <div class="col-lg-12">
         <div class="class-timetable">
@@ -77,7 +92,10 @@
             <thead>
               <tr>
                 <th></th>
-                <th *ngFor="let day of daysOfWeek">{{ day }}</th>
+                <th *ngFor="let dayLabel of dayLabelsWithDate; let i = index">
+                  <span class="day-name">{{ daysOfWeek[i] }}</span>
+                  <span class="day-date">{{ dayLabel.split('(')[1]?.replace(')', '') }}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -177,7 +195,7 @@
 <!-- Booking Modal -->
 <app-booking-modal
   [isOpen]="isBookingModalOpen"
-  [timeSlotsSubjectData]="selectedTimeslot"
+  [timeSlotSubjectData]="selectedTimeslot"
   (close)="closeBookingModal()"
   (success)="onBookingSuccess()"
 ></app-booking-modal>

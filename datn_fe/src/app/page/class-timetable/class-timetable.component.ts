@@ -19,16 +19,26 @@ interface TimetableCell {
   timeSlotTime: string;
   dayOfWeek: number;
   dayName: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 interface TimetableRow {
   timeSlot: string;
+  timeRangeDisplay: string;
   cells: (TimetableCell | null)[];
 }
 
 interface FilterSubject {
   subjectId: number;
   subjectName: string;
+}
+
+interface WeekInfo {
+  startDate: Date;
+  endDate: Date;
+  startDateStr: string;
+  endDateStr: string;
 }
 
 @Component({
@@ -41,6 +51,7 @@ interface FilterSubject {
 export class ClassTimetableComponent implements OnInit, OnDestroy {
   timetableRows: TimetableRow[] = [];
   daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  dayLabelsWithDate: string[] = [];
 
   // Filter subjects from user's enrolled subjects
   filterSubjects: FilterSubject[] = [];
@@ -49,12 +60,36 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
   // Week navigation
   currentWeekIndex = 0; // 0 = current week, -1 = previous, 1 = next, etc.
   weekLabel = 'Tuần Này';
+  weekInfo: WeekInfo | null = null;
 
   isBookingModalOpen = false;
   selectedTimeslot: any = null;
 
   isLoading = true;
   errorMessage = '';
+
+  // Fixed time slots for timetable - 5:00 AM to 12:00 AM (24:00)
+  readonly TIME_SLOTS = [
+    { startHour: 5, endHour: 6, display: '5:00 - 6:00' },
+    { startHour: 6, endHour: 7, display: '6:00 - 7:00' },
+    { startHour: 7, endHour: 8, display: '7:00 - 8:00' },
+    { startHour: 8, endHour: 9, display: '8:00 - 9:00' },
+    { startHour: 9, endHour: 10, display: '9:00 - 10:00' },
+    { startHour: 10, endHour: 11, display: '10:00 - 11:00' },
+    { startHour: 11, endHour: 12, display: '11:00 - 12:00' },
+    { startHour: 12, endHour: 13, display: '12:00 - 1:00 PM' },
+    { startHour: 13, endHour: 14, display: '1:00 - 2:00 PM' },
+    { startHour: 14, endHour: 15, display: '2:00 - 3:00 PM' },
+    { startHour: 15, endHour: 16, display: '3:00 - 4:00 PM' },
+    { startHour: 16, endHour: 17, display: '4:00 - 5:00 PM' },
+    { startHour: 17, endHour: 18, display: '5:00 - 6:00 PM' },
+    { startHour: 18, endHour: 19, display: '6:00 - 7:00 PM' },
+    { startHour: 19, endHour: 20, display: '7:00 - 8:00 PM' },
+    { startHour: 20, endHour: 21, display: '8:00 - 9:00 PM' },
+    { startHour: 21, endHour: 22, display: '9:00 - 10:00 PM' },
+    { startHour: 22, endHour: 23, display: '10:00 - 11:00 PM' },
+    { startHour: 23, endHour: 24, display: '11:00 PM - 12:00 AM' }
+  ];
 
   private destroy$ = new Subject<void>();
   private userId: number | null = null;
@@ -126,8 +161,13 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
 
   /**
    * Navigate to previous week
+   * Blocked if current week (cannot go to past)
    */
   previousWeek(): void {
+    if (this.currentWeekIndex === 0) {
+      // Already at current week, cannot go to past
+      return;
+    }
     this.currentWeekIndex--;
     this.updateWeekLabel();
     this.loadTimetableForWeek();
@@ -161,7 +201,6 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
 
   /**
    * Load timeslot data for selected subject and week
-   * Optimized API call: only fetch needed data
    */
   private loadTimetableForWeek(): void {
     if (!this.selectedSubjectId) return;
@@ -169,23 +208,22 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Calculate date range for the week
-    const { startDate, endDate } = this.getWeekDateRange(this.currentWeekIndex);
-    const dateStr = startDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Get week date range info
+    this.weekInfo = this.getWeekDateRange(this.currentWeekIndex);
 
-    // API call with filters: subject + date (week)
-    // This avoids loading all records at once
+    // Load timeslots for subject filtered by week
     this.timeSlotsSubjectService.getCoachTimeSlotsWithPagination({
       subjectId: this.selectedSubjectId,
-      date: dateStr, // Filter by week start date
+      date: this.weekInfo.startDate.toISOString().split('T')[0], // YYYY-MM-DD format
       page: 0,
-      size: 100 // Only need ~7-10 records per week
+      size: 100 // Enough for a week
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           const timeslots = response.data || [];
           this.buildTimetable(timeslots);
+          this.updateDayLabels();
           this.isLoading = false;
         },
         error: (error) => {
@@ -198,64 +236,149 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Update day labels with dates - Generate labels for each day of the week
+   */
+  private updateDayLabels(): void {
+    if (!this.weekInfo) return;
+
+    this.dayLabelsWithDate = [];
+    const startDate = new Date(this.weekInfo.startDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate.getTime()); // Clone date properly
+      currentDate.setDate(startDate.getDate() + i);
+      const dayName = this.daysOfWeek[i]; // Monday, Tuesday, etc.
+      const dateStr = currentDate.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' });
+      this.dayLabelsWithDate.push(`${dayName} (${dateStr})`);
+    }
+  }
+
+  /**
    * Calculate start and end date of a week
    * weekIndex: 0 = current week, 1 = next week, -1 = previous week, etc.
    */
-  private getWeekDateRange(weekIndex: number): { startDate: Date; endDate: Date } {
+  private getWeekDateRange(weekIndex: number): WeekInfo {
     const today = new Date();
-    const currentDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-    // Calculate Monday of current week
-    const mondayOffset = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+    // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const currentDayOfWeek = today.getDay();
+
+    // Calculate how many days back to Monday (day 1)
+    // If Monday = 1, then offset = (currentDay - 1)
+    // If Sunday = 0, then offset = -6 (Sunday is end of week)
+    const daysUntilMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+
+    // Get Monday of current week
     const mondayOfCurrentWeek = new Date(today);
-    mondayOfCurrentWeek.setDate(today.getDate() + mondayOffset);
+    mondayOfCurrentWeek.setDate(today.getDate() + daysUntilMonday);
+    mondayOfCurrentWeek.setHours(0, 0, 0, 0); // Reset time to start of day
 
-    // Apply week offset
+    // Apply week offset to get the start date
     const startDate = new Date(mondayOfCurrentWeek);
     startDate.setDate(mondayOfCurrentWeek.getDate() + weekIndex * 7);
 
+    // End date is Sunday (6 days after Monday)
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 6); // Saturday
+    endDate.setDate(startDate.getDate() + 6);
 
-    return { startDate, endDate };
+    // Format date strings for display (e.g., "Thứ Hai 21/04")
+    const startDateStr = startDate.toLocaleDateString('vi-VN', {
+      weekday: 'short',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const endDateStr = endDate.toLocaleDateString('vi-VN', {
+      weekday: 'short',
+      month: '2-digit',
+      day: '2-digit'
+    });
+
+    return { startDate, endDate, startDateStr, endDateStr };
   }
 
   /**
    * Build timetable from timeslots data
    */
   private buildTimetable(timeslots: TimeSlotsSubject[]): void {
-    const timeSlots = [
-      { startHour: 6, endHour: 8, display: '6:00 - 8:00' },
-      { startHour: 10, endHour: 12, display: '10:00 - 12:00' },
-      { startHour: 17, endHour: 19, display: '5:00 - 7:00' },
-      { startHour: 19, endHour: 21, display: '7:00 - 9:00' }
-    ];
+    // Initialize timetable rows
+    this.timetableRows = this.TIME_SLOTS.map(ts => ({
+      timeSlot: ts.display,
+      timeRangeDisplay: `${ts.startHour}:00 - ${ts.endHour}:00`,
+      cells: Array(7).fill(null)
+    }));
 
-    this.timetableRows = timeSlots.map(ts => {
-      const cells: (TimetableCell | null)[] = Array(7).fill(null);
-      return {
-        timeSlot: ts.display,
-        cells: cells
-      };
-    });
+    if (!this.weekInfo) return;
 
     // Fill in the timetable with actual data
     timeslots.forEach(timeslot => {
       if (!timeslot.id) return;
 
-      const date = new Date(timeslot.createdAt || new Date());
-      const dayOfWeek = date.getDay();
-      const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      // Use date from TimeSlots object
+      let slotDate: Date;
+      if (timeslot.date) {
+        // Parse date from YYYY-MM-DD format
+        const [year, month, day] = timeslot.date.split('-').map(Number);
+        slotDate = new Date(year, month - 1, day);
+        slotDate.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+      } else {
+        return; // Skip if no date available
+      }
 
-      const timeStr = (timeslot.createdAt || '').substring(11, 16);
+      const startDateOfWeek = new Date(this.weekInfo!.startDate);
+      startDateOfWeek.setHours(0, 0, 0, 0); // Ensure clean comparison
+
+      // Calculate day of week relative to week start (0 = Monday, 6 = Sunday)
+      const dayDiff = Math.floor((slotDate.getTime() - startDateOfWeek.getTime()) / (1000 * 60 * 60 * 24));
+
+      // Check if the timeslot is within this week
+      if (dayDiff < 0 || dayDiff >= 7) {
+        console.log(`Timeslot date ${timeslot.date} not in week, dayDiff=${dayDiff}`);
+        return;
+      }
+
+      // Extract time from startTime (ISO format or HH:mm)
+      let timeStr = '';
+      let hours = 0;
+
+      if (timeslot.startTime) {
+        // Handle ISO format: 2024-04-21T06:00:00
+        if (timeslot.startTime.includes('T')) {
+          timeStr = timeslot.startTime.substring(11, 16); // Extract HH:mm
+          hours = parseInt(timeStr.split(':')[0]);
+        }
+        // Handle HH:mm format
+        else if (timeslot.startTime.includes(':')) {
+          timeStr = timeslot.startTime.substring(0, 5); // Get HH:mm
+          hours = parseInt(timeStr.split(':')[0]);
+        } else {
+          return;
+        }
+      } else {
+        return; // Skip if no startTime
+      }
+
+      // Find matching time slot
       let timeSlotIndex = -1;
+      for (let i = 0; i < this.TIME_SLOTS.length; i++) {
+        const slot = this.TIME_SLOTS[i];
+        if (hours >= slot.startHour && hours < slot.endHour) {
+          timeSlotIndex = i;
+          break;
+        }
+      }
 
-      if (timeStr >= '06:00' && timeStr < '08:00') timeSlotIndex = 0;
-      else if (timeStr >= '10:00' && timeStr < '12:00') timeSlotIndex = 1;
-      else if (timeStr >= '17:00' && timeStr < '19:00') timeSlotIndex = 2;
-      else if (timeStr >= '19:00' && timeStr < '21:00') timeSlotIndex = 3;
+      if (timeSlotIndex >= 0 && dayDiff >= 0 && dayDiff < 7) {
+        // Extract end time as well
+        let endTimeStr = '';
+        if (timeslot.endTime) {
+          if (timeslot.endTime.includes('T')) {
+            endTimeStr = timeslot.endTime.substring(11, 16);
+          } else if (timeslot.endTime.includes(':')) {
+            endTimeStr = timeslot.endTime.substring(0, 5);
+          }
+        }
 
-      if (timeSlotIndex >= 0 && adjustedDay >= 0 && adjustedDay < 7) {
         const cell: TimetableCell = {
           timeSlotsSubjectId: timeslot.id,
           subjectId: timeslot.subjectId,
@@ -264,27 +387,32 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
           currentCapacity: timeslot.currentCapacity,
           maxCapacity: timeslot.maxCapacity,
           trainingMethods: timeslot.trainingMethods,
-          timeSlotDate: date.toLocaleDateString('vi-VN'),
+          timeSlotDate: slotDate.toLocaleDateString('vi-VN'),
           timeSlotTime: timeStr,
-          dayOfWeek: adjustedDay,
-          dayName: this.daysOfWeek[adjustedDay]
+          dayOfWeek: dayDiff,
+          dayName: this.daysOfWeek[dayDiff],
+          startTime: timeStr,
+          endTime: endTimeStr || `${this.TIME_SLOTS[timeSlotIndex].endHour}:00`
         };
 
-        this.timetableRows[timeSlotIndex].cells[adjustedDay] = cell;
+        // If cell already exists, merge or replace
+        if (this.timetableRows[timeSlotIndex].cells[dayDiff]) {
+          // Cell already exists, keep existing or update based on capacity
+          const existing = this.timetableRows[timeSlotIndex].cells[dayDiff];
+          if (cell.currentCapacity < existing!.currentCapacity) {
+            this.timetableRows[timeSlotIndex].cells[dayDiff] = cell;
+          }
+        } else {
+          this.timetableRows[timeSlotIndex].cells[dayDiff] = cell;
+        }
       }
     });
   }
 
   private buildEmptyTimetable(): void {
-    const timeSlots = [
-      { startHour: 6, endHour: 8, display: '6:00 - 8:00' },
-      { startHour: 10, endHour: 12, display: '10:00 - 12:00' },
-      { startHour: 17, endHour: 19, display: '5:00 - 7:00' },
-      { startHour: 19, endHour: 21, display: '7:00 - 9:00' }
-    ];
-
-    this.timetableRows = timeSlots.map(ts => ({
+    this.timetableRows = this.TIME_SLOTS.map(ts => ({
       timeSlot: ts.display,
+      timeRangeDisplay: `${ts.startHour}:00 - ${ts.endHour}:00`,
       cells: Array(7).fill(null)
     }));
   }
@@ -304,7 +432,13 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
     this.selectedTimeslot = {
       ...cell,
       maxCapacity: cell.maxCapacity,
-      currentCapacity: cell.currentCapacity
+      currentCapacity: cell.currentCapacity,
+      trainingMethod: cell.trainingMethods,
+      coach: cell.coachFullName,
+      date: cell.timeSlotDate,
+      time: cell.timeSlotTime,
+      startTime: cell.startTime,
+      endTime: cell.endTime
     };
     this.isBookingModalOpen = true;
   }

@@ -17,4 +17,6 @@ public interface UserSubjectRepository extends JpaRepository<UserSubject,Long> {
      * @return List of UserSubject records where user is a student
      */
     List<UserSubject> findByUserIdAndIsCoachFalse(Long userId);
+
+    UserSubject findBySubjectIdAndUserId(Long subjectId, Long userId);
 }

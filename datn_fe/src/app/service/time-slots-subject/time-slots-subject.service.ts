@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -15,6 +15,10 @@ export interface TimeSlotsSubject {
   coachFullName?: string;
   createdAt?: string;
   updatedAt?: string;
+  // TimeSlots information
+  date?: string;        // YYYY-MM-DD format
+  startTime?: string;   // HH:mm format or ISO datetime
+  endTime?: string;     // HH:mm format or ISO datetime
 }
 
 export interface TimeSlots {
@@ -97,5 +101,20 @@ export class TimeSlotsSubjectService {
     subjectId?: number;
   }): Observable<any> {
     return this.http.post(`${this.apiUrl}/coach/filter`, request);
+  }
+
+  /**
+   * Get coach's weekly schedule with pagination
+   * weekNumber: 0 = current week, 1 = next week, -1 = previous week, etc.
+   */
+  getCoachWeeklySchedule(coachId: number, weekNumber: number = 0): Observable<any> {
+    return this.http.get(`${this.apiUrl}/coach/${coachId}/weekly?weekNumber=${weekNumber}`);
+  }
+
+  /**
+   * Get all available timeslots for a subject with pagination
+   */
+  getTimeslotsForSubject(subjectId: number, page: number = 0, size: number = 100): Observable<any> {
+    return this.http.get(`${this.apiUrl}/subject/${subjectId}?page=${page}&size=${size}`);
   }
 }
