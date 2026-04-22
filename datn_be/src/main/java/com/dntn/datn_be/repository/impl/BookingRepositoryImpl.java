@@ -118,7 +118,7 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
     }
 
     /**
-     * Filter bookings with joined data from related tables
+     * Filter bookings with joined data from related tables (bookings, users, subject, time_slots_subject, time_slots)
      * @param request Filter request
      * @return Page of BookingResponseDto with joined data
      */
@@ -131,7 +131,10 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
             b.subject_id, 
             COALESCE(s.name, 'N/A') as subject_name,
             b.time_slot_subject_id,
-            COALESCE(tss.name, 'N/A') as time_slot_name,
+            COALESCE(ts.start_time, GETDATE()) as time_slot_start,
+            COALESCE(ts.end_time, GETDATE()) as time_slot_end,
+            COALESCE(tss.max_capacity, 0) as max_capacity,
+            COALESCE(tss.current_capacity, 0) as current_capacity,
             b.status, 
             b.created_at, 
             b.updated_at
@@ -139,6 +142,7 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
         LEFT JOIN users u ON b.user_id = u.id
         LEFT JOIN subject s ON b.subject_id = s.id
         LEFT JOIN time_slots_subject tss ON b.time_slot_subject_id = tss.id
+        LEFT JOIN time_slots ts ON tss.time_slots_id = ts.id
         WHERE 1=1
     """);
 
@@ -148,6 +152,7 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
         LEFT JOIN users u ON b.user_id = u.id
         LEFT JOIN subject s ON b.subject_id = s.id
         LEFT JOIN time_slots_subject tss ON b.time_slot_subject_id = tss.id
+        LEFT JOIN time_slots ts ON tss.time_slots_id = ts.id
         WHERE 1=1
     """);
 
@@ -176,8 +181,8 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
 
         // ===== filter by keyword (search in related tables) =====
         if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
-            sql.append(" AND (u.full_name LIKE ? OR s.name LIKE ? OR tss.name LIKE ?) ");
-            countSql.append(" AND (u.full_name LIKE ? OR s.name LIKE ? OR tss.name LIKE ?) ");
+            sql.append(" AND (u.full_name LIKE ? OR s.name LIKE ? OR ts.start_time LIKE ?) ");
+            countSql.append(" AND (u.full_name LIKE ? OR s.name LIKE ? OR ts.start_time LIKE ?) ");
             String keyword = "%" + request.getKeyword() + "%";
             params.add(keyword);
             params.add(keyword);
@@ -220,10 +225,13 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
                 .subjectId(((Number) row[3]).longValue())
                 .subjectName((String) row[4])
                 .timeSlotSubjectId(((Number) row[5]).longValue())
-                .timeSlotName((String) row[6])
-                .status(((Number) row[7]).intValue())
-                .createdAt(row[8] != null ? ((Timestamp) row[8]).toLocalDateTime() : null)
-                .updatedAt(row[9] != null ? ((Timestamp) row[9]).toLocalDateTime() : null)
+                .timeSlotStart(row[6] != null ? ((Timestamp) row[6]).toLocalDateTime() : null)
+                .timeSlotEnd(row[7] != null ? ((Timestamp) row[7]).toLocalDateTime() : null)
+                .maxCapacity(((Number) row[8]).longValue())
+                .currentCapacity(((Number) row[9]).longValue())
+                .status(((Number) row[10]).intValue())
+                .createdAt(row[11] != null ? ((Timestamp) row[11]).toLocalDateTime() : null)
+                .updatedAt(row[12] != null ? ((Timestamp) row[12]).toLocalDateTime() : null)
                 .build();
             content.add(dto);
         }

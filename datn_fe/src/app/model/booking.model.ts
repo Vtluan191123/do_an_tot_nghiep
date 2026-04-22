@@ -1,7 +1,8 @@
 export interface BookingCreateRequest {
   userId: number;
   subjectId: number;
-  timeSlotId: number;
+  // Backend expects: timeSlotSubjectId
+  timeSlotSubjectId: number;
   status?: number; // 0 = Chưa xác nhận, 1 = Đã xác nhận, 2 = Đã hoàn thành, 3 = Đã hủy
 }
 

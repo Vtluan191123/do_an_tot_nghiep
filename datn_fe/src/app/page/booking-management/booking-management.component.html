@@ -30,72 +30,70 @@
         <div class="card mb-4 shadow-sm" style="border: none; border-radius: 8px;">
           <div class="card-body">
             <h5 class="card-title mb-4" style="font-weight: 600; color: #333;">Tìm Kiếm & Lọc</h5>
-            <form (ngSubmit)="onSearch()">
-              <div class="row g-3">
-                <!-- Search by Username -->
-                <div class="col-lg-3 col-md-6">
-                  <label for="searchUsername" class="form-label fw-500" style="color: #555; font-size: 14px;">Tên Người Dùng</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="searchUsername"
-                    [(ngModel)]="searchUsername"
-                    name="searchUsername"
-                    placeholder="Nhập tên người dùng"
-                    style="border-radius: 6px; border: 1px solid #ddd;">
-                </div>
-
-                <!-- Search by Status -->
-                <div class="col-lg-3 col-md-6">
-                  <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>
-                  <select
-                    class="form-control"
-                    id="searchStatus"
-                    [(ngModel)]="searchStatus"
-                    name="searchStatus"
-                    style="border-radius: 6px; border: 1px solid #ddd;">
-                    <option value="">-- Tất Cả Trạng Thái --</option>
-                    <option *ngFor="let option of statusOptions" [value]="option.value">
-                      {{ option.label }}
-                    </option>
-                  </select>
-                </div>
-
-                <!-- Search from Date -->
-                <div class="col-lg-2 col-md-6">
-                  <label for="searchFromDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Từ Ngày</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    id="searchFromDate"
-                    [(ngModel)]="searchFromDate"
-                    name="searchFromDate"
-                    style="border-radius: 6px; border: 1px solid #ddd;">
-                </div>
-
-                <!-- Search to Date -->
-                <div class="col-lg-2 col-md-6">
-                  <label for="searchToDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Đến Ngày</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    id="searchToDate"
-                    [(ngModel)]="searchToDate"
-                    name="searchToDate"
-                    style="border-radius: 6px; border: 1px solid #ddd;">
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="col-lg-2 col-md-12 d-flex gap-2 align-items-end">
-                  <button type="submit" class="btn flex-grow-1" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 500;">
-                    <i class="fa fa-search"></i> Tìm
-                  </button>
-                  <button type="button" class="btn flex-grow-1" style="background-color: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 500;" (click)="onReset()">
-                    <i class="fa fa-redo"></i> Reset
-                  </button>
-                </div>
+            <div class="row g-3">
+              <!-- Search by Username -->
+              <div class="col-lg-3 col-md-6">
+                <label for="searchUsername" class="form-label fw-500" style="color: #555; font-size: 14px;">Tên Người Dùng</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="searchUsername"
+                  [(ngModel)]="searchUsername"
+                  (change)="onFilterChange()"
+                  placeholder="Nhập tên người dùng"
+                  style="border-radius: 6px; border: 1px solid #ddd;">
               </div>
-            </form>
+
+              <!-- Search by Status -->
+              <div class="col-lg-3 col-md-6">
+                <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>
+                <select
+                  class="form-control"
+                  id="searchStatus"
+                  [(ngModel)]="searchStatus"
+                  (change)="onFilterChange()"
+                  style="border-radius: 6px; border: 1px solid #ddd;">
+                  <option value="">-- Tất Cả Trạng Thái --</option>
+                  <option *ngFor="let option of statusOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Search from Date -->
+              <div class="col-lg-2 col-md-6">
+                <label for="searchFromDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Từ Ngày</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="searchFromDate"
+                  [(ngModel)]="searchFromDate"
+                  (change)="onFilterChange()"
+                  style="border-radius: 6px; border: 1px solid #ddd;">
+              </div>
+
+              <!-- Search to Date -->
+              <div class="col-lg-2 col-md-6">
+                <label for="searchToDate" class="form-label fw-500" style="color: #555; font-size: 14px;">Đến Ngày</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="searchToDate"
+                  [(ngModel)]="searchToDate"
+                  (change)="onFilterChange()"
+                  style="border-radius: 6px; border: 1px solid #ddd;">
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="col-lg-2 col-md-12 d-flex gap-2 align-items-end">
+                <button type="button" class="btn flex-grow-1" style="background-color: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 500;" (click)="onSearch()">
+                  <i class="fa fa-search"></i> Tìm
+                </button>
+                <button type="button" class="btn flex-grow-1" style="background-color: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 500;" (click)="onReset()">
+                  <i class="fa fa-redo"></i> Reset
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -115,6 +113,7 @@
                 <th style="color: #495057; font-weight: 600;">Tên Người Dùng</th>
                 <th style="color: #495057; font-weight: 600;">Môn Học</th>
                 <th style="color: #495057; font-weight: 600;">Khung Giờ</th>
+                <th style="color: #495057; font-weight: 600;">Sức Chứa</th>
                 <th style="color: #495057; font-weight: 600;">Trạng Thái</th>
                 <th style="color: #495057; font-weight: 600;">Ngày Tạo</th>
                 <th style="color: #495057; font-weight: 600;">Hành Động</th>
@@ -125,7 +124,8 @@
                 <td><strong>{{ booking.id }}</strong></td>
                 <td><strong style="color: #333;">{{ booking.userName || 'N/A' }}</strong></td>
                 <td><span class="badge" style="background-color: #e3f2fd; color: #1976d2; font-weight: 500;">{{ booking.subjectName || 'N/A' }}</span></td>
-                <td><span class="badge" style="background-color: #f3e5f5; color: #7b1fa2; font-weight: 500;">{{ booking.timeSlotName || 'N/A' }}</span></td>
+                <td><span class="badge" style="background-color: #f3e5f5; color: #7b1fa2; font-weight: 500;">{{ booking.timeSlotStart | date:'HH:mm' }} - {{ booking.timeSlotEnd | date:'HH:mm' }}</span></td>
+                <td><span class="badge" style="background-color: #e8f5e9; color: #388e3c; font-weight: 500;">{{ booking.currentCapacity || 0 }}/{{ booking.maxCapacity || 0 }}</span></td>
                 <td>
                   <span class="badge" [ngClass]="getStatusBadgeClass(booking.status)">
                     {{ getStatusLabel(booking.status) }}
@@ -177,9 +177,13 @@
               <label style="font-weight: 500; color: #555;">Môn Học:</label>
               <p style="margin: 5px 0; color: #333;">{{ selectedBooking.subjectName || 'N/A' }}</p>
             </div>
-            <div>
+            <div style="margin-bottom: 10px;">
               <label style="font-weight: 500; color: #555;">Khung Giờ:</label>
-              <p style="margin: 5px 0; color: #333;">{{ selectedBooking.timeSlotName || 'N/A' }}</p>
+              <p style="margin: 5px 0; color: #333;">{{ selectedBooking.timeSlotStart | date:'HH:mm' }} - {{ selectedBooking.timeSlotEnd | date:'HH:mm' }}</p>
+            </div>
+            <div>
+              <label style="font-weight: 500; color: #555;">Sức Chứa:</label>
+              <p style="margin: 5px 0; color: #333;">{{ selectedBooking.currentCapacity || 0 }}/{{ selectedBooking.maxCapacity || 0 }}</p>
             </div>
           </div>
 

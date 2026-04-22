@@ -4,19 +4,22 @@ import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../service/booking/booking.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 interface Booking {
-  timeSlotName?: string;
   id?: number;
   userId: number;
   userName?: string;
   subjectId: number;
+  subjectName?: string;
   timeSlotSubjectId: number;
+  timeSlotStart?: string; // ISO datetime from backend
+  timeSlotEnd?: string;   // ISO datetime from backend
+  maxCapacity?: number;
+  currentCapacity?: number;
   status: number;
   createdAt?: string;
   updatedAt?: string;
-  subjectName?: string;
 }
 
 @Component({
@@ -58,6 +61,7 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   totalPages = 0;
 
   private destroy$ = new Subject<void>();
+  private filterSubject$ = new Subject<void>();
 
   constructor(
     private bookingService: BookingService,
@@ -65,6 +69,34 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Setup filter subscription with debounce (800ms) to call API on filter changes
+    this.filterSubject$
+      .pipe(
+        debounceTime(800),
+        distinctUntilChanged(),
+        switchMap(() => {
+          this.currentPage = 0;
+          return this.getBookingsWithFilters();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.filteredBookings = response.data;
+            this.totalElements = response.count || 0;
+            this.totalPages = response.totalPages || 0;
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading bookings:', error);
+          this.toastr.error('Lỗi tải danh sách đặt lịch');
+          this.isLoading = false;
+        }
+      });
+
+    // Load initial bookings
     this.loadBookings();
   }
 
@@ -89,9 +121,9 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response && response.data) {
             this.bookings = response.data;
+            this.filteredBookings = response.data;
             this.totalElements = response.count || 0;
             this.totalPages = response.totalPages || 0;
-            this.filterBookings();
           }
           this.isLoading = false;
         },
@@ -103,56 +135,79 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSearch(): void {
-    this.currentPage = 0;
-    this.filterBookings();
+  /**
+   * Build filter request and call API with current filter values
+   */
+  getBookingsWithFilters() {
+    this.isLoading = true;
+    const filter: any = {
+      page: this.currentPage,
+      size: this.pageSize,
+      sortBy: 'id',
+      sortDirection: 'DESC'
+    };
+
+    // Add keyword filter (search username)
+    if (this.searchUsername && this.searchUsername.trim()) {
+      filter.keyword = this.searchUsername.trim();
+    }
+
+    // Add status filter
+    if (this.searchStatus !== '') {
+      filter.status = parseInt(this.searchStatus, 10);
+    }
+
+    // Add date range filters if needed (backend should handle these)
+    // For now, client-side filtering for dates
+    if (this.searchFromDate || this.searchToDate) {
+      filter.fromDate = this.searchFromDate;
+      filter.toDate = this.searchToDate;
+    }
+
+    return this.bookingService.getAllBookingsWithJoin(filter);
   }
 
+  /**
+   * Trigger filter change - debounced API call
+   */
+  onFilterChange(): void {
+    this.filterSubject$.next();
+  }
+
+  /**
+   * Manual search button click - immediate API call
+   */
+  onSearch(): void {
+    this.currentPage = 0;
+    this.getBookingsWithFilters()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data) {
+            this.filteredBookings = response.data;
+            this.totalElements = response.count || 0;
+            this.totalPages = response.totalPages || 0;
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading bookings:', error);
+          this.toastr.error('Lỗi tải danh sách đặt lịch');
+          this.isLoading = false;
+        }
+      });
+  }
+
+  /**
+   * Reset all filters and reload bookings
+   */
   onReset(): void {
     this.searchUsername = '';
     this.searchStatus = '';
     this.searchFromDate = '';
     this.searchToDate = '';
     this.currentPage = 0;
-    this.filterBookings();
-  }
-
-  filterBookings(): void {
-    this.filteredBookings = this.bookings.filter(booking => {
-      let usernameMatch = true;
-      let statusMatch = true;
-      let dateMatch = true;
-
-      // Check username filter
-      if (this.searchUsername && this.searchUsername.trim()) {
-        const username = (booking.userName || '').toLowerCase();
-        usernameMatch = username.includes(this.searchUsername.toLowerCase());
-      }
-
-      // Check status filter
-      if (this.searchStatus !== '') {
-        statusMatch = booking.status === parseInt(this.searchStatus, 10);
-      }
-
-      // Check date range filter
-      if (this.searchFromDate || this.searchToDate) {
-        const bookingDate = booking.createdAt ? new Date(booking.createdAt) : null;
-
-        if (this.searchFromDate) {
-          const fromDate = new Date(this.searchFromDate);
-          fromDate.setHours(0, 0, 0, 0);
-          dateMatch = bookingDate ? bookingDate >= fromDate : false;
-        }
-
-        if (this.searchToDate && dateMatch) {
-          const toDate = new Date(this.searchToDate);
-          toDate.setHours(23, 59, 59, 999);
-          dateMatch = bookingDate ? bookingDate <= toDate : false;
-        }
-      }
-
-      return usernameMatch && statusMatch && dateMatch;
-    });
+    this.onFilterChange();
   }
 
   deleteBooking(id: number): void {

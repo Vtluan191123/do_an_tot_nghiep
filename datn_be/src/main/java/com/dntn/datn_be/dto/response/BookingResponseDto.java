@@ -25,8 +25,14 @@ public class BookingResponseDto {
     
     private Long timeSlotSubjectId;
     
-    private String timeSlotName;
-    
+    private LocalDateTime timeSlotStart;
+
+    private LocalDateTime timeSlotEnd;
+
+    private Long maxCapacity;
+
+    private Long currentCapacity;
+
     private Integer status;
     
     private LocalDateTime createdAt;

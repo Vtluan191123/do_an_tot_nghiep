@@ -21,6 +21,7 @@ import { StatisticsComponent } from './page/statistics/statistics.component';
 import { StudentEnrolledSubjectsComponent } from './page/student-enrolled-subjects/student-enrolled-subjects.component';
 import { CoachTimeSlotsManagementComponent } from './page/coach-time-slots-management/coach-time-slots-management.component';
 import { TrainingRoomBySubjectComponent } from './page/training-room-by-subject/training-room-by-subject.component';
+import { AiTrainingManagementComponent } from './page/ai-training-management/ai-training-management.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -46,6 +47,7 @@ export const routes: Routes = [
   { path: 'user-management', component: UserManagementComponent, canActivate: [authGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [authGuard] },
   { path: 'student-enrolled-subjects', component: StudentEnrolledSubjectsComponent, canActivate: [authGuard] },
+  { path: 'ai-training-management', component: AiTrainingManagementComponent, canActivate: [authGuard] },
   { path: 'team', component: OutTeamComponent, canActivate: [authGuard] },
   { path: 'friend-search', component: FriendSearchComponent, canActivate: [authGuard] },
 

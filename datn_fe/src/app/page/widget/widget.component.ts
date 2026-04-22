@@ -27,6 +27,11 @@ export class WidgetComponent {
   toggle(event: MouseEvent) {
     event.stopPropagation(); // tránh click bị drag
     this.isOpen = !this.isOpen;
+
+    // Reset position when closing modal
+    if (!this.isOpen) {
+      this.position = { x: 20, y: 20 };
+    }
   }
 
   startDrag(event: MouseEvent) {
@@ -35,29 +40,32 @@ export class WidgetComponent {
 
     this.isDragging = true;
 
-    // Calculate offset from right and bottom edges
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    this.offsetX = event.clientX - (window.innerWidth - rect.right);
-    this.offsetY = event.clientY - (window.innerHeight - rect.bottom);
+    // Store the initial mouse position and widget position
+    const startMouseX = event.clientX;
+    const startMouseY = event.clientY;
+    const startPosX = this.position.x;
+    const startPosY = this.position.y;
 
     const move = (e: MouseEvent) => {
       if (!this.isDragging) return;
 
-      // Calculate new right and bottom positions
-      const newRight = window.innerWidth - e.clientX - this.offsetX;
-      const newBottom = window.innerHeight - e.clientY - this.offsetY;
+      // Calculate delta from start position
+      const deltaX = startMouseX - e.clientX;
+      const deltaY = startMouseY - e.clientY;
 
-      this.position.x = Math.max(0, newRight);
-      this.position.y = Math.max(0, newBottom);
+      // Update position based on delta
+      this.position.x = Math.max(0, startPosX + deltaX);
+      this.position.y = Math.max(0, startPosY + deltaY);
     };
 
     const stop = () => {
       this.isDragging = false;
       window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', stop);
     };
 
     window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', stop, { once: true });
+    window.addEventListener('mouseup', stop);
   }
 
   send() {
