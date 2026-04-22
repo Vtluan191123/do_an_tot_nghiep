@@ -1,8 +1,13 @@
 package com.dntn.datn_be.service.impl;
 
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
+import com.dntn.datn_be.dto.response.AiTrainingDto;
 import com.dntn.datn_be.gemini.client.GeminiApiClient;
 import com.dntn.datn_be.gemini.config.GeminiAIProperties;
+import com.dntn.datn_be.model.AiTrainingQuestion;
+import com.dntn.datn_be.model.AiTrainingTopic;
+import com.dntn.datn_be.repository.AiTrainingQuestionRepository;
+import com.dntn.datn_be.repository.AiTrainingTopicRepository;
 import com.dntn.datn_be.service.AIService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,12 +18,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
 @Service
 @RequiredArgsConstructor
 public class AIServiceImpl implements AIService {
 
     private final GeminiAIProperties geminiAIProperties;
     private final GeminiApiClient geminiApiClient;
+    private final ObjectMapper objectMapper;
+    private final AiTrainingQuestionRepository aiTrainingQuestionRepository;
+    private final AiTrainingTopicRepository aiTrainingTopicRepository;
 
 
 
@@ -28,19 +42,50 @@ public class AIServiceImpl implements AIService {
     @Override
     public ResponseGlobalDto<Object> createPrompt(String question) throws Exception {
 
-        String prompt = BuildPrompt(question);
+        String prompt = buildPrompt(question);
 
         //send prompt to gemini
         String rawAiResponse = callAiWithRetryAndFallback(prompt, 3, 1000);
         //transfer raw data to json
         Object productAIResponse = parseAIResponse(rawAiResponse);
+
+        AiTrainingDto aiTrainingDto = objectMapper.readValue(productAIResponse.toString(), AiTrainingDto.class);
+
+        //save database
+        if (!aiTrainingDto.isTrained()) {
+            //TODO save database
+            //Get topic
+            AiTrainingTopic aiTrainingTopic = null;
+            if(aiTrainingDto.getTopicCode() != null && !aiTrainingDto.getTopicCode().isEmpty()) {
+                aiTrainingTopic = aiTrainingTopicRepository.findByCode(aiTrainingDto.getTopicCode());
+            }
+
+            AiTrainingQuestion aiTrainingQuestion = AiTrainingQuestion.builder()
+                    .topic(aiTrainingTopic != null ? aiTrainingTopic : null)
+                    .content(question)
+                    .status(0)
+                    .build();
+            aiTrainingQuestionRepository.save(aiTrainingQuestion);
+        }
+
+        //send socket
+
+
+
         return ResponseGlobalDto.builder()
                 .status(HttpStatus.OK.value())
                 .data(productAIResponse)
                 .build();
     }
 
-    private String BuildPrompt(String prompt)  {
+    private String buildPrompt(String prompt) throws IOException {
+        try {
+            String content = Files.readString(Paths.get("D:\\App\\datn\\datn_be\\promt_base.txt"), StandardCharsets.UTF_8);
+            return content + prompt;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         return prompt;
     }
 

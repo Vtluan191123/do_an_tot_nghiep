@@ -3,10 +3,7 @@ package com.dntn.datn_be.controller;
 import com.dntn.datn_be.gemini.client.GeminiApiClient;
 import com.dntn.datn_be.service.AIService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -16,7 +13,7 @@ public class AiController {
         private final AIService aiService;
 
 
-        @GetMapping("/chat")
+        @PostMapping("/chat")
         public Object chat(@RequestParam String message) throws Exception {
 
 

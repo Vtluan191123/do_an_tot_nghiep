@@ -14,7 +14,7 @@ import lombok.*;
 @Table(name = "ai_training_question")
 public class AiTrainingQuestion extends BaseEntity {
 
-    @Column(name = "topic_id", nullable = false)
+    @Column(name = "topic_id")
     private Long topicId;
 
     @Column(name = "content", columnDefinition = "VARCHAR(MAX)", nullable = false)
