@@ -4,6 +4,8 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerCreateRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerFilterRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerUpdateRequest;
+import com.dntn.datn_be.dto.response.QuestionDTO;
+import com.dntn.datn_be.dto.response.TopicDTO;
 import com.dntn.datn_be.model.AiTrainingAnswer;
 import com.dntn.datn_be.service.AiTrainingAnswerService;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +56,11 @@ public class AiTrainingAnswerController {
         return aiTrainingAnswerService.get(request);
     }
 
+    @GetMapping("/get-all")
+    public List<TopicDTO> getAll() {
+        return aiTrainingAnswerService.getData();
+    }
+
     // ================== UPDATE ==================
     /**
      * Update AI training answer information
@@ -86,5 +93,7 @@ public class AiTrainingAnswerController {
     public ResponseGlobalDto<Boolean> deletes(@RequestBody List<Long> ids) {
         return aiTrainingAnswerService.deletes(ids);
     }
+
+
 }
 

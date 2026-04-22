@@ -4,6 +4,7 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerCreateRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerFilterRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerUpdateRequest;
+import com.dntn.datn_be.dto.response.*;
 import com.dntn.datn_be.model.AiTrainingAnswer;
 import com.dntn.datn_be.repository.AiTrainingAnswerRepository;
 import com.dntn.datn_be.service.AiTrainingAnswerService;
@@ -14,7 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -105,6 +110,58 @@ public class AiTrainingAnswerServiceImpl implements AiTrainingAnswerService {
                 .data(true)
                 .message("Delete AI training answers successfully")
                 .build();
+    }
+
+    @Override
+    public List<TopicDTO> getData() {
+        List<AiTrainingProjection> data = aiTrainingAnswerRepository.getAllTrainingData();
+
+        // GROUP LEVEL 1: Topic
+        Map<String, List<AiTrainingProjection>> topicGroup = data.stream()
+                .collect(Collectors.groupingBy(
+                        x -> x.getCode(), // hoặc topicId nếu có
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        return topicGroup.values().stream().map(topicList -> {
+
+            AiTrainingProjection firstTopic = topicList.get(0);
+
+            // GROUP LEVEL 2: Question
+            Map<String, List<AiTrainingProjection>> questionGroup = topicList.stream()
+                    .collect(Collectors.groupingBy(
+                            AiTrainingProjection::getQuestion,
+                            LinkedHashMap::new,
+                            Collectors.toList()
+                    ));
+
+            List<QuestionChildDTO> questions = questionGroup.values().stream()
+                    .map(qList -> {
+
+                        List<AnswerDTO> answers = qList.stream()
+                                .map(a -> AnswerDTO.builder()
+                                        .answer(a.getAnswer())
+                                        .type(a.getType())
+                                        .position(a.getPosition())
+                                        .build())
+                                .sorted(Comparator.comparing(AnswerDTO::getPosition))
+                                .toList();
+
+                        return QuestionChildDTO.builder()
+                                .question(qList.get(0).getQuestion())
+                                .answers(answers)
+                                .build();
+                    })
+                    .toList();
+
+            return TopicDTO.builder()
+                    .code(firstTopic.getCode())
+                    .topicName(firstTopic.getTopicName())
+                    .questions(questions)
+                    .build();
+
+        }).toList();
     }
 }
 
