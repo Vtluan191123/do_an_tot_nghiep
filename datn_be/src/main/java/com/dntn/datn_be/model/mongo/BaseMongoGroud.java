@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Getter
 @Setter
 @Builder
-@Document(collection = "groud")
+@Document(collection = "group")
 public class BaseMongoGroud extends BaseAbstractAuditingDocument{
     @Field("type")
     private Integer type; //type 0: friend | 1:zoom
