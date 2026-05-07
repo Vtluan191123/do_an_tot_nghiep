@@ -36,7 +36,7 @@ public class ComboServiceImpl implements ComboService {
 
     @Override
     @Transactional
-    public ResponseGlobalDto<Combo> create(ComboCreateRequest request) throws IOException {
+    public ResponseGlobalDto<Combo> create(ComboCreateRequest request)  {
         Combo combo = Combo.builder()
                 .code(request.getCode())
                 .name(request.getName())
@@ -44,9 +44,9 @@ public class ComboServiceImpl implements ComboService {
                 .prices(request.getPrices())
                 .build();
         combo = comboRepository.save(combo);
-        
+
         List<ComboSubject> comboSubjects = new ArrayList<>();
-        
+
         for(ComboSubjectRequest subjectRequest : request.getComboSubjectRequests()){
             ComboSubject comboSubject = ComboSubject.builder()
                     .comboId(combo.getId())
@@ -55,9 +55,9 @@ public class ComboServiceImpl implements ComboService {
                     .build();
             comboSubjects.add(comboSubject);
         }
-        
+
         this.comboSubjectRepository.saveAll(comboSubjects);
-        
+
 
         return ResponseGlobalDto.<Combo>builder()
                 .status(HttpStatus.CREATED.value())
@@ -114,7 +114,7 @@ public class ComboServiceImpl implements ComboService {
         if (request.getComboSubjectRequests() != null && !request.getComboSubjectRequests().isEmpty()) {
             // Delete all old ComboSubject for this combo
             comboSubjectRepository.deleteByComboId(combo.getId());
-            
+
             // Create and save new ComboSubject
             List<ComboSubject> comboSubjects = new ArrayList<>();
             for (ComboSubjectRequest subjectRequest : request.getComboSubjectRequests()) {
@@ -143,7 +143,7 @@ public class ComboServiceImpl implements ComboService {
 
         // Delete all ComboSubject first
         comboSubjectRepository.deleteByComboId(combo.getId());
-        
+
         // Then delete Combo
         comboRepository.delete(combo);
 

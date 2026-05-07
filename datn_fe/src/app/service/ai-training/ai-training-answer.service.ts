@@ -29,7 +29,7 @@ export class AiTrainingAnswerService {
    * Create new answer
    */
   createAnswer(answer: any): Observable<any> {
-    return this.http.post(this.apiUrl, answer);
+    return this.http.post(`${this.apiUrl}/create`, answer);
   }
 
   /**

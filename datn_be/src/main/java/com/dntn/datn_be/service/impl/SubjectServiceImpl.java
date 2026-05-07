@@ -23,7 +23,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final SubjectRepository subjectRepository;
 
     @Override
-    public ResponseGlobalDto<Subject> create(SubjectCreateRequest request) throws IOException {
+    public ResponseGlobalDto<Subject> create(SubjectCreateRequest request) {
         Subject subject = Subject.builder()
                 .name(request.getName())
                 .description(request.getDescription())

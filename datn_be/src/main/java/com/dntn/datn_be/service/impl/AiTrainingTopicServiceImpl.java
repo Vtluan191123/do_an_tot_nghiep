@@ -23,7 +23,7 @@ public class AiTrainingTopicServiceImpl implements AiTrainingTopicService {
     private final AiTrainingTopicRepository aiTrainingTopicRepository;
 
     @Override
-    public ResponseGlobalDto<AiTrainingTopic> create(AiTrainingTopicCreateRequest request) throws IOException {
+    public ResponseGlobalDto<AiTrainingTopic> create(AiTrainingTopicCreateRequest request)  {
         AiTrainingTopic topic = AiTrainingTopic.builder()
                 .topicName(request.getTopicName())
                 .code(request.getCode())

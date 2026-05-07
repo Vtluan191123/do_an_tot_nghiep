@@ -26,12 +26,14 @@ public class AiTrainingQuestionRepositoryImpl implements AiTrainingQuestionRepos
         StringBuilder sql = new StringBuilder("""
         SELECT q.*
         FROM ai_training_question q
+        LEFT JOIN ai_training_topic t ON q.topic_id = t.id
         WHERE 1=1
     """);
         
         StringBuilder countSql = new StringBuilder("""
         SELECT COUNT(*)
         FROM ai_training_question q
+        LEFT JOIN ai_training_topic t ON q.topic_id = t.id
         WHERE 1=1
     """);
         
@@ -49,6 +51,13 @@ public class AiTrainingQuestionRepositoryImpl implements AiTrainingQuestionRepos
             sql.append(" AND q.topic_id = ? ");
             countSql.append(" AND q.topic_id = ? ");
             params.add(request.getTopicId());
+        }
+
+        // ===== Filter by topic code =====
+        if (request.getCode() != null && !request.getCode().isEmpty()) {
+            sql.append(" AND LOWER(t.code) = ? ");
+            countSql.append(" AND LOWER(t.code) = ? ");
+            params.add(request.getCode().toLowerCase().trim());
         }
         
         // ===== Filter by content =====

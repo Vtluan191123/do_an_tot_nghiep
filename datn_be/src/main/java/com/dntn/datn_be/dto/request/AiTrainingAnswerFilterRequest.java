@@ -15,6 +15,8 @@ public class AiTrainingAnswerFilterRequest extends BaseFilterRequest {
 
     private Long questionId;
 
+    private Long topicId;
+
     private String type;
 
     private Integer position;

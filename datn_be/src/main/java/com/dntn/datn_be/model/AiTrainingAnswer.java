@@ -26,6 +26,9 @@ public class AiTrainingAnswer extends BaseEntity {
     @Column(name = "position")
     private Integer position;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", insertable = false, updatable = false)
     @JsonIgnore

@@ -4,12 +4,16 @@ import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerCreateRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerFilterRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerUpdateRequest;
+import com.dntn.datn_be.dto.request.MessageRequest;
 import com.dntn.datn_be.dto.response.QuestionDTO;
 import com.dntn.datn_be.dto.response.TopicDTO;
 import com.dntn.datn_be.model.AiTrainingAnswer;
 import com.dntn.datn_be.service.AiTrainingAnswerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,12 +27,17 @@ public class AiTrainingAnswerController {
 
     // ================== CREATE ==================
     /**
-     * Create a new AI training answer
-     * @param request Answer creation data
+     * Create a new AI training answer with file upload
+     * @param request Answer creation data (supports file upload)
      * @return Created answer
      */
-    @PostMapping
-    public ResponseGlobalDto<AiTrainingAnswer> create(@RequestBody AiTrainingAnswerCreateRequest request) throws IOException {
+
+
+    @PostMapping("/create")
+    public ResponseGlobalDto<AiTrainingAnswer> create(@RequestPart("anwser") @Valid
+                                                          AiTrainingAnswerCreateRequest request,
+                                                      @RequestPart(value = "files", required = false) MultipartFile file) throws IOException {
+        request.setImageFile(file);
         return aiTrainingAnswerService.create(request);
     }
 
@@ -63,12 +72,12 @@ public class AiTrainingAnswerController {
 
     // ================== UPDATE ==================
     /**
-     * Update AI training answer information
-     * @param request Answer update data
+     * Update AI training answer information with optional file upload
+     * @param request Answer update data (supports file upload)
      * @return Updated answer
      */
-    @PutMapping
-    public ResponseGlobalDto<AiTrainingAnswer> update(@RequestBody AiTrainingAnswerUpdateRequest request) {
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseGlobalDto<AiTrainingAnswer> update(@ModelAttribute AiTrainingAnswerUpdateRequest request) throws IOException {
         return aiTrainingAnswerService.update(request);
     }
 

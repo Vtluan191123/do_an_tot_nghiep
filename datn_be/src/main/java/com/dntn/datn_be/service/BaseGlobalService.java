@@ -12,7 +12,7 @@ public interface BaseGlobalService<T,CR,GR,UR,DR> {
     ResponseGlobalDto<T> create(CR request) throws IOException;
     ResponseGlobalDto<List<T>> gets(GR request);
     ResponseGlobalDto<T> get(GR request);
-    ResponseGlobalDto<T> update(UR request);
+    ResponseGlobalDto<T> update(UR request) ;
     ResponseGlobalDto<Boolean> delete(DR request) throws Exception;
     ResponseGlobalDto<Boolean> deletes(List<DR> request);
 }

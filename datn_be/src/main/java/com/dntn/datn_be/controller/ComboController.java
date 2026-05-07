@@ -73,7 +73,7 @@ public class ComboController {
      * @return Updated combo
      */
     @PutMapping
-    public ResponseGlobalDto<Combo> update(@RequestBody ComboUpdateRequest request) {
+    public ResponseGlobalDto<Combo> update(@RequestBody ComboUpdateRequest request) throws IOException {
         return comboService.update(request);
     }
 

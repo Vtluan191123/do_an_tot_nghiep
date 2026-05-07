@@ -6,8 +6,12 @@ import com.dntn.datn_be.dto.request.AiTrainingAnswerFilterRequest;
 import com.dntn.datn_be.dto.request.AiTrainingAnswerUpdateRequest;
 import com.dntn.datn_be.dto.response.*;
 import com.dntn.datn_be.model.AiTrainingAnswer;
+import com.dntn.datn_be.model.AiTrainingQuestion;
 import com.dntn.datn_be.repository.AiTrainingAnswerRepository;
+import com.dntn.datn_be.repository.AiTrainingQuestionRepository;
 import com.dntn.datn_be.service.AiTrainingAnswerService;
+import com.dntn.datn_be.service.AiTrainingQuestionService;
+import com.dntn.datn_be.service.UploadFileService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,17 +30,41 @@ import java.util.stream.Collectors;
 public class AiTrainingAnswerServiceImpl implements AiTrainingAnswerService {
 
     private final AiTrainingAnswerRepository aiTrainingAnswerRepository;
+    private final AiTrainingQuestionRepository aiTrainingQuestionRepository;
+    private final UploadFileService uploadFileService;
 
     @Override
-    public ResponseGlobalDto<AiTrainingAnswer> create(AiTrainingAnswerCreateRequest request) throws IOException {
+    @Transactional
+    public ResponseGlobalDto<AiTrainingAnswer> create(AiTrainingAnswerCreateRequest request)  {
+        // ===== Upload image if type is image =====
+        String imageUrl = null;
+        if ("image".equals(request.getType()) && request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+            // Upload MultipartFile
+            try {
+                List<String> uploadedFiles = this.uploadFileService.uploads(List.of(request.getImageFile()));
+                if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
+                    imageUrl = uploadedFiles.get(0); // Get first uploaded file path
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         AiTrainingAnswer answer = AiTrainingAnswer.builder()
                 .questionId(request.getQuestionId())
                 .type(request.getType())
                 .content(request.getContent())
                 .position(request.getPosition() != null ? request.getPosition() : 0)
+                .imageUrl(imageUrl)
                 .build();
 
         aiTrainingAnswerRepository.save(answer);
+
+        // ===== Update Question Status to 1 (Has Answer) =====
+        AiTrainingQuestion question = aiTrainingQuestionRepository.findById(request.getQuestionId())
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+        question.setStatus(1); // 1 = has answer
+        aiTrainingQuestionRepository.save(question);
 
         return ResponseGlobalDto.<AiTrainingAnswer>builder()
                 .status(HttpStatus.CREATED.value())
@@ -73,7 +101,8 @@ public class AiTrainingAnswerServiceImpl implements AiTrainingAnswerService {
     }
 
     @Override
-    public ResponseGlobalDto<AiTrainingAnswer> update(AiTrainingAnswerUpdateRequest request) {
+    @Transactional
+    public ResponseGlobalDto<AiTrainingAnswer> update(AiTrainingAnswerUpdateRequest request)  {
         AiTrainingAnswer answer = aiTrainingAnswerRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("AI training answer not found"));
 
@@ -82,7 +111,31 @@ public class AiTrainingAnswerServiceImpl implements AiTrainingAnswerService {
         answer.setContent(request.getContent());
         answer.setPosition(request.getPosition());
 
+        // ===== Handle image upload if type is image =====
+        if ("image".equals(request.getType())) {
+            // If new image is provided, upload it
+            if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+                try {
+                    List<String> uploadedFiles = this.uploadFileService.uploads(List.of(request.getImageFile()));
+                    if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
+                        answer.setImageUrl(uploadedFiles.get(0)); // Get first uploaded file path
+                    }
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            // If type is text, clear image
+            answer.setImageUrl(null);
+        }
+
         aiTrainingAnswerRepository.save(answer);
+
+        // ===== Update Question Status to 1 (Has Answer) =====
+        AiTrainingQuestion question = aiTrainingQuestionRepository.findById(request.getQuestionId())
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+        question.setStatus(1); // 1 = has answer
+        aiTrainingQuestionRepository.save(question);
 
         return ResponseGlobalDto.<AiTrainingAnswer>builder()
                 .status(HttpStatus.OK.value())

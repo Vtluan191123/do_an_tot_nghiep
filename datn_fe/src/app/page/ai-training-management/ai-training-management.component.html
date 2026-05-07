@@ -173,8 +173,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Tìm theo nội dung"
-                  [(ngModel)]="searchQuestionContent">
+                  placeholder="Tìm theo mã chủ đề"
+                  [(ngModel)]="searchQuestionTopicCode">
               </div>
               <div class="col-md-3 mb-3">
                 <select class="form-control" [(ngModel)]="searchQuestionStatus">
@@ -184,10 +184,6 @@
                 </select>
               </div>
               <div class="col-md-3 mb-3">
-                <select class="form-control" [(ngModel)]="searchQuestionTopicId">
-                  <option [value]="null">Tất cả chủ đề</option>
-                  <option *ngFor="let topic of topics" [value]="topic.id">{{ topic.topicName }}</option>
-                </select>
               </div>
               <div class="col-md-3 mb-3">
                 <button class="btn btn-info w-100" (click)="onSearchQuestion()">
@@ -213,6 +209,7 @@
               <thead class="table-dark">
                 <tr>
                   <th>#</th>
+                  <th>ID</th>
                   <th>Chủ Đề</th>
                   <th>Nội Dung</th>
                   <th>Trạng Thái</th>
@@ -223,6 +220,7 @@
               <tbody>
                 <tr *ngFor="let question of questions; let i = index">
                   <td>{{ (currentPage * pageSize) + i + 1 }}</td>
+                  <td><span class="badge bg-primary">{{ question.id }}</span></td>
                   <td><span class="badge bg-secondary">{{ getTopicName(question.topicId) }}</span></td>
                   <td>{{ getQuestionContent(question.id) }}</td>
                   <td>
@@ -288,6 +286,28 @@
             </button>
           </div>
 
+          <!-- Search and Filter Section -->
+          <div class="search-filter mb-4 p-3 bg-light rounded">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <input
+                  type="number"
+                  class="form-control"
+                  placeholder="Tìm theo ID câu hỏi"
+                  [(ngModel)]="searchAnswerQuestionId"
+                  min="0">
+              </div>
+              <div class="col-md-6 mb-3">
+                <button class="btn btn-info w-100" (click)="onSearchAnswer()">
+                  <i class="fa fa-search"></i> Tìm Kiếm
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-secondary" (click)="onResetAnswer()">
+              <i class="fa fa-redo"></i> Reset
+            </button>
+          </div>
+
           <!-- Loading Indicator -->
           <div *ngIf="isLoading" class="text-center">
             <div class="spinner-border" role="status">
@@ -305,6 +325,7 @@
                   <th>Loại</th>
                   <th>Vị Trí</th>
                   <th>Nội Dung</th>
+                  <th class="text-center">Ảnh</th>
                   <th>Ngày Tạo</th>
                   <th>Hành Động</th>
                 </tr>
@@ -318,7 +339,22 @@
                     <span *ngIf="answer.type === 'image'" class="badge bg-warning">Image</span>
                   </td>
                   <td>{{ answer.position }}</td>
-                  <td>{{ answer.content.length > 50 ? answer.content.substring(0, 50) + '...' : answer.content }}</td>
+                  <td>{{
+                      answer.type === 'text'
+                        ? (answer.content.length > 30
+                          ? answer.content.substring(0, 30) + '...'
+                          : answer.content)
+                        : ''
+                    }}</td>
+                  <td style="text-align: center;">
+                    <img
+                      *ngIf="answer.imageUrl"
+                      [src]="BASE_URL_UPLOAD + answer.imageUrl"
+                      alt="User Avatar"
+                      class="img-thumbnail"
+                      style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                    <span *ngIf="!answer.imageUrl" class="text-muted" style="font-size: 13px;">-</span>
+                  </td>
                   <td>{{ answer.createdAt | date: 'short' }}</td>
                   <td>
                     <button class="btn btn-sm btn-warning me-2" (click)="openAnswerForm(answer)">
@@ -462,22 +498,23 @@
     </div>
     <div class="modal-body">
       <div class="form-group mb-3">
-        <label>Câu Hỏi <span class="text-danger">*</span></label>
-        <select
+        <label>ID Câu Hỏi <span class="text-danger">*</span></label>
+        <input
+          type="number"
           class="form-control"
-          [(ngModel)]="answerFormData.questionId">
-          <option value="">Chọn câu hỏi</option>
-          <option *ngFor="let question of questions" [value]="question.id">{{ question.content.substring(0, 40) }}...</option>
-        </select>
+          [(ngModel)]="answerFormData.questionId"
+          placeholder="Nhập ID câu hỏi"
+          min="1">
       </div>
       <div class="form-group mb-3">
         <label>Loại <span class="text-danger">*</span></label>
-        <select class="form-control" [(ngModel)]="answerFormData.type">
+        <select class="form-control" [(ngModel)]="answerFormData.type" (change)="onAnswerTypeChange(answerFormData.type)">
           <option value="text">Text</option>
           <option value="image">Image</option>
         </select>
       </div>
-      <div class="form-group mb-3">
+      <!-- Nội Dung - Chỉ hiển thị khi type = "text" -->
+      <div *ngIf="answerFormData.type === 'text'" class="form-group mb-3">
         <label>Nội Dung <span class="text-danger">*</span></label>
         <textarea
           class="form-control"
@@ -485,6 +522,7 @@
           [(ngModel)]="answerFormData.content"
           placeholder="Nhập nội dung câu trả lời"></textarea>
       </div>
+      <!-- Vị Trí -->
       <div class="form-group mb-3">
         <label>Vị Trí</label>
         <input
@@ -492,6 +530,31 @@
           class="form-control"
           [(ngModel)]="answerFormData.position"
           placeholder="Nhập vị trí">
+      </div>
+      <!-- Upload Image - Chỉ hiển thị khi type = "image" -->
+      <div *ngIf="answerFormData.type === 'image'" class="form-group mb-3">
+        <label>Upload Ảnh</label>
+        <div class="input-group">
+          <input
+            type="file"
+            class="form-control"
+            accept="image/*"
+            (change)="onAnswerImageSelected($event)">
+        </div>
+        <small class="text-muted">Chỉ hỗ trợ file ảnh (jpg, png, gif, ...)</small>
+      </div>
+      <div *ngIf="answerFormData.type === 'image' && answerImagePreview" class="form-group mb-3">
+        <label>Xem Trước Ảnh</label>
+        <div class="position-relative">
+          <img [src]="answerImagePreview" class="img-thumbnail" style="max-width: 300px; max-height: 200px;">
+          <button
+            type="button"
+            class="btn btn-sm btn-danger position-absolute top-0 end-0"
+            (click)="removeAnswerImage()"
+            style="margin: 5px;">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">

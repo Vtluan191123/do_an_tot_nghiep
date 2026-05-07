@@ -48,7 +48,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public ResponseGlobalDto<BaseMongoMessage> create(MessageRequest request) throws IOException {
+    public ResponseGlobalDto<BaseMongoMessage> create(MessageRequest request) {
         BaseMongoMessage message = null;
         try {
             MessageDetailDto messageDetailDto = handleMessage(request.getMessageDetailRequest());
@@ -89,7 +89,7 @@ public class MessageServiceImpl implements MessageService {
 
             Users usersReceiver = null;
             Users usersSend = null;
-            
+
             // Try to get users for notification
             if (userReceiverId != null) {
                 try {

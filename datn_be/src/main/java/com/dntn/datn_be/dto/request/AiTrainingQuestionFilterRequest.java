@@ -15,6 +15,8 @@ public class AiTrainingQuestionFilterRequest extends BaseFilterRequest {
 
     private Long topicId;
 
+    private String code; // Filter by topic code
+
     private String content;
 
     private Integer status;

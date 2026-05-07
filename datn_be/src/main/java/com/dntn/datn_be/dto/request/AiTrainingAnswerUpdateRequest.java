@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -20,5 +21,7 @@ public class AiTrainingAnswerUpdateRequest {
     private String content;
 
     private Integer position;
+
+    private MultipartFile imageFile; // Thay thế imageUrl
 }
 

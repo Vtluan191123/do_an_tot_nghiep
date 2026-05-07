@@ -61,7 +61,7 @@ public class AiTrainingQuestionController {
      * @return Updated question
      */
     @PutMapping
-    public ResponseGlobalDto<AiTrainingQuestion> update(@RequestBody AiTrainingQuestionUpdateRequest request) {
+    public ResponseGlobalDto<AiTrainingQuestion> update(@RequestBody AiTrainingQuestionUpdateRequest request) throws IOException {
         return aiTrainingQuestionService.update(request);
     }
 

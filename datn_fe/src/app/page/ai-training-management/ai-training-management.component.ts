@@ -7,6 +7,7 @@ import { AiTrainingAnswerService } from '../../service/ai-training/ai-training-a
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import {BASE_URL_UPLOAD} from '../../constants/constants';
 
 interface Topic {
   id?: number;
@@ -32,6 +33,7 @@ interface Answer {
   type: string; // text or image
   content: string;
   position?: number;
+  imageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -78,9 +80,13 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
 
   searchTopicName = '';
   searchTopicCode = '';
-  searchQuestionContent = '';
+  searchQuestionTopicCode = '';
   searchQuestionStatus = '';
-  searchQuestionTopicId: number | null = null;
+  searchAnswerQuestionId: number | null = null;
+
+  // File upload for Answer
+  selectedAnswerImage: File | null = null;
+  answerImagePreview: string | null = null;
 
   isLoading = false;
 
@@ -232,8 +238,7 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   loadQuestions(): void {
     this.isLoading = true;
     const filter = {
-      topicId: this.searchQuestionTopicId,
-      content: this.searchQuestionContent,
+      code: this.searchQuestionTopicCode,
       status: this.searchQuestionStatus ? parseInt(this.searchQuestionStatus) : null,
       page: this.currentPage,
       size: this.pageSize
@@ -343,11 +348,21 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   }
 
   onResetQuestion(): void {
-    this.searchQuestionContent = '';
+    this.searchQuestionTopicCode = '';
     this.searchQuestionStatus = '';
-    this.searchQuestionTopicId = null;
     this.currentPage = 0;
     this.loadQuestions();
+  }
+
+  onSearchAnswer(): void {
+    this.currentPage = 0;
+    this.loadAnswers();
+  }
+
+  onResetAnswer(): void {
+    this.searchAnswerQuestionId = null;
+    this.currentPage = 0;
+    this.loadAnswers();
   }
 
   // ============================
@@ -357,6 +372,7 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   loadAnswers(): void {
     this.isLoading = true;
     const filter = {
+      questionId: this.searchAnswerQuestionId,
       page: this.currentPage,
       size: this.pageSize
     };
@@ -384,10 +400,17 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
       this.isEditingAnswer = true;
       this.selectedAnswer = answer;
       this.answerFormData = { ...answer };
+      // Load existing image if available and type is image
+      if (answer.imageUrl && answer.type === 'image') {
+        this.answerImagePreview = answer.imageUrl;
+      } else {
+        this.removeAnswerImage();
+      }
     } else {
       this.isEditingAnswer = false;
       this.selectedAnswer = null;
       this.answerFormData = { questionId: 0, type: 'text', content: '', position: 0 };
+      this.removeAnswerImage();
     }
   }
 
@@ -396,43 +419,117 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
     this.isEditingAnswer = false;
     this.selectedAnswer = null;
     this.answerFormData = { questionId: 0, type: 'text', content: '', position: 0 };
+    this.removeAnswerImage();
+  }
+
+  // ===== Handle Answer Type Change =====
+  onAnswerTypeChange(type: string): void {
+    if (type === 'text') {
+      // Clear image when switching to text type
+      this.removeAnswerImage();
+      this.answerFormData.imageUrl = '';
+    } else if (type === 'image') {
+      // Clear content when switching to image type
+      this.answerFormData.content = '';
+    }
   }
 
   saveAnswerData(): void {
-    if (!this.answerFormData.questionId || !this.answerFormData.content || !this.answerFormData.type) {
+    // Validate required fields based on type
+    if (!this.answerFormData.questionId || !this.answerFormData.type) {
       this.toastr.warning('Vui lòng điền tất cả các trường bắt buộc');
       return;
     }
 
-    if (this.isEditingAnswer && this.answerFormData.id) {
-      this.aiTrainingAnswerService.updateAnswer(this.answerFormData)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.toastr.success('Cập nhật câu trả lời thành công');
-            this.closeAnswerForm();
-            this.loadAnswers();
-          },
-          error: (error) => {
-            console.error('Error updating answer:', error);
-            this.toastr.error('Lỗi cập nhật câu trả lời');
-          }
-        });
-    } else {
-      this.aiTrainingAnswerService.createAnswer(this.answerFormData)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.toastr.success('Thêm câu trả lời thành công');
-            this.closeAnswerForm();
-            this.loadAnswers();
-          },
-          error: (error) => {
-            console.error('Error creating answer:', error);
-            this.toastr.error('Lỗi thêm câu trả lời');
-          }
-        });
+    // Content is required only for text type
+    if (this.answerFormData.type === 'text' && !this.answerFormData.content) {
+      this.toastr.warning('Vui lòng nhập nội dung');
+      return;
     }
+
+    // Image is required for image type
+    if (this.answerFormData.type === 'image' && !this.selectedAnswerImage && !this.answerFormData.imageUrl) {
+      this.toastr.warning('Vui lòng upload ảnh');
+      return;
+    }
+
+    if (this.isEditingAnswer && this.answerFormData.id) {
+      this.performUpdateAnswer();
+    } else {
+      this.performCreateAnswer();
+    }
+  }
+
+  private performCreateAnswer(): void {
+    const formData = new FormData();
+
+    // Tạo object request
+    const answerRequest = {
+      questionId: this.answerFormData.questionId,
+      type: this.answerFormData.type,
+      content: this.answerFormData.content || '',
+      position: this.answerFormData.position || 0
+    };
+
+    // Gửi object dưới dạng JSON
+    formData.append(
+      'anwser',
+      new Blob([JSON.stringify(answerRequest)], {
+        type: 'application/json'
+      })
+    );
+
+    // Gửi file
+    if (this.answerFormData.type === 'image' && this.selectedAnswerImage) {
+      formData.append('files', this.selectedAnswerImage);
+    }
+
+    this.aiTrainingAnswerService.createAnswer(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Thêm câu trả lời thành công');
+          this.closeAnswerForm();
+          this.loadAnswers();
+        },
+        error: (error) => {
+          console.error('Error creating answer:', error);
+          this.toastr.error('Lỗi thêm câu trả lời');
+        }
+      });
+  }
+
+  private performUpdateAnswer(): void {
+    // Create FormData
+    const formData = new FormData();
+    formData.append('id', this.answerFormData.id!.toString());
+    formData.append('questionId', this.answerFormData.questionId.toString());
+    formData.append('type', this.answerFormData.type);
+
+    if (this.answerFormData.type === 'text') {
+      formData.append('content', this.answerFormData.content || '');
+    }
+
+    formData.append('position', (this.answerFormData.position || 0).toString());
+
+    // Thêm file nếu type = image
+    if (this.answerFormData.type === 'image' && this.selectedAnswerImage) {
+      formData.append('imageFile', this.selectedAnswerImage);
+    }
+
+    this.aiTrainingAnswerService.updateAnswer(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Cập nhật câu trả lời thành công');
+          this.closeAnswerForm();
+          this.loadAnswers();
+        },
+        error: (error) => {
+          console.error('Error updating answer:', error);
+          this.toastr.error('Lỗi cập nhật câu trả lời');
+        }
+      });
   }
 
   deleteAnswerData(id?: number): void {
@@ -459,7 +556,48 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ===== Pagination =====
+  // ===== File Upload Handlers for Answer =====
+
+  onAnswerImageSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedAnswerImage = file;
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.answerImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeAnswerImage(): void {
+    this.selectedAnswerImage = null;
+    this.answerImagePreview = null;
+    this.answerFormData.imageUrl = '';
+  }
+
+  async uploadAnswerImage(): Promise<string | null> {
+    if (!this.selectedAnswerImage) {
+      return null;
+    }
+
+    try {
+      const reader = new FileReader();
+      return new Promise((resolve) => {
+        reader.onload = (e: any) => {
+          resolve(e.target.result);
+        };
+        reader.readAsDataURL(this.selectedAnswerImage!);
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      this.toastr.error('Lỗi upload ảnh');
+      return null;
+    }
+  }
+
 
   nextPage(): void {
     if (this.currentPage < this.totalPages - 1) {
@@ -539,5 +677,7 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   getStatusLabel(status: number): string {
     return status === 0 ? 'Chưa có câu trả lời' : 'Có câu trả lời';
   }
+
+  protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
 }
 
