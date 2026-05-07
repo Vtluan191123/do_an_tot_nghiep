@@ -7,4 +7,5 @@ public interface AiTrainingProjection {
     String getAnswer();
     String getType();
     Integer getPosition();
+    String getImageUrl();
 }

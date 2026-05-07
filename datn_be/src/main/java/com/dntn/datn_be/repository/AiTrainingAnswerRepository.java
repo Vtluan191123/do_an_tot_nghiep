@@ -19,10 +19,11 @@ public interface AiTrainingAnswerRepository extends JpaRepository<AiTrainingAnsw
         atq.content AS question,
         ata.content AS answer,
         ata.type AS type,
-        ata.position AS position
+        ata.position AS position,
+        ata.image_url AS imageUrl
     FROM ai_training_answer ata
-    JOIN ai_training_question atq ON ata.question_id = atq.id
-    JOIN ai_training_topic att ON atq.topic_id = att.id
+    right JOIN ai_training_question atq ON ata.question_id = atq.id
+    right JOIN ai_training_topic att ON atq.topic_id = att.id
     ORDER BY att.code, atq.content, ata.position
 """, nativeQuery = true)
     List<AiTrainingProjection> getAllTrainingData();

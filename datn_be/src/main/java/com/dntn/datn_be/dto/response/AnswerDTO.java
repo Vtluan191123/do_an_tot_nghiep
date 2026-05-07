@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AnswerDTO {
     private String answer;
+    private String imageUrl;
     private String type;
     private Integer position;
 }

@@ -197,6 +197,7 @@ public class AiTrainingAnswerServiceImpl implements AiTrainingAnswerService {
                                         .answer(a.getAnswer())
                                         .type(a.getType())
                                         .position(a.getPosition())
+                                        .imageUrl(a.getImageUrl())
                                         .build())
                                 .sorted(Comparator.comparing(AnswerDTO::getPosition))
                                 .toList();
