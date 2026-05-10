@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -184,30 +185,40 @@ public class AiTrainingAnswerServiceImpl implements AiTrainingAnswerService {
             // GROUP LEVEL 2: Question
             Map<String, List<AiTrainingProjection>> questionGroup = topicList.stream()
                     .collect(Collectors.groupingBy(
-                            AiTrainingProjection::getQuestion,
+                            x -> x.getQuestion() == null ? "" : x.getQuestion(),
                             LinkedHashMap::new,
                             Collectors.toList()
                     ));
 
-            List<QuestionChildDTO> questions = questionGroup.values().stream()
-                    .map(qList -> {
+            // If topic has no questions, set empty list
+            List<QuestionChildDTO> questions;
+            if (questionGroup.size() == 1 && questionGroup.containsKey("")) {
+                questions = new ArrayList<>();  // Empty list if no questions
+            } else {
+                questions = questionGroup.values().stream()
+                        .map(qList -> {
 
-                        List<AnswerDTO> answers = qList.stream()
-                                .map(a -> AnswerDTO.builder()
-                                        .answer(a.getAnswer())
-                                        .type(a.getType())
-                                        .position(a.getPosition())
-                                        .imageUrl(a.getImageUrl())
-                                        .build())
-                                .sorted(Comparator.comparing(AnswerDTO::getPosition))
-                                .toList();
+                            List<AnswerDTO> answers = qList.stream()
+                                    .map(a -> AnswerDTO.builder()
+                                            .answer(a.getAnswer())
+                                            .type(a.getType())
+                                            .position(a.getPosition())
+                                            .imageUrl(a.getImageUrl())
+                                            .build())
+                                    .sorted(Comparator.comparing(AnswerDTO::getPosition))
+                                    .toList();
 
-                        return QuestionChildDTO.builder()
-                                .question(qList.get(0).getQuestion())
-                                .answers(answers)
-                                .build();
-                    })
-                    .toList();
+                            // Set isTraining = true if question has answers
+                            boolean hasAnswers = !answers.isEmpty();
+
+                            return QuestionChildDTO.builder()
+                                    .question(qList.get(0).getQuestion())
+                                    .answers(answers)
+                                    .isTraining(hasAnswers)  // Set true if answers exist
+                                    .build();
+                        })
+                        .toList();
+            }
 
             return TopicDTO.builder()
                     .code(firstTopic.getCode())

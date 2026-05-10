@@ -37,20 +37,105 @@
 
     <!-- Messages -->
     <div class="messages" role="log" aria-live="polite">
-      <div *ngFor="let msg of messages" role="article">
-        {{ msg }}
+      <ng-container *ngFor="let msg of messages">
+        <!-- User Message -->
+        <div *ngIf="msg.type === 'user'" class="message user-message" role="article">
+          <strong>You:</strong> {{ msg.user }}
+        </div>
+
+        <!-- AI Training Message -->
+        <div *ngIf="msg.type === 'ai-training' && msg.aiTraining" class="message ai-training-message" role="article">
+          <div class="answers" *ngIf="msg.aiTraining.answer && msg.aiTraining.answer.length > 0">
+            <div *ngFor="let answer of msg.aiTraining.answer" class="answer-item">
+              <!-- Image Type Answer -->
+              <div *ngIf="answer.type === 'image'" class="answer-image-container">
+                <img
+                  [src]="BASE_URL_UPLOAD + answer.content"
+                  alt="Answer image"
+                  class="answer-image"
+                  (click)="openImageModal(BASE_URL_UPLOAD + answer.content)"
+                  (error)="onImageError($event)"
+                />
+              </div>
+
+              <!-- Text Type Answer -->
+              <div *ngIf="answer.type !== 'image'" class="answer-text-container">
+                <span class="answer-content">{{ answer.content }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-answers" *ngIf="!msg.aiTraining.answer || msg.aiTraining.answer.length === 0">
+            <em>No answers available</em>
+          </div>
+
+          <small class="message-time">{{ msg.timestamp | date: 'short' }}</small>
+        </div>
+
+        <!-- AI Text Message -->
+        <div *ngIf="msg.type === 'ai-text'" class="message ai-text-message" role="article">
+          <strong>AI:</strong> {{ msg.aiText }}
+        </div>
+      </ng-container>
+
+      <!-- Loading Indicator -->
+      <div *ngIf="isLoading" class="message loading-message" role="status" aria-live="polite">
+        <div class="loading-spinner">
+          <span class="dot dot1"></span>
+          <span class="dot dot2"></span>
+          <span class="dot dot3"></span>
+        </div>
+        <span class="loading-text">AI đang xử lý...</span>
       </div>
     </div>
 
     <!-- Input -->
-    <input
-      [(ngModel)]="input"
-      (keyup.enter)="send()"
-      type="text"
-      placeholder="Nhập câu hỏi..."
-      aria-label="Nhập tin nhắn"
-      role="textbox"
-    />
+    <div class="input-container">
+      <input
+        [(ngModel)]="input"
+        (keyup.enter)="send()"
+        type="text"
+        placeholder="Nhập câu hỏi..."
+        aria-label="Nhập tin nhắn"
+        role="textbox"
+        [disabled]="isLoading"
+        [attr.aria-busy]="isLoading"
+      />
+      <button
+        class="new-session-btn"
+        (click)="openNewSessionDialog()"
+        title="Tạo phiên làm việc mới"
+        aria-label="Tạo phiên làm việc mới"
+      >
+        ➕
+      </button>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div *ngIf="selectedImage" class="image-modal" (click)="closeImageModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeImageModal()" aria-label="Close modal">✕</button>
+      <img [src]="selectedImage" alt="Full view" class="modal-image" />
+    </div>
+  </div>
+
+  <!-- New Session Dialog -->
+  <div *ngIf="showNewSessionDialog" class="confirmation-dialog-overlay" (click)="cancelNewSession()">
+    <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>Tạo Phiên Làm Việc Mới</h3>
+        <button class="dialog-close" (click)="cancelNewSession()" aria-label="Close">✕</button>
+      </div>
+      <div class="dialog-body">
+        <p>Bạn có muốn tạo một phiên làm việc mới với AI không?</p>
+        <p class="dialog-hint">Phiên làm việc hiện tại sẽ được lưu lại.</p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-cancel" (click)="cancelNewSession()">Hủy</button>
+        <button class="btn-confirm" (click)="confirmNewSession()">Tạo Phiên Mới</button>
+      </div>
+    </div>
   </div>
 
 </div>

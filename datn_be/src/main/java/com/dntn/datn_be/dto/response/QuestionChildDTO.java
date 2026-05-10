@@ -10,4 +10,5 @@ import java.util.List;
 public class QuestionChildDTO {
     private String question;
     private List<AnswerDTO> answers;
+    private boolean isTraining;
 }

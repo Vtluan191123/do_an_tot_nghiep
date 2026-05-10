@@ -546,7 +546,7 @@
       <div *ngIf="answerFormData.type === 'image' && answerImagePreview" class="form-group mb-3">
         <label>Xem Trước Ảnh</label>
         <div class="position-relative">
-          <img [src]="answerImagePreview" class="img-thumbnail" style="max-width: 300px; max-height: 200px;">
+          <img [src]="BASE_URL_UPLOAD + answerImagePreview" class="img-thumbnail" style="max-width: 300px; max-height: 200px;">
           <button
             type="button"
             class="btn btn-sm btn-danger position-absolute top-0 end-0"
