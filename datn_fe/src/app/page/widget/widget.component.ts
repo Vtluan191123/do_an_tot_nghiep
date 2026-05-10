@@ -17,6 +17,7 @@ export interface AiTrainingDto {
 
 export interface AnswerItemDto {
   content: string;
+  imageUrl: string;
   isCorrect: boolean;
   type?: string;
 }
@@ -36,8 +37,7 @@ export interface DisplayMessage {
     FormsModule,
     NgForOf,
     NgIf,
-    CommonModule,
-    HttpClientModule
+    CommonModule
   ],
   templateUrl: './widget.component.html',
   styleUrl: './widget.component.scss'

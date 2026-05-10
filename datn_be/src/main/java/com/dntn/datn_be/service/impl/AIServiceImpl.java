@@ -2,17 +2,18 @@ package com.dntn.datn_be.service.impl;
 
 import com.dntn.datn_be.dto.common.ResponseGlobalDto;
 import com.dntn.datn_be.dto.response.AiTrainingDto;
+import com.dntn.datn_be.dto.response.UserEnrolledSubjectDetailResponse;
+import com.dntn.datn_be.dto.response.UserScheduledTimeSlotResponse;
 import com.dntn.datn_be.gemini.client.GeminiApiClient;
 import com.dntn.datn_be.gemini.config.GeminiAIProperties;
 import com.dntn.datn_be.model.AiSessionHistory;
 import com.dntn.datn_be.model.AiTrainingQuestion;
 import com.dntn.datn_be.model.AiTrainingTopic;
+import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.repository.AiSessionHistoryRepository;
 import com.dntn.datn_be.repository.AiTrainingQuestionRepository;
 import com.dntn.datn_be.repository.AiTrainingTopicRepository;
-import com.dntn.datn_be.service.AIService;
-import com.dntn.datn_be.service.AiTrainingAnswerService;
-import com.dntn.datn_be.service.WebSocketService;
+import com.dntn.datn_be.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,8 @@ public class AIServiceImpl implements AIService {
     private final WebSocketService webSocketService;
     private final AiTrainingAnswerService aiTrainingAnswerService;
     private final AiSessionHistoryRepository aiSessionHistoryRepository;
+    private final UserSubjectEnrollmentService userSubjectEnrollmentService;
+    private final AuthService authService;
 
 
 
@@ -175,6 +178,25 @@ public class AIServiceImpl implements AIService {
                 }
             }
 
+
+            //Thống kê các môn đã đăng ký
+
+            Users currentUser  = authService.getCurrentUser();
+            List<UserEnrolledSubjectDetailResponse> userEnrolledSubjectDetailResponses =
+                    userSubjectEnrollmentService.getUserEnrolledSubjects(currentUser.getId()).getData();
+            if(!userEnrolledSubjectDetailResponses.isEmpty()){
+                dataTraining = dataTraining +
+                        "-Đây là các môn học mà client đã đăng ký, " + userEnrolledSubjectDetailResponses.toString();
+            }
+
+            // Thống kê các lịch đã book
+
+            List<UserScheduledTimeSlotResponse> userScheduledTimeSlotResponses =
+                    userSubjectEnrollmentService.getUserScheduledTimeSlots(currentUser.getId()).getData();
+            if(!userScheduledTimeSlotResponses.isEmpty()){
+                dataTraining = dataTraining +
+                        "-Đây là các lịch mà client đã đặt lịch, " + userScheduledTimeSlotResponses.toString();
+            }
 
             return dataTraining + "Đây là câu hỏi của client:" + prompt;
         }catch (Exception e){

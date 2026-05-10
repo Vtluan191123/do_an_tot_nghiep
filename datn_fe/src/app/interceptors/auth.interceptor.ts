@@ -108,7 +108,6 @@ function addTokenToRequest(req: any, token: string | null): any {
   if (!token) {
     return req;
   }
-
   return req.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`

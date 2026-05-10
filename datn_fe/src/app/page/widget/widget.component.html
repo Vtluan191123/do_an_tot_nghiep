@@ -50,10 +50,10 @@
               <!-- Image Type Answer -->
               <div *ngIf="answer.type === 'image'" class="answer-image-container">
                 <img
-                  [src]="BASE_URL_UPLOAD + answer.content"
+                  [src]="BASE_URL_UPLOAD + answer.imageUrl"
                   alt="Answer image"
                   class="answer-image"
-                  (click)="openImageModal(BASE_URL_UPLOAD + answer.content)"
+                  (click)="openImageModal(BASE_URL_UPLOAD + answer.imageUrl)"
                   (error)="onImageError($event)"
                 />
               </div>
