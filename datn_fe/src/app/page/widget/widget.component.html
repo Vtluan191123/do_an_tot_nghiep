@@ -19,20 +19,39 @@
   <div
     class="chat-panel"
     *ngIf="isOpen"
+    [class.maximized]="isMaximized"
     role="dialog"
     aria-label="AI Support Chat"
   >
     <!-- Header -->
     <div class="header">
       <span>AI Support 🚀</span>
-      <span
-        class="close"
-        (click)="toggle($event)"
-        role="button"
-        tabindex="0"
-        title="Đóng chat"
-        aria-label="Đóng chat"
-      >✖</span>
+      <div class="header-actions">
+        <span
+          class="maximize-btn"
+          (click)="toggleMaximize($event)"
+          role="button"
+          tabindex="0"
+          [title]="isMaximized ? 'Thu nhỏ chat' : 'Phóng to chat'"
+          [attr.aria-label]="isMaximized ? 'Thu nhỏ chat' : 'Phóng to chat'"
+        >{{ isMaximized ? '⊞' : '⊡' }}</span>
+        <span
+          class="collapse-btn"
+          (click)="collapseChat($event)"
+          role="button"
+          tabindex="0"
+          title="Ẩn chat"
+          aria-label="Ẩn chat"
+        >−</span>
+        <span
+          class="close"
+          (click)="closeSessionWithConfirm($event)"
+          role="button"
+          tabindex="0"
+          title="Đóng session"
+          aria-label="Đóng session"
+        >✖</span>
+      </div>
     </div>
 
     <!-- Messages -->
@@ -134,6 +153,24 @@
       <div class="dialog-footer">
         <button class="btn-cancel" (click)="cancelNewSession()">Hủy</button>
         <button class="btn-confirm" (click)="confirmNewSession()">Tạo Phiên Mới</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Close Session Dialog -->
+  <div *ngIf="showCloseSessionDialog" class="confirmation-dialog-overlay" (click)="cancelCloseSession()">
+    <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>Đóng Phiên Làm Việc</h3>
+        <button class="dialog-close" (click)="cancelCloseSession()" aria-label="Close">✕</button>
+      </div>
+      <div class="dialog-body">
+        <p>Bạn có muốn đóng phiên làm việc hiện tại không?</p>
+        <p class="dialog-hint">Phiên làm việc sẽ được xóa khỏi hệ thống.</p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-cancel" (click)="cancelCloseSession()">Hủy</button>
+        <button class="btn-confirm" (click)="confirmCloseSession()">Đóng Phiên</button>
       </div>
     </div>
   </div>

@@ -92,9 +92,11 @@ public class AIServiceImpl implements AIService {
 
         //send socket to frontend
         try {
-            String topic = "ai-response";
+            String topic = StringUtils.hasText(sessionId) ? 
+                    String.format("ai-response:%s", sessionId) : 
+                    "ai-response";
             webSocketService.sendMessage(topic, aiTrainingDto, null);
-            log.info("[AI_RESPONSE] Sent AI response to WebSocket topic: {}", topic);
+            log.info("[AI_RESPONSE] Sent AI response to WebSocket topic: {} for sessionId: {}", topic, sessionId);
         } catch (Exception ex) {
             log.error("[AI_RESPONSE] Failed to send message to WebSocket: {}", ex.getMessage());
             // Continue execution even if WebSocket fails
@@ -163,43 +165,63 @@ public class AIServiceImpl implements AIService {
             );
             String dataTraining = Files.readString(path, StandardCharsets.UTF_8);
 
-            //get data
-            dataTraining = dataTraining+
-                    "-Đây là data training để bạn dựa vào đây để trả lời, bao gồm chủ đề , các câu hỏi tương ứng chủ đề và các câu trả lời có position."
-                    + aiTrainingAnswerService.getData().toString() ;
-
             //get history
             Optional<AiSessionHistory> sessionOpt = aiSessionHistoryRepository.findBySessionId(sessionId);
             if (sessionOpt.isPresent()) {
                 AiSessionHistory session = sessionOpt.get();
                 if (StringUtils.hasText(session.getMetadata())) {
-                    dataTraining = dataTraining +
-                    "-Đây là lịch sử hội thoại giữa client và AI, bạn có thể dựa vào đây để hiểu hơn về ngữ cảnh của client:" + session.getMetadata();
+                    dataTraining = dataTraining + "\n- Đây là lịch sử hội thoại giữa client và AI, bạn có thể dựa vào đây để hiểu hơn về ngữ cảnh của client:\n"
+                            + session.getMetadata();
                 }
             }
 
-
             //Thống kê các môn đã đăng ký
-
             Users currentUser  = authService.getCurrentUser();
             List<UserEnrolledSubjectDetailResponse> userEnrolledSubjectDetailResponses =
                     userSubjectEnrollmentService.getUserEnrolledSubjects(currentUser.getId()).getData();
-            if(!userEnrolledSubjectDetailResponses.isEmpty()){
-                dataTraining = dataTraining +
-                        "-Đây là các môn học mà client đã đăng ký, " + userEnrolledSubjectDetailResponses.toString();
+            try {
+                String enrolledSubjectsData = objectMapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(userEnrolledSubjectDetailResponses);
+                dataTraining = dataTraining + "\n- Đây là các môn học mà client đã đăng ký:\n"
+                        + (userEnrolledSubjectDetailResponses.isEmpty() ? "Người dùng chưa đăng ký môn học nào"  : enrolledSubjectsData);
+            } catch (JsonProcessingException e) {
+                log.error("[BuildPrompt] Error formatting enrolled subjects with ObjectMapper: {}", e.getMessage());
+                dataTraining = dataTraining + "\n- Đây là các môn học mà client đã đăng ký:\n"
+                        + userEnrolledSubjectDetailResponses.toString();
             }
 
-            // Thống kê các lịch đã book
+            //get data - format với ObjectMapper để dễ đọc
+            try {
+                String trainingData = objectMapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(aiTrainingAnswerService.getData());
+                dataTraining = dataTraining + "\n- Đây là data training để bạn dựa vào đây để trả lời, bao gồm chủ đề, các câu hỏi tương ứng chủ đề và các câu trả lời có position:\n"
+                        + trainingData;
+            } catch (JsonProcessingException e) {
+                log.error("[BuildPrompt] Error formatting training data with ObjectMapper: {}", e.getMessage());
+                dataTraining = dataTraining + "\n- Đây là data training để bạn dựa vào đây để trả lời, bao gồm chủ đề, các câu hỏi tương ứng chủ đề và các câu trả lời có position:\n"
+                        + aiTrainingAnswerService.getData().toString();
+            }
 
+
+
+            //Thống kê các lịch đã book
             List<UserScheduledTimeSlotResponse> userScheduledTimeSlotResponses =
                     userSubjectEnrollmentService.getUserScheduledTimeSlots(currentUser.getId()).getData();
-            if(!userScheduledTimeSlotResponses.isEmpty()){
-                dataTraining = dataTraining +
-                        "-Đây là các lịch mà client đã đặt lịch, " + userScheduledTimeSlotResponses.toString();
+            try {
+                String scheduledTimeSlotsData = objectMapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(userScheduledTimeSlotResponses);
+                dataTraining = dataTraining + "\n- Đây là các lịch mà client đã đặt lịch:\n"
+                        + (userScheduledTimeSlotResponses.isEmpty() ? "Người dùng chưa đặt lịch tập nào" :scheduledTimeSlotsData);
+            } catch (JsonProcessingException e) {
+                log.error("[BuildPrompt] Error formatting scheduled time slots with ObjectMapper: {}", e.getMessage());
+                dataTraining = dataTraining + "\n- Đây là các lịch mà client đã đặt lịch:\n"
+                        + userScheduledTimeSlotResponses.toString();
             }
 
-            return dataTraining + "Đây là câu hỏi của client:" + prompt;
+
+            return dataTraining + "\n\nĐây là câu hỏi của client: " + prompt;
         }catch (Exception e){
+            log.error("[BuildPrompt] Error building prompt: {}", e.getMessage(), e);
             e.printStackTrace();
         }
 

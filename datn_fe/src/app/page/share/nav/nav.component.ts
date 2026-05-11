@@ -57,7 +57,7 @@ export class NavComponent implements OnInit, OnDestroy {
   // Menu items configuration
   menuItems = [
     { label: 'Trang Chủ', route: '/' },
-    { label: 'Lớp Tập', route: '/class-timetable' },
+    { label: 'Đặt Lịch', route: '/class-timetable' },
     { label: 'Tạo Phòng Tập', route: '/gym-room' },
     { label: 'Dịch Vụ', route: '/class-detail' },
     { label: 'Đội Ngũ', route: '/team' },
@@ -65,7 +65,7 @@ export class NavComponent implements OnInit, OnDestroy {
     { label: 'Quản Lý Môn Học', route: '/subject-management' },
     { label: 'Quản Lý Đặt Lịch', route: '/booking-management' },
     { label: 'Quản Lý Khung Giờ Dạy', route: '/coach-time-slots-management' },
-    { label: 'Quản Lý User', route: '/user-management' },
+    { label: 'Quản Lý Người dùng', route: '/user-management' },
     { label: 'Thống Kê & Báo Cáo', route: '/statistics' }
   ];
 

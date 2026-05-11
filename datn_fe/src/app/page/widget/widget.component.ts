@@ -48,6 +48,7 @@ export class WidgetComponent implements OnInit, OnDestroy {
   isDragging = false;
 
   isOpen = false;
+  isMaximized = false;  // Maximize/minimize state
   messages: DisplayMessage[] = [];
   input = "";
   isLoading = false;  // Loading state for API call
@@ -55,6 +56,7 @@ export class WidgetComponent implements OnInit, OnDestroy {
   selectedImage: string | null = null;  // Selected image for modal
   sessionId: string | null = null;  // AI session ID
   showNewSessionDialog = false;  // Show new session confirmation dialog
+  showCloseSessionDialog = false;  // Show close session confirmation dialog
 
   private destroy$ = new Subject<void>();
 
@@ -72,7 +74,20 @@ export class WidgetComponent implements OnInit, OnDestroy {
   }
 
   subscribeToAiResponse(): void {
-    const topic =BASE_TOPIC_SOCKET_FE + 'ai-response';
+    // Create topic based on sessionId
+    this.createAiResponseSubscription();
+  }
+
+  /**
+   * Create or update WebSocket subscription based on sessionId
+   */
+  private createAiResponseSubscription(): void {
+    if (!this.sessionId) {
+      console.warn('[Widget] Cannot subscribe - sessionId is not set');
+      return;
+    }
+
+    const topic = BASE_TOPIC_SOCKET_FE + `ai-response:${this.sessionId}`;
     console.log('[Widget] Subscribing to WebSocket topic:', topic);
 
     this.webSocketService.subscribeToTopic(topic)
@@ -111,12 +126,41 @@ export class WidgetComponent implements OnInit, OnDestroy {
     this.isOpen = !this.isOpen;
 
     if (this.isOpen) {
-      // Create AI session when opening chatbox
-      this.createAiSession();
+      // Try to load existing session from localStorage
+      this.loadSessionFromStorage();
     } else {
+      // Just collapse, don't show dialog
       this.position = { x: 20, y: 20 };
-      // Optional: Mark session as COMPLETED when closing
-      // this.completeAiSession();
+    }
+  }
+
+  /**
+   * Toggle maximize/minimize chat panel
+   */
+  toggleMaximize(event: MouseEvent) {
+    event.stopPropagation();
+    this.isMaximized = !this.isMaximized;
+  }
+
+  /**
+   * Close chat without confirmation - keeps session
+   */
+  collapseChat(event: MouseEvent): void {
+    event.stopPropagation();
+    this.isOpen = false;
+    this.position = { x: 20, y: 20 };
+    console.log('[Widget] Chat collapsed');
+  }
+
+  /**
+   * Close session with confirmation - removes session
+   */
+  closeSessionWithConfirm(event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.sessionId) {
+      this.showCloseSessionDialog = true;
+    } else {
+      this.collapseChat(event);
     }
   }
 
@@ -139,13 +183,35 @@ export class WidgetComponent implements OnInit, OnDestroy {
         (response) => {
           if (response.data) {
             this.sessionId = response.data.sessionId;
-            console.log('[Widget] AI Session created:', this.sessionId);
+            // Save sessionId to localStorage
+            if (this.sessionId) {
+              localStorage.setItem('aiSessionId', this.sessionId);
+              console.log('[Widget] AI Session created and saved:', this.sessionId);
+              // Subscribe to AI response with sessionId
+              this.createAiResponseSubscription();
+            }
           }
         },
         (error) => {
           console.error('[Widget] Error creating AI session:', error);
         }
       );
+  }
+
+  /**
+   * Load session from localStorage if it exists
+   */
+  private loadSessionFromStorage(): void {
+    const savedSessionId = localStorage.getItem('aiSessionId');
+    if (savedSessionId) {
+      this.sessionId = savedSessionId;
+      console.log('[Widget] AI Session loaded from storage:', this.sessionId);
+      // Subscribe to AI response with sessionId
+      this.createAiResponseSubscription();
+    } else {
+      // Create new session if doesn't exist
+      this.createAiSession();
+    }
   }
 
   /**
@@ -288,9 +354,52 @@ export class WidgetComponent implements OnInit, OnDestroy {
     // Clear existing messages
     this.messages = [];
     this.input = "";
+    this.sessionId = null;
 
     // Create new session
     this.createAiSession();
+  }
+
+  /**
+   * Open close session confirmation dialog
+   */
+  openCloseSessionDialog(): void {
+    this.showCloseSessionDialog = true;
+    console.log('[Widget] Opened close session dialog');
+  }
+
+  /**
+   * Cancel close session
+   */
+  cancelCloseSession(): void {
+    this.showCloseSessionDialog = false;
+    this.isOpen = true;  // Keep chat open
+    console.log('[Widget] Cancelled close session');
+  }
+
+  /**
+   * Confirm and close session
+   */
+  confirmCloseSession(): void {
+    this.showCloseSessionDialog = false;
+    // Remove session from localStorage
+    localStorage.removeItem('aiSessionId');
+    this.sessionId = null;
+    // Clear all chat messages
+    this.messages = [];
+    this.input = "";
+    console.log('[Widget] Session closed and removed from storage');
+    console.log('[Widget] All chat data cleared');
+    // Close chat
+    this.closeChat();
+  }
+
+  /**
+   * Close chat without session management
+   */
+  private closeChat(): void {
+    this.isOpen = false;
+    this.position = { x: 20, y: 20 };
   }
 
   protected readonly BASE_URL_UPLOAD = BASE_URL_UPLOAD;
