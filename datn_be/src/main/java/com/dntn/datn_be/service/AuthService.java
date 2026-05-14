@@ -14,4 +14,5 @@ public interface AuthService {
     Users getCurrentUser();
     ResponseEntity<LoginResponse> refreshToken(RefreshTokenRequest request);
     ResponseEntity<ResponseGlobalDto<Object>> logout();
+    String generateToken(String username);
 }

@@ -45,9 +45,6 @@ export class VideoCallComponent implements OnInit{
   userReceiveId:any
   isOpenScreenUserCurrent:boolean = true
 
-  //=====================
-  @ViewChild('remoteVideo', { static: false })
-  videoElement!: ElementRef<HTMLVideoElement>;
 
   audioInputs: MediaDeviceInfo[] = [];
   audioOutputs: MediaDeviceInfo[] = [];
@@ -57,6 +54,8 @@ export class VideoCallComponent implements OnInit{
   receiverCall:any
   isHideReceiverCall:boolean = true
   metadataCall:any
+  isInitiator: boolean = false  // true = người gọi (A), false = người nhận (B)
+  pendingOffer: any = null  // Lưu offer chờ user accept
 
   //thiết bị lua chọn
   audioInput?: string;
@@ -86,7 +85,11 @@ export class VideoCallComponent implements OnInit{
   async ngOnInit(): Promise<void> {
     if(!this.isBrowser()) return
     if (!isPlatformBrowser(this.platformId)) return;
-    await this.init()
+
+    // Delay thêm 100ms để cho phép metadataCall được set từ parent component
+    setTimeout(async () => {
+      await this.init();
+    }, 100);
   }
 
   async init(){
@@ -97,15 +100,29 @@ export class VideoCallComponent implements OnInit{
       // lấy khi mở message detail
     this.transferDataService.userDetailGroud$.subscribe(user => {
       if (!user) return;
+      console.log('Got infoFriendUser from transferData:', user);
       this.infoFriendUser = user;
     });
 
-    if(!this.infoFriendUser){
-      this.infoFriendUser = this.metadataCall.infoCaller
+    // Nếu không có infoFriendUser từ transferData, lấy từ metadataCall (khi nhận call)
+    if(!this.infoFriendUser && this.metadataCall && this.metadataCall.infoCaller){
+      console.log('Got infoFriendUser from metadataCall:', this.metadataCall.infoCaller);
+      this.infoFriendUser = this.metadataCall.infoCaller;
+      this.receiverCall = true; // Đây là người nhận call
+      this.isInitiator = false;
+    } else if (!this.infoFriendUser) {
+      // Nếu vẫn không có infoFriendUser từ cả 2 nguồn, có lỗi
+      console.error('No friend info available. metadataCall:', this.metadataCall);
+      return;
+    } else {
+      // Có infoFriendUser từ transferData = người gọi
+      this.isInitiator = true;
+      console.log('Initiator - Friend info:', this.infoFriendUser);
     }
 
     this.userSendId = this.infoCurrentUser.id;
     this.userReceiveId = this.infoFriendUser.id;
+    console.log('Setup complete. isInitiator:', this.isInitiator, 'userSendId:', this.userSendId, 'userReceiveId:', this.userReceiveId);
 
     this.handleSignaling();
     this.handleStart();
@@ -145,11 +162,23 @@ export class VideoCallComponent implements OnInit{
           console.log('handle handleCandidate',data);
           break;
         case 'call':
+          // Initiator (người gọi) không cần nhận 'call' message của chính mình
+          if (this.isInitiator) {
+            console.log('Initiator ignoring own call message');
+            return;
+          }
           if (this.pc) {
             console.log('already in call, ignoring');
             return;
           }
-          this.hasCall = true
+          // Lưu thông tin người gọi từ metadata
+          if (data.callerInfo) {
+            console.log('Receiver got call from:', data.callerInfo);
+            this.infoFriendUser = data.callerInfo;
+          }
+          this.hasCall = true;
+          this.receiverCall = true; // Đây là người nhận call
+          this.isHideReceiverCall = true; // Hiển thị UI trạng thái nhận call
           break;
         case 'bye':
           if (this.pc) {
@@ -228,83 +257,72 @@ export class VideoCallComponent implements OnInit{
       this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,message);
     };
 
-    if(this.toStream){
-      this.toStream.getTracks().forEach((track:any) => this.pc.addTrack(track, this.toStream));
-    }else {
-      this.fromStream.getTracks().forEach((track:any) => this.pc.addTrack(track, this.fromStream));
+    // Thêm tracks từ stream hiện tại
+    const activeStream = this.toStream || this.fromStream;
+    if(activeStream){
+      activeStream.getTracks().forEach((track:any) => this.pc.addTrack(track, activeStream));
     }
+
     this.pc.ontrack = (event:any) => {
+        console.log('ontrack received', event.streams);
         this.remoteVideo.nativeElement.srcObject = event.streams[0];
-        this.isHideReceiverCall = false
     }
 
   }
 
   async makeCall() {
-
-    // Always reset peer connection and stream before making a new call
+    // Always reset peer connection before making a new call
     if (this.pc) {
       this.pc.close();
       this.pc = null;
     }
-    if (this.toStream) {
-      this.toStream.getTracks().forEach((track: any) => track.stop());
-      this.toStream = null;
-    }
 
-    //set audio và video cho B
-    this.toStream = await navigator.mediaDevices.getUserMedia({audio: {
-        echoCancellation: true,  // loại bỏ tiếng vang
-        noiseSuppression: true,  // giảm tiếng ồn
-        autoGainControl: true    // cân bằng âm lượng
-      }, video: true});
-
-    // Cập nhật device info sau khi toStream được tạo
-    await this.getDevices();
+    // Người gọi sử dụng fromStream (đã tạo ở handleStart)
+    // Người nhận sẽ tạo toStream riêng ở handleOffer
 
     this.createPeerConnection();
 
     const offer = await this.pc.createOffer();
-    //this.signaling.postMessage({userId:this.getUserId(),type: 'offer', sdp: offer.sdp});
-    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'offer', sdp: offer.sdp})
-    await this.pc.setLocalDescription(offer);
-    // Always set local video srcObject to new stream
-    if (this.localVideo && this.localVideo.nativeElement) {
-      this.localVideo.nativeElement.srcObject = this.toStream;
-    }
+
+    // Wrap offer vào RTCSessionDescription
+    const offerDescription = new RTCSessionDescription({
+      type: 'offer' as RTCSdpType,
+      sdp: offer.sdp
+    });
+
+    console.log('Sending offer to user:', this.userSendId);
+    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{
+      userId:this.userSendId,
+      type: 'offer',
+      sdp: offer.sdp
+    })
+    await this.pc.setLocalDescription(offerDescription);
   }
 
   async  handleOffer(offer:any) {
-    // Always reset peer connection and stream when receiving a new offer
+    console.log('Handling offer from user:', offer.userId);
+
+    // Lưu offer, chờ user accept
+    this.pendingOffer = offer;
+
+    // Reset peer connection trước khi tạo mới
     if (this.pc) {
       this.pc.close();
       this.pc = null;
     }
-    if (this.toStream) {
-      this.toStream.getTracks().forEach((track: any) => track.stop());
-      this.toStream = null;
-    }
-    // Tạo toStream khi nhận offer
-    this.toStream = await navigator.mediaDevices.getUserMedia({audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }, video: true});
 
-    // Cập nhật device info
-    await this.getDevices();
-
+    // Tạo PC nhưng chưa gửi answer
     this.createPeerConnection();
-    await this.pc.setRemoteDescription(offer);
-    const answer = await this.pc.createAnswer();
-    await this.pc.setLocalDescription(answer);
-    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'answer', sdp: answer.sdp})
 
-    // Always set local video srcObject to new stream
-    if (this.localVideo && this.localVideo.nativeElement) {
-      this.localVideo.nativeElement.srcObject = this.toStream;
-    }
+    // Wrap offer vào RTCSessionDescription
+    const offerDescription = new RTCSessionDescription({
+      type: 'offer' as RTCSdpType,
+      sdp: offer.sdp
+    });
 
+    await this.pc.setRemoteDescription(offerDescription);
+
+    console.log('Receiver: offer saved, waiting for user to accept');
   }
 
   async  handleAnswer(answer:any) {
@@ -312,11 +330,18 @@ export class VideoCallComponent implements OnInit{
       console.error('no peerconnection');
       return;
     }
-    await this.pc.setRemoteDescription(answer);
+
+    // Wrap answer vào RTCSessionDescription
+    const answerDescription = new RTCSessionDescription({
+      type: 'answer' as RTCSdpType,
+      sdp: answer.sdp
+    });
+
+    await this.pc.setRemoteDescription(answerDescription);
     //await this.flushPendingCandidates();
   }
 
-  async  handleCandidate(candidate: RTCIceCandidateInit) {
+  async  handleCandidate(candidate: any) {
     if (!this.pc) {
       console.error('no peerconnection');
       return;
@@ -339,7 +364,12 @@ export class VideoCallComponent implements OnInit{
     // }
     //SDP đã có → add ICE ngay
     try {
-      await this.pc.addIceCandidate(candidate);
+      const iceCandidate = new RTCIceCandidate({
+        candidate: candidate.candidate,
+        sdpMLineIndex: candidate.sdpMLineIndex,
+        sdpMid: candidate.sdpMid
+      });
+      await this.pc.addIceCandidate(iceCandidate);
     } catch (e) {
       console.error('addIceCandidate error', e);
     }
@@ -355,23 +385,76 @@ export class VideoCallComponent implements OnInit{
   //   }
   //   this.pendingCandidates = [];
   // }
-  handleAnswerPhone(){
-    console.log('handle reply')
-    this.receiverCall = false
-    this.makeCall();
+  async handleAnswerPhone(){
+    console.log('handle reply - user accepting incoming call');
+    this.receiverCall = false;
+    this.isHideReceiverCall = false;  // Ẩn incoming call UI ngay
+
+    // Tạo toStream (local stream của người nhận)
+    if (!this.toStream) {
+      this.toStream = await navigator.mediaDevices.getUserMedia({audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }, video: true});
+
+      // Cập nhật device info
+      await this.getDevices();
+
+      // Hiển thị video của người nhận
+      if (this.localVideo && this.localVideo.nativeElement) {
+        this.localVideo.nativeElement.srcObject = this.toStream;
+      }
+    }
+
+    // Nếu đã có pendingOffer, giờ tạo answer và gửi
+    if (this.pendingOffer && this.pc) {
+      const answer = await this.pc.createAnswer();
+
+      // Wrap answer vào RTCSessionDescription
+      const answerDescription = new RTCSessionDescription({
+        type: 'answer' as RTCSdpType,
+        sdp: answer.sdp
+      });
+
+      await this.pc.setLocalDescription(answerDescription);
+
+      console.log('Sending answer to user:', this.userSendId);
+      this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{
+        userId:this.userSendId,
+        type: 'answer',
+        sdp: answer.sdp
+      });
+
+      this.pendingOffer = null; // Clear pending offer
+    }
   }
 
   async handleStart() {
+    // Tạo fromStream cho người gọi
     this.fromStream = await navigator.mediaDevices.getUserMedia({audio: {
         echoCancellation: true,  // loại bỏ tiếng vang
         noiseSuppression: true,  // giảm tiếng ồn
         autoGainControl: true    // cân bằng âm lượng
       }, video: true});
     this.localVideo.nativeElement.srcObject = this.fromStream;
-    console.log('handleStart')
-    //this.signaling.postMessage({userId:this.getUserId(),type: 'ready'});
-    console.log("call to userID: ", this.userSendId)
-    this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{userId:this.userSendId,type: 'call'})
+    console.log('handleStart - created local stream');
+
+    // Chỉ người gọi (initiator) mới thực hiện bước gửi call message
+    if (this.isInitiator) {
+      console.log("Initiator: sending call to userID: ", this.userSendId);
+      // Gửi thông tin người gọi kèm theo message call
+      this.websocketService.sendMessage(`${BASE_TOPIC_SOCKET}${this.userSendId}`,{
+        userId: this.userSendId,
+        type: 'call',
+        callerInfo: this.infoCurrentUser // Gửi thông tin người gọi
+      });
+
+      // Người gọi gửi offer
+      this.makeCall();
+    } else {
+      console.log("Receiver: waiting for offer from caller");
+    }
   }
 
   handleHangup() {
@@ -495,7 +578,7 @@ export class VideoCallComponent implements OnInit{
   }
 
   async changeAudioDestination() {
-    const video = this.videoElement.nativeElement;
+    const video = this.remoteVideo.nativeElement;
     if (!('sinkId' in video)) {
       console.warn('Browser does not support setSinkId');
       return;
@@ -540,35 +623,38 @@ export class VideoCallComponent implements OnInit{
   }
 
   handleToggleMicro() {
+    const isNowEnabled = !this.isEnableMic;
+
     if(this.fromStream){
       this.fromStream.getAudioTracks().forEach((track:any) => {
-        track.enabled = !track.enabled;
-        this.isEnableMic = !this.isEnableMic
+        track.enabled = isNowEnabled;
       });
     }
 
     if(this.toStream){
       this.toStream.getAudioTracks().forEach((track:any) => {
-        track.enabled = !track.enabled;
-        this.isEnableMic = !this.isEnableMic
+        track.enabled = isNowEnabled;
       });
     }
 
+    this.isEnableMic = isNowEnabled;
   }
 
   handleToggleCamera() {
+    const isNowEnabled = !this.isEnableCamera;
+
     if(this.fromStream){
       this.fromStream.getVideoTracks().forEach((track:any) => {
-        track.enabled = !track.enabled;
-        this.isEnableCamera = !this.isEnableCamera
+        track.enabled = isNowEnabled;
       });
     }
     if(this.toStream){
       this.toStream.getVideoTracks().forEach((track:any) => {
-        track.enabled = !track.enabled;
-        this.isEnableCamera = !this.isEnableCamera
+        track.enabled = isNowEnabled;
       });
     }
+
+    this.isEnableCamera = isNowEnabled;
   }
 
   handleShowChangeDevice() {

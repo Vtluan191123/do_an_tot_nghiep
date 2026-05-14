@@ -64,6 +64,8 @@ integration:
     domain: https://socket.easypos.vn
     prefix_topic_fanout: '/topics/'
     prefix_topic_direct: '/user/topics/'
+  frontend:
+    base-url: ${FRONTEND_URL:https://example.com}
 
 server:
   port: 8080

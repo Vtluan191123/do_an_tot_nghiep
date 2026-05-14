@@ -258,7 +258,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         // Get pageable from request (already handles 1-based to 0-based conversion)
         Pageable pageable = request.toPageable();
-        int page = pageable.getPageNumber();  // Already 0-based from toPageable()
+        int page = pageable.getPageNumber() ;  // Already 0-based from toPageable()
         int size = pageable.getPageSize();
 
         // Calculate offset

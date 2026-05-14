@@ -155,4 +155,9 @@ public class AuthServiceImpl implements AuthService {
                             .build());
         }
     }
+
+    @Override
+    public String generateToken(String username) {
+        return this.handleCreateToken(username).getAccessToken();
+    }
 }

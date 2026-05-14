@@ -17,7 +17,7 @@ export class AuthServiceService {
    * Get current user info
    */
   getInfoUser(): Observable<any> {
-    return this.http.get(`${this.api}/get_info`);
+    return this.http.get(`${this.api}/profile`);
   }
 
   /**

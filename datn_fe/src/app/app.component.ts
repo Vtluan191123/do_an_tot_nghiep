@@ -26,6 +26,7 @@ import { FriendSearchComponent } from './page/friend-search/friend-search.compon
 import { NotificationClientService } from './service/notification/notification-client.service';
 import { NotificationApiService } from './service/notification/notification-api.service';
 import {BASE_TOPIC_SOCKET, BASE_TOPIC_SOCKET_FE} from './constants/constants';
+import { PaymentNotificationModalComponent } from './component/payment-notification-modal/payment-notification-modal.component';
 import { ComboManagementComponent } from './page/combo-management/combo-management.component';
 import { SubjectManagementComponent } from './page/subject-management/subject-management.component';
 import { BookingManagementComponent } from './page/booking-management/booking-management.component';
@@ -36,7 +37,7 @@ import { StudentEnrolledSubjectsComponent } from './page/student-enrolled-subjec
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent, ComboManagementComponent, SubjectManagementComponent, BookingManagementComponent, UserManagementComponent, StatisticsComponent, StudentEnrolledSubjectsComponent],
+  imports: [RouterOutlet, VideoCallComponent, DashBoardComponent, VideoTestComponent, WidgetComponent, MessageDetailComponent, NgIf, UserDetailComponent, VideoConferenceClientComponent, NavComponent, FooterComponent, ClassDetailComponent, OutTeamComponent, ClassTimetableComponent, GymRoomComponent, FriendSearchComponent, ComboManagementComponent, SubjectManagementComponent, BookingManagementComponent, UserManagementComponent, StatisticsComponent, StudentEnrolledSubjectsComponent, PaymentNotificationModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -112,6 +113,7 @@ export class AppComponent implements OnInit ,OnDestroy{
 
   handleConnectTopic(){
     console.log('Connecting to WebSocket topics for user:', this.infoCurrentUser.id);
+    // Subscribe to global topic
     this.websocketService
       .subscribeToTopic(`${BASE_TOPIC_SOCKET_FE}global/${this.infoCurrentUser.id}`)
       .subscribe((res: any) => {
@@ -137,12 +139,21 @@ export class AppComponent implements OnInit ,OnDestroy{
             break;
           }
 
+          case 'payment': {
+            console.log('notification received', data.metadata);
+            this.handleNotification(data.metadata);
+            break;
+          }
+
           default: {
             console.warn('Unknown type:', res);
             break;
           }
         }
       });
+
+    // NOTE: Payment notifications are now handled via redirects to success/failed pages
+    // No WebSocket subscription needed for payment notifications
   }
 
   /**
@@ -151,7 +162,7 @@ export class AppComponent implements OnInit ,OnDestroy{
   handleNotification(notificationData: any) {
     try {
       // Add vào list notifications
-      this.notificationClientService.addNotification(notificationData);
+      this.notificationClientService.addNotification(notificationData as any);
 
       // Show toast
       this.toastService.info(
@@ -165,6 +176,12 @@ export class AppComponent implements OnInit ,OnDestroy{
       console.error('Error handling notification:', error);
     }
   }
+
+  /**
+   * Xử lý thông báo thanh toán từ WebSocket - DEPRECATED
+   * Payment notifications now handled via redirect to success/failed pages
+   */
+  // REMOVED: Payment notifications now use redirects instead of WebSocket
 
   handleShowModal(metadata:any){
     const modalRef = this.modalService.open(VideoCallComponent, {

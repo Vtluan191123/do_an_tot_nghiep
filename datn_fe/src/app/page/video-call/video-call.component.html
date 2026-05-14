@@ -31,9 +31,9 @@
     <p aria-label="Trạng thái cuộc gọi">Đang gọi ...</p>
   </div>
 
-  <!-- Remote Video Feed -->
+  <!-- Remote Video Feed - Show when connection established (ontrack triggered) -->
   <video
-    [hidden]="isHideReceiverCall"
+    [hidden]="!remoteVideo?.srcObject"
     #remoteVideo
     id="remoteVideo"
     playsinline

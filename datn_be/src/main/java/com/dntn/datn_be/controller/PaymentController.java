@@ -6,11 +6,13 @@ import com.dntn.datn_be.model.Users;
 import com.dntn.datn_be.service.AuthService;
 import com.dntn.datn_be.service.VNPayService;
 import com.dntn.datn_be.service.OrderService;
+import com.dntn.datn_be.service.WebSocketService;
 import com.dntn.datn_be.model.Order;
 import com.dntn.datn_be.repository.OrderRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,10 @@ public class PaymentController {
     private final OrderRepository orderRepository;
     private final AuthService authService;
     private final OrderService orderService;
+    private final WebSocketService webSocketService;
+
+    @Value("${integration.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
 
     /**
      * Create VNPay payment URL
@@ -103,15 +109,12 @@ public class PaymentController {
     public void paymentCallback(
             HttpServletRequest request,
             HttpServletResponse httpServletResponse) throws IOException {
-        System.out.println(request.getQueryString());
 
         int paymentStatus = vnPayService.orderReturn(request);
 
         // Get orderId from orderInfo parameter (format: Order-{orderId}-subject-{subjectId})
         String orderInfo = request.getParameter("vnp_OrderInfo");
         Long orderId = extractOrderIdFromOrderInfo(orderInfo);
-        
-        String redirectUrl;
 
         if (paymentStatus == 1 && orderId != null) {
             // Payment successful - update Order status and create UserSubject
@@ -126,16 +129,26 @@ public class PaymentController {
                     Map<String, Object> paymentData = new HashMap<>();
                     paymentData.put("orderType", order.getOrderType());
                     orderService.processOrderAfterPayment(orderId, paymentData);
+
+                    // Redirect to success page
+                    String redirectUrl = frontendBaseUrl + "/payment/success?orderId=" + orderId + 
+                                       "&transactionId=" + request.getParameter("vnp_TransactionNo");
+                    httpServletResponse.sendRedirect(redirectUrl);
+                    return;
                 }
             } catch (Exception e) {
                 System.err.println("Error updating order: " + e.getMessage());
                 e.printStackTrace();
+                // Redirect to failure page if error occurs
+                String redirectUrl = frontendBaseUrl + "/payment/failed?orderId=" + orderId + 
+                                   "&message=Lỗi khi xử lý đơn hàng";
+                httpServletResponse.sendRedirect(redirectUrl);
+                return;
             }
-            redirectUrl = "http://localhost:4200/payment/success";
-        } else {
-            redirectUrl = "http://localhost:4200/payment/fail";
         }
-
+        
+        // Payment failed - redirect to failure page
+        String redirectUrl = frontendBaseUrl + "/payment/failed?orderId=" + orderId;
         httpServletResponse.sendRedirect(redirectUrl);
     }
 

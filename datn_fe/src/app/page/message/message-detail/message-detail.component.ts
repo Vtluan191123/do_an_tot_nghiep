@@ -625,12 +625,17 @@ export class MessageDetailComponent implements OnInit, AfterViewInit, AfterViewC
     });
 
     console.log('this.userDetailMessage',this.userDetailMessage)
+
+    // Truyền metadata cho component modal
+    const metadataCall = {
+      groupId: this.userDetailMessage.groudId,
+      infoCaller: this.infoCurrentUser
+    };
+    (modalRef.componentInstance as any).metadataCall = metadataCall;
+
     const data: SocketData = {
       type: 'call',
-      metadata: {
-        groupId: this.userDetailMessage.groudId,
-        infoCaller: this.infoCurrentUser
-      }
+      metadata: metadataCall
     }
 
     //bắn socket sang bên gọi

@@ -13,6 +13,8 @@ import { FriendSearchComponent } from './page/friend-search/friend-search.compon
 import { ComboDetailComponent } from './page/combo-detail/combo-detail.component';
 import { SubjectDetailComponent } from './page/subject-detail/subject-detail.component';
 import { PaymentComponent } from './page/payment/payment.component';
+import { PaymentSuccessComponent } from './page/payment/payment-success.component';
+import { PaymentFailedComponent } from './page/payment/payment-failed.component';
 import { ComboManagementComponent } from './page/combo-management/combo-management.component';
 import { SubjectManagementComponent } from './page/subject-management/subject-management.component';
 import { BookingManagementComponent } from './page/booking-management/booking-management.component';
@@ -40,6 +42,8 @@ export const routes: Routes = [
   { path: 'combo-detail/:id', component: ComboDetailComponent, canActivate: [authGuard] },
   { path: 'subject-detail/:id', component: SubjectDetailComponent, canActivate: [authGuard] },
   { path: 'payment', component: PaymentComponent, canActivate: [authGuard] },
+  { path: 'payment/success', component: PaymentSuccessComponent, canActivate: [authGuard] },
+  { path: 'payment/failed', component: PaymentFailedComponent, canActivate: [authGuard] },
   { path: 'combo-management', component: ComboManagementComponent, canActivate: [authGuard] },
   { path: 'subject-management', component: SubjectManagementComponent, canActivate: [authGuard] },
   { path: 'booking-management', component: BookingManagementComponent, canActivate: [authGuard] },
