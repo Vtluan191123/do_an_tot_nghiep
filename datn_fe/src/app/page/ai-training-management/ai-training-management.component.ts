@@ -126,8 +126,8 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: any) => {
           this.topics = response.data || [];
-          this.totalElements = response.totalElements || 0;
-          this.totalPages = response.totalPages || 0;
+          this.totalElements = response.count || response.totalElements || 0;
+          this.totalPages = response.totalPages || Math.ceil(this.totalElements / this.pageSize);
           this.isLoading = false;
         },
         error: (error) => {
@@ -249,8 +249,8 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: any) => {
           this.questions = response.data || [];
-          this.totalElements = response.totalElements || 0;
-          this.totalPages = response.totalPages || 0;
+          this.totalElements = response.count || response.totalElements || 0;
+          this.totalPages = response.totalPages || Math.ceil(this.totalElements / this.pageSize);
           this.isLoading = false;
         },
         error: (error) => {
@@ -382,8 +382,8 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: any) => {
           this.answers = response.data || [];
-          this.totalElements = response.totalElements || 0;
-          this.totalPages = response.totalPages || 0;
+          this.totalElements = response.count || response.totalElements || 0;
+          this.totalPages = response.totalPages || Math.ceil(this.totalElements / this.pageSize);
           this.isLoading = false;
         },
         error: (error) => {
@@ -600,7 +600,7 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
 
 
   nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
+    if (this.totalPages > 0 && this.currentPage < this.totalPages - 1) {
       this.currentPage++;
       this.loadCurrentTab();
     }
@@ -614,13 +614,17 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   }
 
   firstPage(): void {
-    this.currentPage = 0;
-    this.loadCurrentTab();
+    if (this.totalPages > 0) {
+      this.currentPage = 0;
+      this.loadCurrentTab();
+    }
   }
 
   lastPage(): void {
-    this.currentPage = this.totalPages - 1;
-    this.loadCurrentTab();
+    if (this.totalPages > 0) {
+      this.currentPage = this.totalPages - 1;
+      this.loadCurrentTab();
+    }
   }
 
   changePageSize(newSize: number): void {
@@ -630,13 +634,26 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   }
 
   goToPage(page: number): void {
-    this.currentPage = page;
-    this.loadCurrentTab();
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.loadCurrentTab();
+    }
   }
 
   getPageNumbers(): number[] {
     const pages: number[] = [];
-    for (let i = 0; i < this.totalPages; i++) {
+    const maxPagesToShow = 5;
+    const halfWindow = Math.floor(maxPagesToShow / 2);
+
+    let startPage = Math.max(0, this.currentPage - halfWindow);
+    let endPage = Math.min(this.totalPages - 1, startPage + maxPagesToShow - 1);
+
+    // Adjust start page if we're near the end
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(0, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
     return pages;
@@ -647,6 +664,9 @@ export class AiTrainingManagementComponent implements OnInit, OnDestroy {
   switchTab(tab: 'topic' | 'question' | 'answer'): void {
     this.activeTab = tab;
     this.currentPage = 0;
+    // Reset pagination state when switching tabs
+    this.totalPages = 0;
+    this.totalElements = 0;
     this.loadCurrentTab();
   }
 

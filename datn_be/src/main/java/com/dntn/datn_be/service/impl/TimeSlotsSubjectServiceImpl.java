@@ -643,14 +643,33 @@ public class TimeSlotsSubjectServiceImpl implements TimeSlotsSubjectService {
             }
 
             // Check if TimeSlot exists
-            TimeSlots timeSlot = timeSlotsRepository.findById(timeSlotId)
-                    .orElseThrow(() -> new RuntimeException("Time slot not found"));
-
-            // Check if already exists
-            if (!timeSlotsSubjectRepository.findBySubjectIdAndTimeSlotId(subjectId, timeSlotId).isEmpty()) {
+            if (timeSlotsRepository.findById(timeSlotId).isEmpty()) {
                 return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
                         .status(HttpStatus.BAD_REQUEST.value())
-                        .message("Error: This time slot already exists for this subject")
+                        .message("Error: Time slot not found")
+                        .build();
+            }
+
+            // Check if already exists
+            if (timeSlotsSubjectRepository.findBySubjectIdAndTimeSlotId(subjectId, timeSlotId).isPresent()) {
+                // Get subject name for the warning message
+                Subject subject = subjectRepository.findById(subjectId).orElse(null);
+                String subjectName = subject != null ? subject.getName() : "Môn học";
+
+                // Get timeSlot information for the warning message
+                TimeSlots timeSlot = timeSlotsRepository.findById(timeSlotId).orElse(null);
+                String timeSlotInfo = "";
+                if (timeSlot != null && timeSlot.getStartTime() != null && timeSlot.getEndTime() != null) {
+                    String startTime = String.format("%02d:%02d", timeSlot.getStartTime().getHour(), timeSlot.getStartTime().getMinute());
+                    String endTime = String.format("%02d:%02d", timeSlot.getEndTime().getHour(), timeSlot.getEndTime().getMinute());
+                    timeSlotInfo = String.format(" từ %s - %s", startTime, endTime);
+                }
+
+                String warningMessage = String.format("Khung giờ với môn %s%s đã tồn tại không thể tạo", subjectName, timeSlotInfo);
+
+                return ResponseGlobalDto.<TimeSlotsSubjectResponse>builder()
+                        .status(HttpStatus.OK.value())
+                        .message(warningMessage)
                         .build();
             }
 
@@ -663,7 +682,7 @@ public class TimeSlotsSubjectServiceImpl implements TimeSlotsSubjectService {
                     .trainingMethods(trainingMethods != null ? trainingMethods : "OFFLINE")
                     .coachId(currentUser.getId())
                     .build();
-            
+
             TimeSlotsSubject saved = timeSlotsSubjectRepository.save(newSlot);
 
             // Create TrainingRoom if training method is ONLINE

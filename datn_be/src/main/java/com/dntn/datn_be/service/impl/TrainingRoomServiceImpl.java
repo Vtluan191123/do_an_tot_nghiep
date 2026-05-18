@@ -204,7 +204,26 @@ public class TrainingRoomServiceImpl implements TrainingRoomService {
     @Override
     public ResponseGlobalDto<List<TrainingRoomResponse>> getOnlineRoomsForUser(Long userId) {
         try {
-            List<TrainingRoom> rooms = trainingRoomRepository.findOnlineRoomsForUser(userId);
+            // Get user to check role
+            Optional<Users> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseGlobalDto.<List<TrainingRoomResponse>>builder()
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .message("User not found")
+                        .build();
+            }
+
+            Users user = userOpt.get();
+            List<TrainingRoom> rooms;
+
+            // Check user role: 2 = USER, 3 = COACH
+            if (user.getRoleId() != null && user.getRoleId().equals(3L)) {
+                // COACH: use UserSubject enrolled subjects
+                rooms = trainingRoomRepository.findOnlineRoomsForCoach(userId);
+            } else {
+                // USER: use confirmed bookings (status = 1)
+                rooms = trainingRoomRepository.findOnlineRoomsForUser(userId);
+            }
 
             // Batch fetch coaches and subjects
             Set<Long> coachIds = new HashSet<>();
@@ -341,7 +360,26 @@ public class TrainingRoomServiceImpl implements TrainingRoomService {
             int pageSize = size != null ? size : 20;
             Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-            Page<TrainingRoom> roomsPage = trainingRoomRepository.findOnlineRoomsForUser(userId, pageable);
+            // Get user to check role
+            Optional<Users> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseGlobalDto.<Page<TrainingRoomResponse>>builder()
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .message("User not found")
+                        .build();
+            }
+
+            Users user = userOpt.get();
+            Page<TrainingRoom> roomsPage;
+
+            // Check user role: 2 = USER, 3 = COACH
+            if (user.getRoleId() != null && user.getRoleId().equals(3L)) {
+                // COACH: use UserSubject enrolled subjects
+                roomsPage = trainingRoomRepository.findOnlineRoomsForCoach(userId, pageable);
+            } else {
+                // USER: use confirmed bookings (status = 1)
+                roomsPage = trainingRoomRepository.findOnlineRoomsForUser(userId, pageable);
+            }
 
             // Batch fetch coaches and subjects
             Set<Long> coachIds = new HashSet<>();
@@ -384,7 +422,26 @@ public class TrainingRoomServiceImpl implements TrainingRoomService {
     @Override
     public ResponseGlobalDto<List<TrainingRoomResponse>> getOnlineRoomsForUserBySubject(Long userId, Long subjectId) {
         try {
-            List<TrainingRoom> rooms = trainingRoomRepository.findOnlineRoomsForUserBySubject(userId, subjectId);
+            // Get user to check role
+            Optional<Users> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseGlobalDto.<List<TrainingRoomResponse>>builder()
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .message("User not found")
+                        .build();
+            }
+
+            Users user = userOpt.get();
+            List<TrainingRoom> rooms;
+
+            // Check user role: 2 = USER, 3 = COACH
+            if (user.getRoleId() != null && user.getRoleId().equals(3L)) {
+                // COACH: use UserSubject enrolled subjects
+                rooms = trainingRoomRepository.findOnlineRoomsForCoachBySubject(userId, subjectId);
+            } else {
+                // USER: use confirmed bookings (status = 1)
+                rooms = trainingRoomRepository.findOnlineRoomsForUserBySubject(userId, subjectId);
+            }
 
             // Batch fetch coaches and subjects
             Set<Long> coachIds = new HashSet<>();

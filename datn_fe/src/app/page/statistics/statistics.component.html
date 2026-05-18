@@ -84,23 +84,23 @@
 
       <!-- Top Items -->
       <div class="row">
-        <!-- Top Combos -->
+        <!-- Top 5 Combos -->
         <div class="col-lg-6 mb-5">
-          <h3 class="section-title mb-4">Top Combo Mua Nhiều</h3>
+          <h3 class="section-title mb-4">Top 5 Combo Bán Chạy</h3>
 
           <div *ngIf="topCombos.length > 0" class="top-items-table">
             <div class="table-responsive">
               <table class="table table-hover">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Tên Combo</th>
-                    <th>Giá</th>
-                    <th>Lượt Mua</th>
+                    <th style="width: 10%;">#</th>
+                    <th style="width: 50%;">Tên Combo</th>
+                    <th style="width: 20%;">Giá</th>
+                    <th style="width: 20%;">Lượt Mua</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let combo of topCombos; let i = index">
+                  <tr *ngFor="let combo of topCombos; let i = index" [ngClass]="{'rank-1': i === 0, 'rank-2': i === 1, 'rank-3': i === 2}">
                     <td>
                       <span class="badge badge-rank" [ngClass]="'rank-' + (i + 1)">
                         {{ i + 1 }}
@@ -108,12 +108,12 @@
                     </td>
                     <td>
                       <strong>{{ combo.name }}</strong>
-                      <br>
-                      <small class="text-muted">{{ combo.code }}</small>
                     </td>
                     <td>{{ formatCurrency(combo.price) }}</td>
                     <td>
-                      <span class="badge badge-success">{{ combo.purchaseCount }}</span>
+                      <span class="badge badge-success" style="font-size: 14px; padding: 8px 12px;">
+                        {{ combo.purchaseCount }}
+                      </span>
                     </td>
                   </tr>
                 </tbody>
@@ -126,23 +126,23 @@
           </div>
         </div>
 
-        <!-- Top Subjects -->
+        <!-- Top 5 Subjects -->
         <div class="col-lg-6 mb-5">
-          <h3 class="section-title mb-4">Top Môn Học Mua Nhiều</h3>
+          <h3 class="section-title mb-4">Top 5 Môn Học Bán Chạy</h3>
 
           <div *ngIf="topSubjects.length > 0" class="top-items-table">
             <div class="table-responsive">
               <table class="table table-hover">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Tên Môn Học</th>
-                    <th>Giá</th>
-                    <th>Lượt Mua</th>
+                    <th style="width: 10%;">#</th>
+                    <th style="width: 50%;">Tên Môn Học</th>
+                    <th style="width: 20%;">Giá</th>
+                    <th style="width: 20%;">Lượt Mua</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let subject of topSubjects; let i = index">
+                  <tr *ngFor="let subject of topSubjects; let i = index" [ngClass]="{'rank-1': i === 0, 'rank-2': i === 1, 'rank-3': i === 2}">
                     <td>
                       <span class="badge badge-rank" [ngClass]="'rank-' + (i + 1)">
                         {{ i + 1 }}
@@ -150,12 +150,12 @@
                     </td>
                     <td>
                       <strong>{{ subject.name }}</strong>
-                      <br>
-                      <small class="text-muted">{{ subject.code }}</small>
                     </td>
                     <td>{{ formatCurrency(subject.price) }}</td>
                     <td>
-                      <span class="badge badge-info">{{ subject.purchaseCount }}</span>
+                      <span class="badge badge-info" style="font-size: 14px; padding: 8px 12px;">
+                        {{ subject.purchaseCount }}
+                      </span>
                     </td>
                   </tr>
                 </tbody>

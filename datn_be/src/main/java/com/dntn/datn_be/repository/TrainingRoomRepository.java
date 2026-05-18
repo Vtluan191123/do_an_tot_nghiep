@@ -35,29 +35,66 @@ public interface TrainingRoomRepository extends JpaRepository<TrainingRoom, Long
     List<TrainingRoom> findBySubjectId(Long subjectId);
     
     /**
-     * Get training rooms for user based on their enrolled subjects
+     * Get online training rooms for USER role (based on confirmed bookings with status = 1)
      */
     @Query("SELECT tr FROM TrainingRoom tr " +
-           "WHERE tr.subjectId IN (SELECT us.subjectId FROM UserSubject us WHERE us.userId = :userId) " +
+           "INNER JOIN Bookings b ON tr.timeSlotsSubjectId = b.timeSlotSubjectId " +
+           "INNER JOIN TimeSlotsSubject ts ON tr.timeSlotsSubjectId = ts.id " +
+           "WHERE b.userId = :userId " +
+           "AND b.status = 1 " +
+           "AND ts.trainingMethods = 'ONLINE' " +
            "AND tr.status = 'ACTIVE'")
     List<TrainingRoom> findOnlineRoomsForUser(@Param("userId") Long userId);
     
     /**
-     * Get training rooms for user with pagination
+     * Get online training rooms for USER role with pagination (based on confirmed bookings with status = 1)
      */
     @Query("SELECT tr FROM TrainingRoom tr " +
-           "WHERE tr.subjectId IN (SELECT us.subjectId FROM UserSubject us WHERE us.userId = :userId) " +
+           "INNER JOIN Bookings b ON tr.timeSlotsSubjectId = b.timeSlotSubjectId " +
+           "INNER JOIN TimeSlotsSubject ts ON tr.timeSlotsSubjectId = ts.id " +
+           "WHERE b.userId = :userId " +
+           "AND b.status = 1 " +
+           "AND ts.trainingMethods = 'ONLINE' " +
            "AND tr.status = 'ACTIVE'")
     Page<TrainingRoom> findOnlineRoomsForUser(@Param("userId") Long userId, Pageable pageable);
     
     /**
-     * Get training rooms for user by specific subject
+     * Get online training rooms for USER role by specific subject (based on confirmed bookings with status = 1)
+     */
+    @Query("SELECT tr FROM TrainingRoom tr " +
+           "INNER JOIN Bookings b ON tr.timeSlotsSubjectId = b.timeSlotSubjectId " +
+           "INNER JOIN TimeSlotsSubject ts ON tr.timeSlotsSubjectId = ts.id " +
+           "WHERE tr.subjectId = :subjectId " +
+           "AND b.userId = :userId " +
+           "AND b.status = 1 " +
+           "AND ts.trainingMethods = 'ONLINE' " +
+           "AND tr.status = 'ACTIVE'")
+    List<TrainingRoom> findOnlineRoomsForUserBySubject(@Param("userId") Long userId, @Param("subjectId") Long subjectId);
+    
+    /**
+     * Get online training rooms for COACH role (based on UserSubject - enrolled subjects)
+     */
+    @Query("SELECT tr FROM TrainingRoom tr " +
+           "WHERE tr.subjectId IN (SELECT us.subjectId FROM UserSubject us WHERE us.userId = :userId) " +
+           "AND tr.status = 'ACTIVE'")
+    List<TrainingRoom> findOnlineRoomsForCoach(@Param("userId") Long userId);
+    
+    /**
+     * Get online training rooms for COACH role with pagination (based on UserSubject - enrolled subjects)
+     */
+    @Query("SELECT tr FROM TrainingRoom tr " +
+           "WHERE tr.subjectId IN (SELECT us.subjectId FROM UserSubject us WHERE us.userId = :userId) " +
+           "AND tr.status = 'ACTIVE'")
+    Page<TrainingRoom> findOnlineRoomsForCoach(@Param("userId") Long userId, Pageable pageable);
+    
+    /**
+     * Get online training rooms for COACH role by specific subject (based on UserSubject - enrolled subjects)
      */
     @Query("SELECT tr FROM TrainingRoom tr " +
            "WHERE tr.subjectId = :subjectId " +
            "AND tr.subjectId IN (SELECT us.subjectId FROM UserSubject us WHERE us.userId = :userId) " +
            "AND tr.status = 'ACTIVE'")
-    List<TrainingRoom> findOnlineRoomsForUserBySubject(@Param("userId") Long userId, @Param("subjectId") Long subjectId);
+    List<TrainingRoom> findOnlineRoomsForCoachBySubject(@Param("userId") Long userId, @Param("subjectId") Long subjectId);
     
     /**
      * Delete all training rooms for a coach

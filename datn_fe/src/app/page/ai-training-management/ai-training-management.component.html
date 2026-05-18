@@ -129,20 +129,20 @@
           <!-- Pagination -->
           <nav class="mt-4" *ngIf="totalPages > 0">
             <ul class="pagination justify-content-center">
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="firstPage()">Đầu</a>
+              <li class="page-item" [class.disabled]="currentPage === 0 || totalPages === 0">
+                <a class="page-link" (click)="currentPage !== 0 && firstPage()" [style.cursor]="(currentPage === 0 || totalPages === 0) ? 'not-allowed' : 'pointer'">Đầu</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="previousPage()">Trước</a>
+              <li class="page-item" [class.disabled]="currentPage === 0 || totalPages === 0">
+                <a class="page-link" (click)="currentPage > 0 && previousPage()" [style.cursor]="(currentPage === 0 || totalPages === 0) ? 'not-allowed' : 'pointer'">Trước</a>
               </li>
               <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
-                <a class="page-link" (click)="goToPage(page)">{{ page + 1 }}</a>
+                <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">{{ page + 1 }}</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="nextPage()">Sau</a>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1 || totalPages === 0">
+                <a class="page-link" (click)="currentPage < totalPages - 1 && nextPage()" [style.cursor]="(currentPage === totalPages - 1 || totalPages === 0) ? 'not-allowed' : 'pointer'">Sau</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="lastPage()">Cuối</a>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1 || totalPages === 0">
+                <a class="page-link" (click)="currentPage !== totalPages - 1 && lastPage()" [style.cursor]="(currentPage === totalPages - 1 || totalPages === 0) ? 'not-allowed' : 'pointer'">Cuối</a>
               </li>
             </ul>
           </nav>
@@ -249,20 +249,20 @@
           <!-- Pagination -->
           <nav class="mt-4" *ngIf="totalPages > 0">
             <ul class="pagination justify-content-center">
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="firstPage()">Đầu</a>
+              <li class="page-item" [class.disabled]="currentPage === 0 || totalPages === 0">
+                <a class="page-link" (click)="currentPage !== 0 && firstPage()" [style.cursor]="(currentPage === 0 || totalPages === 0) ? 'not-allowed' : 'pointer'">Đầu</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="previousPage()">Trước</a>
+              <li class="page-item" [class.disabled]="currentPage === 0 || totalPages === 0">
+                <a class="page-link" (click)="currentPage > 0 && previousPage()" [style.cursor]="(currentPage === 0 || totalPages === 0) ? 'not-allowed' : 'pointer'">Trước</a>
               </li>
               <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
-                <a class="page-link" (click)="goToPage(page)">{{ page + 1 }}</a>
+                <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">{{ page + 1 }}</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="nextPage()">Sau</a>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1 || totalPages === 0">
+                <a class="page-link" (click)="currentPage < totalPages - 1 && nextPage()" [style.cursor]="(currentPage === totalPages - 1 || totalPages === 0) ? 'not-allowed' : 'pointer'">Sau</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="lastPage()">Cuối</a>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1 || totalPages === 0">
+                <a class="page-link" (click)="currentPage !== totalPages - 1 && lastPage()" [style.cursor]="(currentPage === totalPages - 1 || totalPages === 0) ? 'not-allowed' : 'pointer'">Cuối</a>
               </li>
             </ul>
           </nav>
@@ -377,20 +377,20 @@
           <!-- Pagination -->
           <nav class="mt-4" *ngIf="totalPages > 0">
             <ul class="pagination justify-content-center">
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="firstPage()">Đầu</a>
+              <li class="page-item" [class.disabled]="currentPage === 0 || totalPages === 0">
+                <a class="page-link" (click)="currentPage !== 0 && firstPage()" [style.cursor]="(currentPage === 0 || totalPages === 0) ? 'not-allowed' : 'pointer'">Đầu</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="previousPage()">Trước</a>
+              <li class="page-item" [class.disabled]="currentPage === 0 || totalPages === 0">
+                <a class="page-link" (click)="currentPage > 0 && previousPage()" [style.cursor]="(currentPage === 0 || totalPages === 0) ? 'not-allowed' : 'pointer'">Trước</a>
               </li>
               <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
-                <a class="page-link" (click)="goToPage(page)">{{ page + 1 }}</a>
+                <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">{{ page + 1 }}</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="nextPage()">Sau</a>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1 || totalPages === 0">
+                <a class="page-link" (click)="currentPage < totalPages - 1 && nextPage()" [style.cursor]="(currentPage === totalPages - 1 || totalPages === 0) ? 'not-allowed' : 'pointer'">Sau</a>
               </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="lastPage()">Cuối</a>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1 || totalPages === 0">
+                <a class="page-link" (click)="currentPage !== totalPages - 1 && lastPage()" [style.cursor]="(currentPage === totalPages - 1 || totalPages === 0) ? 'not-allowed' : 'pointer'">Cuối</a>
               </li>
             </ul>
           </nav>
@@ -533,27 +533,30 @@
       </div>
       <!-- Upload Image - Chỉ hiển thị khi type = "image" -->
       <div *ngIf="answerFormData.type === 'image'" class="form-group mb-3">
-        <label>Upload Ảnh</label>
-        <div class="input-group">
-          <input
-            type="file"
-            class="form-control"
-            accept="image/*"
-            (change)="onAnswerImageSelected($event)">
-        </div>
-        <small class="text-muted">Chỉ hỗ trợ file ảnh (jpg, png, gif, ...)</small>
-      </div>
-      <div *ngIf="answerFormData.type === 'image' && answerImagePreview" class="form-group mb-3">
-        <label>Xem Trước Ảnh</label>
-        <div class="position-relative">
-          <img [src]="BASE_URL_UPLOAD + answerImagePreview" class="img-thumbnail" style="max-width: 300px; max-height: 200px;">
-          <button
-            type="button"
-            class="btn btn-sm btn-danger position-absolute top-0 end-0"
-            (click)="removeAnswerImage()"
-            style="margin: 5px;">
-            <i class="fa fa-trash"></i>
-          </button>
+        <label>Upload Ảnh <span class="text-danger">*</span></label>
+        <input
+          type="file"
+          class="form-control"
+          id="answerImageFile"
+          accept="image/*"
+          (change)="onAnswerImageSelected($event)"
+          style="border-radius: 6px; border: 1px solid #ddd;">
+        <small class="form-text text-muted" style="font-size: 12px; margin-top: 6px; display: block;">
+          Chỉ hỗ trợ file ảnh (jpg, png, gif, ...) - Max 5MB
+        </small>
+
+        <!-- Image Preview - Giống user-management -->
+        <div *ngIf="answerImagePreview" class="mt-3">
+          <div class="alert alert-info" style="background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; border-radius: 6px;">
+            <strong>Ảnh được chọn:</strong>
+            <div class="mt-2">
+              <img
+                [src]="answerImagePreview.startsWith('http') ? answerImagePreview : (answerImagePreview.startsWith('data:') ? answerImagePreview : BASE_URL_UPLOAD + answerImagePreview)"
+                alt="Preview"
+                class="img-thumbnail"
+                style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 6px;">
+            </div>
+          </div>
         </div>
       </div>
     </div>

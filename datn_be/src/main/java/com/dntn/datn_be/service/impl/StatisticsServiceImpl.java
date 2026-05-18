@@ -35,13 +35,13 @@ public class StatisticsServiceImpl implements StatisticsService {
             statistics.put("totalRevenue", totalRevenue);
             
             // Monthly revenue
-            String monthlySql = "SELECT DATE_FORMAT(b.created_at, '%Y-%m') as month, " +
+            String monthlySql = "SELECT TOP 12 CONVERT(VARCHAR(7), b.created_at, 120) as month, " +
                     "COALESCE(SUM(s.price), 0) as revenue " +
                     "FROM bookings b " +
                     "JOIN subject s ON b.subject_id = s.id " +
                     "WHERE b.status IN (1, 2) " +
-                    "GROUP BY DATE_FORMAT(b.created_at, '%Y-%m') " +
-                    "ORDER BY month DESC LIMIT 12";
+                    "GROUP BY CONVERT(VARCHAR(7), b.created_at, 120) " +
+                    "ORDER BY month DESC";
             
             Query monthlyQuery = entityManager.createNativeQuery(monthlySql);
             List<Object[]> monthlyResults = monthlyQuery.getResultList();
@@ -70,11 +70,12 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public ResponseGlobalDto<Object> getTopCombos(Integer limit) {
         try {
-            String sql = "SELECT c.id, c.code, c.name, c.prices, COUNT(b.id) as purchase_count " +
+            String sql = "SELECT c.id, c.code, c.name, c.prices, COUNT(o.id) as purchase_count " +
                     "FROM combo c " +
-                    "LEFT JOIN bookings b ON c.id = b.subject_id " +
+                    "LEFT JOIN orders o ON c.id = o.combo_id AND o.order_type = 'COMBO' AND o.payment_status = 'SUCCESS' " +
                     "GROUP BY c.id, c.code, c.name, c.prices " +
-                    "ORDER BY purchase_count DESC LIMIT ?";
+                    "ORDER BY purchase_count DESC " +
+                    "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
             
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter(1, limit);
@@ -109,11 +110,12 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public ResponseGlobalDto<Object> getTopSubjects(Integer limit) {
         try {
-            String sql = "SELECT s.id, s.code, s.name, s.price, COUNT(b.id) as purchase_count " +
+            String sql = "SELECT s.id, s.name, s.price, COUNT(o.id) as purchase_count " +
                     "FROM subject s " +
-                    "LEFT JOIN bookings b ON s.id = b.subject_id " +
-                    "GROUP BY s.id, s.code, s.name, s.price " +
-                    "ORDER BY purchase_count DESC LIMIT ?";
+                    "LEFT JOIN orders o ON s.id = o.subject_id AND o.order_type = 'SUBJECT' AND o.payment_status = 'SUCCESS' " +
+                    "GROUP BY s.id, s.name, s.price " +
+                    "ORDER BY purchase_count DESC " +
+                    "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
             
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter(1, limit);
@@ -123,10 +125,9 @@ public class StatisticsServiceImpl implements StatisticsService {
             for (Object[] row : results) {
                 Map<String, Object> subject = new HashMap<>();
                 subject.put("id", row[0]);
-                subject.put("code", row[1]);
-                subject.put("name", row[2]);
-                subject.put("price", row[3]);
-                subject.put("purchaseCount", row[4] != null ? ((Number) row[4]).intValue() : 0);
+                subject.put("name", row[1]);
+                subject.put("price", row[2]);
+                subject.put("purchaseCount", row[3] != null ? ((Number) row[3]).intValue() : 0);
                 topSubjects.add(subject);
             }
             

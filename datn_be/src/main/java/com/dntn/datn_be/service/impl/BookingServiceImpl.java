@@ -71,9 +71,9 @@ public class BookingServiceImpl implements BookingService {
 
         bookingRepository.save(booking);
 
-        // Increment currentCapacity when booking is created
-        timeSlotSubject.setCurrentCapacity(timeSlotSubject.getCurrentCapacity() + 1);
-        timeSlotsSubjectRepository.save(timeSlotSubject);
+//        // Increment currentCapacity when booking is created
+//        timeSlotSubject.setCurrentCapacity(timeSlotSubject.getCurrentCapacity() + 1);
+//        timeSlotsSubjectRepository.save(timeSlotSubject);
 
         return ResponseGlobalDto.<Bookings>builder()
                 .status(HttpStatus.CREATED.value())

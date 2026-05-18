@@ -451,11 +451,14 @@ export class CoachTimeSlotsManagementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          if (response && response.data) {
+          if (response && response.status === 201 && response.data) {
             this.toastr.success('Tạo khung giờ dạy thành công!');
             this.closeCreateModal();
             // Reload time slots
             this.loadCoachTimeSlots();
+          } else if (response && response.message) {
+            // Display warning/error message from backend
+            this.toastr.warning(response.message);
           } else {
             this.toastr.info('Không thể tạo khung giờ dạy');
           }

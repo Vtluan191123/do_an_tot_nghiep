@@ -35,7 +35,7 @@ export class FriendSearchComponent implements OnInit {
   showProfileModal = false;
 
   // Pagination properties
-  currentPage: number = 1;
+  currentPage: number = 0;
   pageSize: number = 10;
   pageSizeOptions: number[] = [6, 10, 15, 20, 30];
   totalItems: number = 0;
@@ -94,9 +94,11 @@ export class FriendSearchComponent implements OnInit {
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+
+    if (page >= 0 && page < this.totalPages) {
+
       this.currentPage = page;
-      // Call API directly when changing page
+
       this.performSearch(this.searchQuery);
     }
   }
@@ -125,21 +127,32 @@ export class FriendSearchComponent implements OnInit {
   }
 
   getPageNumbers(): number[] {
-    // Guard: if totalPages is 0 or 1, don't show pagination
+
     if (this.totalPages <= 1) {
       return [];
     }
 
     const pages: number[] = [];
 
-    // Limit pages to show (e.g., show max 5 pages at a time)
     const maxPagesToShow = 5;
-    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
 
-    // Adjust startPage if endPage is at the end
-    if (endPage === this.totalPages) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    // currentPage đang là 0-based
+    let startPage = Math.max(
+      0,
+      this.currentPage - Math.floor(maxPagesToShow / 2)
+    );
+
+    let endPage = Math.min(
+      this.totalPages - 1,
+      startPage + maxPagesToShow - 1
+    );
+
+    // adjust lại start
+    if (endPage === this.totalPages - 1) {
+      startPage = Math.max(
+        0,
+        endPage - maxPagesToShow + 1
+      );
     }
 
     for (let i = startPage; i <= endPage; i++) {

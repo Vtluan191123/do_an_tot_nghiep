@@ -141,14 +141,12 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         StringBuilder sql = new StringBuilder("""
         SELECT u.*
         FROM users u
-        LEFT JOIN roles r ON u.role_id = r.id
         WHERE 1=1
     """);
 
         StringBuilder countSql = new StringBuilder("""
         SELECT COUNT(*)
         FROM users u
-        LEFT JOIN roles r ON u.role_id = r.id
         WHERE 1=1
     """);
 
