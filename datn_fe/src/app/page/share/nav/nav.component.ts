@@ -14,6 +14,7 @@ import {NotificationApiService} from "../../../service/notification/notification
 import {Subject} from "rxjs";
 import {takeUntil, filter} from "rxjs/operators";
 import {IMessage} from "@stomp/stompjs";
+import {RoleUtil} from "../../../util/role.util";
 
 export interface Notification {
   id: number;
@@ -27,6 +28,12 @@ export interface Notification {
   relatedEntityId: number;
   isRead: boolean;
   createdAt: string;
+}
+
+export interface MenuItem {
+  label: string;
+  route: string;
+  roles?: string[]; // If empty/undefined, visible to all roles
 }
 
 @Component({
@@ -51,23 +58,46 @@ export class NavComponent implements OnInit, OnDestroy {
   unreadMessageCount: number = 0
   notifications: Notification[] = [];
   currentRoute: string = '';
+  userRole: string = ''; // Will be set based on current user
 
   private destroy$ = new Subject<void>();
 
-  // Menu items configuration
-  menuItems = [
-    { label: 'Trang Chủ', route: '/' },
-    { label: 'Đặt Lịch', route: '/class-timetable' },
-    { label: 'Tạo Phòng Tập', route: '/gym-room' },
-    { label: 'Dịch Vụ', route: '/class-detail' },
-    { label: 'Đội Ngũ', route: '/team' },
-    { label: 'Quản Lý Combo', route: '/combo-management' },
-    { label: 'Quản Lý Môn Học', route: '/subject-management' },
-    { label: 'Quản Lý Đặt Lịch', route: '/booking-management' },
-    { label: 'Quản Lý Khung Giờ Dạy', route: '/coach-time-slots-management' },
-    { label: 'Quản Lý Người dùng', route: '/user-management' },
-    { label: 'Thống Kê & Báo Cáo', route: '/statistics' }
+  // All available menu items with role restrictions
+  private allMenuItems: MenuItem[] = [
+    { label: 'Trang Chủ', route: '/', roles: ['ROLE_USER'] },
+    { label: 'Đặt Lịch', route: '/class-timetable', roles: ['ROLE_USER'] },
+    { label: 'Phòng Tập Trực Tuyến', route: '/training-room-by-subject', roles: ['ROLE_USER'] },
+    { label: 'Quản lý Phòng Tập Trực Tuyến', route: '/gym-room', roles: [ 'ROLE_COACH'] },
+    { label: 'Đội Ngũ', route: '/team', roles: ['ROLE_USER'] },
+    { label: 'Môn Học Của Tôi', route: '/student-enrolled-subjects', roles: ['ROLE_USER'] },
+    { label: 'Quản Lý Combo', route: '/combo-management', roles: ['ROLE_ADMIN'] },
+    { label: 'Quản Lý Môn Học', route: '/subject-management', roles: ['ROLE_ADMIN'] },
+    { label: 'Quản Lý Đặt Lịch', route: '/booking-management', roles: ['ROLE_COACH'] },
+    { label: 'Quản Lý Khung Giờ Dạy', route: '/coach-time-slots-management', roles: ['ROLE_COACH'] },
+    { label: 'Quản Lý Người dùng', route: '/user-management', roles: ['ROLE_ADMIN'] },
+    { label: 'Thống Kê & Báo Cáo', route: '/statistics', roles: ['ROLE_ADMIN'] },
+    { label: 'Quản Lý AI Training', route: '/ai-training-management', roles: ['ROLE_ADMIN'] }
   ];
+
+  // Filtered menu items based on user role
+  get menuItems(): MenuItem[] {
+    if (!this.userRole) {
+      return [];
+    }
+    return this.allMenuItems.filter(item => {
+      // If no roles specified, show to all
+      if (!item.roles || item.roles.length === 0) {
+        return true;
+      }
+      // Show if user's role is in the item's roles array
+      return item.roles.includes(this.userRole);
+    });
+  }
+
+  // Get default route based on user role
+  private getDefaultRoute(): string {
+    return RoleUtil.getDefaultRoute(this.userRole);
+  }
 
   constructor(
     private router: Router,
@@ -78,7 +108,29 @@ export class NavComponent implements OnInit, OnDestroy {
     private notificationApiService: NotificationApiService
   ) {}
 
+  /**
+   * Convert roleId to role string
+   */
+  private getRoleFromRoleId(roleId: any): string {
+    return RoleUtil.getRoleFromRoleId(roleId);
+  }
+
   ngOnInit(): void {
+    // Initialize user role from current user
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.roleId) {
+      this.userRole = this.getRoleFromRoleId(currentUser.roleId);
+    }
+
+    // Subscribe to user changes to update role dynamically
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user: any) => {
+        if (user && user.roleId) {
+          this.userRole = this.getRoleFromRoleId(user.roleId);
+        }
+      });
+
     // Track current route
     this.router.events
       .pipe(

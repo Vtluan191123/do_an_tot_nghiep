@@ -121,4 +121,11 @@ export class TrainingRoomService {
   getOnlineRoomsForUserBySubject(userId: number, subjectId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/user/${userId}/subject/${subjectId}`);
   }
+
+  joinRoom(roomId: any, userName: any): Observable<any> {
+    return this.http.post<any>(
+      `/api/livekit/join_room?roomId=${roomId}&userName=${userName}`,
+      {}
+    );
+  }
 }

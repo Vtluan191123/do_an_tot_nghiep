@@ -80,7 +80,7 @@
             <div class="pi-price">
               <h2>{{ formatPrice(combo.prices) }}</h2>
             </div>
-            <p class="combo-description">{{ combo.description }}</p>
+<!--            <p class="combo-description">{{ combo.description }}</p>-->
             <ul>
               <li>Truy cập không giới hạn</li>
               <li>Huấn luyện viên cá nhân</li>
@@ -234,6 +234,126 @@
           <i class="fa fa-inbox" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
           <p>Hiện chưa có môn học nào</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!loadingSubjects && subjects.length > 0" style="margin-top: 40px;">
+      <nav>
+        <ul class="pagination justify-content-center" style="
+          display: flex;
+          flex-wrap: wrap;
+          padding: 0;
+          list-style: none;
+          gap: 5px;">
+          <li class="page-item" [class.disabled]="currentSubjectPage === 0" style="list-style: none;">
+            <a class="page-link"
+               (click)="goToSubjectPage(0)"
+               [style.cursor]="currentSubjectPage === 0 ? 'not-allowed' : 'pointer'"
+               style="
+              padding: 8px 12px;
+              background: #f8f9fa;
+              border: 1px solid #dee2e6;
+              border-radius: 4px;
+              color: #0d6efd;
+              text-decoration: none;
+              display: block;
+              transition: all 0.3s ease;">
+              Đầu
+            </a>
+          </li>
+          <li class="page-item" [class.disabled]="currentSubjectPage === 0" style="list-style: none;">
+            <a class="page-link"
+               (click)="previousSubjectPage()"
+               [style.cursor]="currentSubjectPage === 0 ? 'not-allowed' : 'pointer'"
+               style="
+              padding: 8px 12px;
+              background: #f8f9fa;
+              border: 1px solid #dee2e6;
+              border-radius: 4px;
+              color: #0d6efd;
+              text-decoration: none;
+              display: block;
+              transition: all 0.3s ease;">
+              Trước
+            </a>
+          </li>
+          <li class="page-item"
+              *ngFor="let page of getSubjectPageNumbers()"
+              [class.active]="page === currentSubjectPage"
+              [class.disabled]="page === -1"
+              style="list-style: none;">
+            <a *ngIf="page !== -1"
+               class="page-link"
+               (click)="goToSubjectPage(page)"
+               [style.background]="page === currentSubjectPage ? '#0d6efd' : '#f8f9fa'"
+               [style.color]="page === currentSubjectPage ? 'white' : '#0d6efd'"
+               [style.border-color]="page === currentSubjectPage ? '#0d6efd' : '#dee2e6'"
+               style="
+              padding: 8px 12px;
+              border: 1px solid #dee2e6;
+              border-radius: 4px;
+              text-decoration: none;
+              display: block;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              font-weight: 500;">
+              {{ page + 1 }}
+            </a>
+            <span *ngIf="page === -1"
+                  class="page-link"
+                  style="
+              padding: 8px 12px;
+              background: transparent;
+              border: none;
+              color: #666;
+              display: block;
+              cursor: default;">
+              ...
+            </span>
+          </li>
+          <li class="page-item" [class.disabled]="currentSubjectPage === totalSubjectPages - 1" style="list-style: none;">
+            <a class="page-link"
+               (click)="nextSubjectPage()"
+               [style.cursor]="currentSubjectPage === totalSubjectPages - 1 ? 'not-allowed' : 'pointer'"
+               style="
+              padding: 8px 12px;
+              background: #f8f9fa;
+              border: 1px solid #dee2e6;
+              border-radius: 4px;
+              color: #0d6efd;
+              text-decoration: none;
+              display: block;
+              transition: all 0.3s ease;">
+              Sau
+            </a>
+          </li>
+          <li class="page-item" [class.disabled]="currentSubjectPage === totalSubjectPages - 1" style="list-style: none;">
+            <a class="page-link"
+               (click)="goToSubjectPage(totalSubjectPages - 1)"
+               [style.cursor]="currentSubjectPage === totalSubjectPages - 1 ? 'not-allowed' : 'pointer'"
+               style="
+              padding: 8px 12px;
+              background: #f8f9fa;
+              border: 1px solid #dee2e6;
+              border-radius: 4px;
+              color: #0d6efd;
+              text-decoration: none;
+              display: block;
+              transition: all 0.3s ease;">
+              Cuối
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Page Info -->
+      <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+        <p style="margin: 0;">
+          Hiển thị {{ subjects.length }} / {{ totalSubjects }} kết quả
+          <span style="margin: 0 10px;">|</span>
+          Trang {{ currentSubjectPage + 1 }} / {{ totalSubjectPages }}
+        </p>
       </div>
     </div>
   </div>

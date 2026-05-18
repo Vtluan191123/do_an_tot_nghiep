@@ -198,13 +198,23 @@ export class TrainingRoomBySubjectComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (room.zoomLink) {
-      if (isPlatformBrowser(this.platformId)) {
-        window.open(room.zoomLink, '_blank');
+    // call api tạo token zoom
+    this.trainingRoomService.joinRoom(room.id,this.currentUser.fullName).subscribe({
+      next: (response) => {
+        if (response && response.urlRoom) {
+          const zoomLink = response.urlRoom;
+          if (isPlatformBrowser(this.platformId)) {
+            window.open(zoomLink, '_blank');
+          }
+        } else {
+          alert('Liên kết Zoom sẽ được cung cấp trước khi bắt đầu lớp');
+        }
+      },
+      error: (error) => {
+        console.error('Error joining room:', error);
+        alert('Không thể tham gia phòng tập. Vui lòng thử lại sau.');
       }
-    } else {
-      alert('Liên kết Zoom sẽ được cung cấp trước khi bắt đầu lớp');
-    }
+    });
   }
 
   /**

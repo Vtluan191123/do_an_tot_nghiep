@@ -44,6 +44,10 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
   subjects: any[] = [];
   loadingSubjects: boolean = true;
   errorSubjects: string = '';
+  currentSubjectPage: number = 0;
+  subjectPageSize: number = 6;
+  totalSubjects: number = 0;
+  totalSubjectPages: number = 0;
 
   // Drag properties
   isDragging: boolean = false;
@@ -114,8 +118,8 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
    */
   loadSubjects(): void {
     const filter = {
-      page: 0,
-      size: 6,
+      page: this.currentSubjectPage,
+      size: this.subjectPageSize,
       sortBy: 'id',
       sortDirection: 'desc'
     };
@@ -125,17 +129,35 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
       .subscribe(
         (response: any) => {
           if (response.status === 200) {
-            this.subjects = response.data;
+            this.subjects = response.data || [];
+
+            // Handle totalElements from API response
+            if (response.totalElements !== undefined && response.totalElements !== null) {
+              this.totalSubjects = response.totalElements;
+            } else if (this.subjects.length === 0) {
+              this.totalSubjects = 0;
+            } else if (this.subjects.length < this.subjectPageSize) {
+              // If subjects count < pageSize, this is likely the last page
+              this.totalSubjects = (this.currentSubjectPage * this.subjectPageSize) + this.subjects.length;
+            } else {
+              // Default: assume there's at least one more page
+              this.totalSubjects = (this.currentSubjectPage + 2) * this.subjectPageSize;
+            }
+
+            // Calculate total pages
+            this.totalSubjectPages = Math.max(1, Math.ceil(this.totalSubjects / this.subjectPageSize));
             this.loadingSubjects = false;
           } else {
             this.errorSubjects = 'Lỗi khi tải danh sách môn học';
             this.loadingSubjects = false;
+            this.totalSubjectPages = 1;
           }
         },
         (error) => {
           console.error('Error loading subjects:', error);
           this.errorSubjects = 'Không thể tải danh sách môn học';
           this.loadingSubjects = false;
+          this.totalSubjectPages = 1;
         }
       );
   }
@@ -154,6 +176,77 @@ export class DashBoardComponent implements AfterViewInit, OnInit, OnDestroy {
     // You can navigate to a subject detail page if available
     // For now, we can just open combo-detail or create a subject-detail page
     this.router.navigate(['/subject-detail', id]);
+  }
+
+  /**
+   * Go to specific subject page
+   */
+  goToSubjectPage(page: number): void {
+    if (page >= 0 && page < this.totalSubjectPages) {
+      this.currentSubjectPage = page;
+      this.loadSubjects();
+    }
+  }
+
+  /**
+   * Go to next subject page
+   */
+  nextSubjectPage(): void {
+    if (this.currentSubjectPage < this.totalSubjectPages - 1) {
+      this.goToSubjectPage(this.currentSubjectPage + 1);
+    }
+  }
+
+  /**
+   * Go to previous subject page
+   */
+  previousSubjectPage(): void {
+    if (this.currentSubjectPage > 0) {
+      this.goToSubjectPage(this.currentSubjectPage - 1);
+    }
+  }
+
+  /**
+   * Get page numbers to display in pagination
+   */
+  getSubjectPageNumbers(): number[] {
+    const pages: number[] = [];
+    const totalPages = this.totalSubjectPages;
+
+    if (totalPages <= 5) {
+      // Show all pages if total <= 5
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(0);
+
+      // Show current page and adjacent pages
+      const startPage = Math.max(1, this.currentSubjectPage - 1);
+      const endPage = Math.min(totalPages - 2, this.currentSubjectPage + 1);
+
+      if (startPage > 1) {
+        pages.push(-1); // -1 represents "..."
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        if (!pages.includes(i)) {
+          pages.push(i);
+        }
+      }
+
+      if (endPage < totalPages - 2) {
+        pages.push(-1); // -1 represents "..."
+      }
+
+      // Always show last page
+      if (!pages.includes(totalPages - 1)) {
+        pages.push(totalPages - 1);
+      }
+    }
+
+    return pages;
   }
 
   /**

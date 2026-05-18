@@ -112,6 +112,47 @@
           }
         }
 
+        &.past-date {
+          background-color: #f5f5f5 !important;
+          opacity: 0.7;
+          cursor: not-allowed;
+          position: relative;
+
+          &:hover {
+            background-color: #f5f5f5 !important;
+            box-shadow: none;
+
+            .hover-tooltip {
+              opacity: 1;
+              visibility: visible;
+              pointer-events: auto;
+            }
+          }
+
+          .timeslot-content {
+            opacity: 0.6;
+          }
+
+          .past-date-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: #ff6b6b;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 10;
+
+            .past-badge-text {
+              letter-spacing: 0.5px;
+            }
+          }
+        }
+
         .timeslot-content {
           h5 {
             margin: 0 0 5px 0;
@@ -208,6 +249,26 @@
             color: #ff6b6b;
             font-weight: 600;
             text-align: center;
+
+            &.past-footer {
+              color: #d32f2f;
+              background-color: #ffebee;
+              border-radius: 4px;
+              padding: 8px;
+              border-top: none;
+              margin-top: 0;
+              padding-top: 0;
+            }
+          }
+
+          &.past-tooltip {
+            .tooltip-row {
+              opacity: 0.8;
+            }
+
+            .tooltip-title {
+              color: #d32f2f;
+            }
           }
         }
       }

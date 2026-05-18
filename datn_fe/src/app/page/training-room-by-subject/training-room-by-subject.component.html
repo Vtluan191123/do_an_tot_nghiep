@@ -188,18 +188,17 @@
                     </div>
                   }
                 </div>
-
                 <!-- Capacity Progress Bar -->
-                <div class="capacity-bar">
-                  <div class="progress">
-                    <div
-                      class="progress-bar"
-                      [ngClass]="isRoomFull(room) ? 'bg-danger' : 'bg-success'"
-                      [style.width.%]="getCapacityPercentage(room)">
-                    </div>
-                  </div>
-                  <small>{{ (room.currentCapacity || 0) }}/{{ room.maxCapacity }} Thành Viên</small>
-                </div>
+<!--                <div class="capacity-bar">-->
+<!--                  <div class="progress">-->
+<!--                    <div-->
+<!--                      class="progress-bar"-->
+<!--                      [ngClass]="isRoomFull(room) ? 'bg-danger' : 'bg-success'"-->
+<!--                      [style.width.%]="getCapacityPercentage(room)">-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                  <small>{{ (room.currentCapacity || 0) }}/{{ room.maxCapacity }} Thành Viên</small>-->
+<!--                </div>-->
 
                 <!-- Join Button -->
                 <button

@@ -51,15 +51,15 @@ public class BookingServiceImpl implements BookingService {
         }
 
         //check timeSlotSubject
-        TimeSlotsSubject timeSlotSubject = timeSlotsSubjectRepository.findById(request.getTimeSlotSubjectId()).orElse(null);
-        if (timeSlotSubject != null) {
-            if(timeSlotSubject.getCurrentCapacity() >= timeSlotSubject.getMaxCapacity()) {
-                return ResponseGlobalDto.<Bookings>builder()
-                        .status(HttpStatus.BAD_REQUEST.value())
-                        .data(null)
-                        .message("Time slot is full")
-                        .build();
-            }
+        TimeSlotsSubject timeSlotSubject = timeSlotsSubjectRepository.findById(request.getTimeSlotSubjectId())
+                .orElseThrow(() -> new RuntimeException("khung giờ không tồn tại"));
+
+        if(timeSlotSubject.getCurrentCapacity() >= timeSlotSubject.getMaxCapacity()) {
+            return ResponseGlobalDto.<Bookings>builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .data(null)
+                    .message("Khung giờ đã đầy không thể đặt")
+                    .build();
         }
 
         Bookings booking = Bookings.builder()
@@ -71,10 +71,14 @@ public class BookingServiceImpl implements BookingService {
 
         bookingRepository.save(booking);
 
+        // Increment currentCapacity when booking is created
+        timeSlotSubject.setCurrentCapacity(timeSlotSubject.getCurrentCapacity() + 1);
+        timeSlotsSubjectRepository.save(timeSlotSubject);
+
         return ResponseGlobalDto.<Bookings>builder()
                 .status(HttpStatus.CREATED.value())
                 .data(booking)
-                .message("Create booking successfully")
+                .message("Đặt lịch thành công")
                 .build();
     }
 

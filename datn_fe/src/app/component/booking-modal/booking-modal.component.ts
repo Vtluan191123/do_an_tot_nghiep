@@ -108,18 +108,31 @@ export class BookingModalComponent implements OnInit {
     this.isLoading = true;
 
     this.bookingService.createBooking(bookingPayload).subscribe({
-      next: () => {
+      next: (response) => {
         this.isLoading = false;
-        this.successMessage = 'Đặt lịch thành công! Bạn sẽ được xác nhận trong thời gian sớm nhất.';
-        setTimeout(() => {
-          this.success.emit();
-          this.closeModal();
-        }, 2000);
+        console.log('Booking response:', response);
+
+        // Check if response status indicates success (201 for created, 200 for OK)
+        if (response?.status === 201 || response?.status === 200) {
+          this.successMessage = response?.message || 'Đặt lịch thành công! Bạn sẽ được xác nhận trong thời gian sớm nhất.';
+          setTimeout(() => {
+            this.success.emit();
+            this.closeModal();
+          }, 2000);
+        } else {
+          // If status is not success, treat as error
+          this.errorMessage = response?.message || 'Đặt lịch thất bại. Vui lòng thử lại sau.';
+        }
       },
       error: (error) => {
         this.isLoading = false;
         console.error('Error booking:', error);
-        this.errorMessage = 'Lỗi đặt lịch: ' + (error?.error?.message || 'Vui lòng thử lại sau');
+
+        // Try to get error message from response
+        const errorMessage = error?.error?.message
+          || error?.message
+          || 'Vui lòng thử lại sau';
+        this.errorMessage = 'Lỗi đặt lịch: ' + errorMessage;
       }
     });
   }

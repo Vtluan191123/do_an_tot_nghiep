@@ -25,13 +25,14 @@ import { CoachTimeSlotsManagementComponent } from './page/coach-time-slots-manag
 import { TrainingRoomBySubjectComponent } from './page/training-room-by-subject/training-room-by-subject.component';
 import { AiTrainingManagementComponent } from './page/ai-training-management/ai-training-management.component';
 import { authGuard } from './guards/auth.guard';
+import { roleRedirectGuard } from './guards/role-redirect.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
 
   // Protected routes - require authentication
-  { path: '', component: DashBoardComponent, canActivate: [authGuard] },
+  { path: '', component: DashBoardComponent, canActivate: [authGuard, roleRedirectGuard] },
   { path: 'dashboard', component: DashBoardComponent, canActivate: [authGuard] },
   { path: 'call', component: VideoCallComponent, canActivate: [authGuard] },
   { path: 'room-subject', component: VideoConferenceClientComponent, canActivate: [authGuard] },

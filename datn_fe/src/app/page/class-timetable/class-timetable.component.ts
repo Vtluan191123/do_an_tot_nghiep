@@ -21,6 +21,7 @@ interface TimetableCell {
   dayName: string;
   startTime?: string;
   endTime?: string;
+  isPastDate?: boolean; // Flag to indicate if date is in the past
 }
 
 interface TimetableRow {
@@ -161,13 +162,9 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
 
   /**
    * Navigate to previous week
-   * Blocked if current week (cannot go to past)
+   * Now allows viewing past weeks (but cannot book past dates)
    */
   previousWeek(): void {
-    if (this.currentWeekIndex === 0) {
-      // Already at current week, cannot go to past
-      return;
-    }
     this.currentWeekIndex--;
     this.updateWeekLabel();
     this.loadTimetableForWeek();
@@ -298,6 +295,20 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Check if a date is in the past (before today)
+   * Returns true if date is before today (not including today)
+   */
+  private isPastDate(date: Date): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0); // Set to start of date
+
+    return checkDate < today;
+  }
+
+  /**
    * Build timetable from timeslots data
    */
   private buildTimetable(timeslots: TimeSlotsSubject[]): void {
@@ -392,7 +403,8 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
           dayOfWeek: dayDiff,
           dayName: this.daysOfWeek[dayDiff],
           startTime: timeStr,
-          endTime: endTimeStr || `${this.TIME_SLOTS[timeSlotIndex].endHour}:00`
+          endTime: endTimeStr || `${this.TIME_SLOTS[timeSlotIndex].endHour}:00`,
+          isPastDate: this.isPastDate(slotDate) // Check if date is in the past
         };
 
         // If cell already exists, merge or replace
@@ -429,6 +441,12 @@ export class ClassTimetableComponent implements OnInit, OnDestroy {
   }
 
   onTimeslotClick(cell: TimetableCell): void {
+    // Prevent booking for past dates
+    if (cell.isPastDate) {
+      alert('Không thể đặt lịch cho những ngày trong quá khứ!');
+      return;
+    }
+
     this.selectedTimeslot = {
       ...cell,
       maxCapacity: cell.maxCapacity,

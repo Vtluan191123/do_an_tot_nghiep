@@ -57,7 +57,7 @@
                     [(ngModel)]="searchSubjectId"
                     name="searchSubject"
                     (change)="onSearch()"
-                    style="border-radius: 6px; border: 1px solid #ddd;">
+                    style="border-radius: 6px; border: 1px solid #ddd;padding: 5px">
                     <option [value]="null">-- Chọn Môn Học --</option>
                     <option *ngFor="let subject of subjects" [value]="subject.id">
                       {{ subject.name }}

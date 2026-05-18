@@ -22,139 +22,139 @@
   <!-- Breadcrumb Section End -->
 
   <!-- Create Room Section -->
-  <section class="create-room-section spad">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="section-title">
-            <span>Quản Lý Phòng Tập</span>
-            <h2>Tạo Phòng Tập Mới</h2>
-          </div>
-        </div>
-      </div>
+<!--  <section class="create-room-section spad">-->
+<!--    <div class="container">-->
+<!--      <div class="row">-->
+<!--        <div class="col-lg-12">-->
+<!--          <div class="section-title">-->
+<!--            <span>Quản Lý Phòng Tập</span>-->
+<!--            <h2>Tạo Phòng Tập Mới</h2>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <!-- Create Room Button -->
-      <div class="row mb-4">
-        <div class="col-lg-12">
-          <button
-            class="primary-btn"
-            (click)="toggleCreateForm()">
-            <i class="fa fa-plus"></i> {{ showCreateForm ? 'Đóng Form' : 'Tạo Phòng Tập Mới' }}
-          </button>
-        </div>
-      </div>
+<!--      &lt;!&ndash; Create Room Button &ndash;&gt;-->
+<!--      <div class="row mb-4">-->
+<!--        <div class="col-lg-12">-->
+<!--          <button-->
+<!--            class="primary-btn"-->
+<!--            (click)="toggleCreateForm()">-->
+<!--            <i class="fa fa-plus"></i> {{ showCreateForm ? 'Đóng Form' : 'Tạo Phòng Tập Mới' }}-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <!-- Create Room Form -->
-      @if(showCreateForm) {
-        <div class="row">
-          <div class="col-lg-8 offset-lg-2">
-            <div class="create-form-container">
-              <h3>Tạo Phòng Tập Mới</h3>
-              <form [formGroup]="createRoomForm" (ngSubmit)="onCreateRoom()">
-                <div class="form-group">
-                  <label for="name">Tên Phòng Tập</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="name"
-                    formControlName="name"
-                    placeholder="Nhập tên phòng tập">
-                  @if(createRoomForm.get('name')?.hasError('required') && createRoomForm.get('name')?.touched) {
-                    <small class="text-danger">Tên phòng tập là bắt buộc</small>
-                  }
-                  @if(createRoomForm.get('name')?.hasError('minlength') && createRoomForm.get('name')?.touched) {
-                    <small class="text-danger">Tên phải tối thiểu 3 ký tự</small>
-                  }
-                </div>
+<!--      &lt;!&ndash; Create Room Form &ndash;&gt;-->
+<!--      @if(showCreateForm) {-->
+<!--        <div class="row">-->
+<!--          <div class="col-lg-8 offset-lg-2">-->
+<!--            <div class="create-form-container">-->
+<!--              <h3>Tạo Phòng Tập Mới</h3>-->
+<!--              <form [formGroup]="createRoomForm" (ngSubmit)="onCreateRoom()">-->
+<!--                <div class="form-group">-->
+<!--                  <label for="name">Tên Phòng Tập</label>-->
+<!--                  <input-->
+<!--                    type="text"-->
+<!--                    class="form-control"-->
+<!--                    id="name"-->
+<!--                    formControlName="name"-->
+<!--                    placeholder="Nhập tên phòng tập">-->
+<!--                  @if(createRoomForm.get('name')?.hasError('required') && createRoomForm.get('name')?.touched) {-->
+<!--                    <small class="text-danger">Tên phòng tập là bắt buộc</small>-->
+<!--                  }-->
+<!--                  @if(createRoomForm.get('name')?.hasError('minlength') && createRoomForm.get('name')?.touched) {-->
+<!--                    <small class="text-danger">Tên phải tối thiểu 3 ký tự</small>-->
+<!--                  }-->
+<!--                </div>-->
 
-                <div class="form-group">
-                  <label for="subject">Bộ Môn</label>
-                  <select class="form-control" id="subject" formControlName="subject">
-                    <option value="">-- Chọn Bộ Môn --</option>
-                    @for(subject of subjects; track subject) {
-                      <option [value]="subject">{{ subject }}</option>
-                    }
-                  </select>
-                  @if(createRoomForm.get('subject')?.hasError('required') && createRoomForm.get('subject')?.touched) {
-                    <small class="text-danger">Vui lòng chọn bộ môn</small>
-                  }
-                </div>
+<!--                <div class="form-group">-->
+<!--                  <label for="subject">Bộ Môn</label>-->
+<!--                  <select class="form-control" id="subject" formControlName="subject">-->
+<!--                    <option value="">&#45;&#45; Chọn Bộ Môn &#45;&#45;</option>-->
+<!--                    @for(subject of subjects; track subject) {-->
+<!--                      <option [value]="subject">{{ subject }}</option>-->
+<!--                    }-->
+<!--                  </select>-->
+<!--                  @if(createRoomForm.get('subject')?.hasError('required') && createRoomForm.get('subject')?.touched) {-->
+<!--                    <small class="text-danger">Vui lòng chọn bộ môn</small>-->
+<!--                  }-->
+<!--                </div>-->
 
-                <div class="form-group">
-                  <label for="instructor">Huấn Luyện Viên</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="instructor"
-                    formControlName="instructor"
-                    placeholder="Nhập tên huấn luyện viên">
-                  @if(createRoomForm.get('instructor')?.hasError('required') && createRoomForm.get('instructor')?.touched) {
-                    <small class="text-danger">Tên huấn luyện viên là bắt buộc</small>
-                  }
-                </div>
+<!--                <div class="form-group">-->
+<!--                  <label for="instructor">Huấn Luyện Viên</label>-->
+<!--                  <input-->
+<!--                    type="text"-->
+<!--                    class="form-control"-->
+<!--                    id="instructor"-->
+<!--                    formControlName="instructor"-->
+<!--                    placeholder="Nhập tên huấn luyện viên">-->
+<!--                  @if(createRoomForm.get('instructor')?.hasError('required') && createRoomForm.get('instructor')?.touched) {-->
+<!--                    <small class="text-danger">Tên huấn luyện viên là bắt buộc</small>-->
+<!--                  }-->
+<!--                </div>-->
 
-                <div class="form-row">
-                  <div class="form-group col-md-6">
-                    <label for="startTime">Giờ Bắt Đầu</label>
-                    <input
-                      type="time"
-                      class="form-control"
-                      id="startTime"
-                      formControlName="startTime">
-                    @if(createRoomForm.get('startTime')?.hasError('required') && createRoomForm.get('startTime')?.touched) {
-                      <small class="text-danger">Giờ bắt đầu là bắt buộc</small>
-                    }
-                  </div>
-                  <div class="form-group col-md-6">
-                    <label for="endTime">Giờ Kết Thúc</label>
-                    <input
-                      type="time"
-                      class="form-control"
-                      id="endTime"
-                      formControlName="endTime">
-                    @if(createRoomForm.get('endTime')?.hasError('required') && createRoomForm.get('endTime')?.touched) {
-                      <small class="text-danger">Giờ kết thúc là bắt buộc</small>
-                    }
-                  </div>
-                </div>
+<!--                <div class="form-row">-->
+<!--                  <div class="form-group col-md-6">-->
+<!--                    <label for="startTime">Giờ Bắt Đầu</label>-->
+<!--                    <input-->
+<!--                      type="time"-->
+<!--                      class="form-control"-->
+<!--                      id="startTime"-->
+<!--                      formControlName="startTime">-->
+<!--                    @if(createRoomForm.get('startTime')?.hasError('required') && createRoomForm.get('startTime')?.touched) {-->
+<!--                      <small class="text-danger">Giờ bắt đầu là bắt buộc</small>-->
+<!--                    }-->
+<!--                  </div>-->
+<!--                  <div class="form-group col-md-6">-->
+<!--                    <label for="endTime">Giờ Kết Thúc</label>-->
+<!--                    <input-->
+<!--                      type="time"-->
+<!--                      class="form-control"-->
+<!--                      id="endTime"-->
+<!--                      formControlName="endTime">-->
+<!--                    @if(createRoomForm.get('endTime')?.hasError('required') && createRoomForm.get('endTime')?.touched) {-->
+<!--                      <small class="text-danger">Giờ kết thúc là bắt buộc</small>-->
+<!--                    }-->
+<!--                  </div>-->
+<!--                </div>-->
 
-                <div class="form-group">
-                  <label for="capacity">Sức Chứa (Nhân Viên)</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="capacity"
-                    formControlName="capacity"
-                    min="5"
-                    max="100">
-                  @if(createRoomForm.get('capacity')?.hasError('required') && createRoomForm.get('capacity')?.touched) {
-                    <small class="text-danger">Sức chứa là bắt buộc</small>
-                  }
-                </div>
+<!--                <div class="form-group">-->
+<!--                  <label for="capacity">Sức Chứa (Nhân Viên)</label>-->
+<!--                  <input-->
+<!--                    type="number"-->
+<!--                    class="form-control"-->
+<!--                    id="capacity"-->
+<!--                    formControlName="capacity"-->
+<!--                    min="5"-->
+<!--                    max="100">-->
+<!--                  @if(createRoomForm.get('capacity')?.hasError('required') && createRoomForm.get('capacity')?.touched) {-->
+<!--                    <small class="text-danger">Sức chứa là bắt buộc</small>-->
+<!--                  }-->
+<!--                </div>-->
 
-                <div class="form-group">
-                  <label for="description">Mô Tả</label>
-                  <textarea
-                    class="form-control"
-                    id="description"
-                    formControlName="description"
-                    rows="3"
-                    placeholder="Mô tả chi tiết về phòng tập..."></textarea>
-                </div>
+<!--                <div class="form-group">-->
+<!--                  <label for="description">Mô Tả</label>-->
+<!--                  <textarea-->
+<!--                    class="form-control"-->
+<!--                    id="description"-->
+<!--                    formControlName="description"-->
+<!--                    rows="3"-->
+<!--                    placeholder="Mô tả chi tiết về phòng tập..."></textarea>-->
+<!--                </div>-->
 
-                <button
-                  type="submit"
-                  class="btn btn-success"
-                  [disabled]="isLoading || createRoomForm.invalid">
-                  {{ isLoading ? 'Đang Tạo...' : 'Tạo Phòng Tập' }}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  </section>
+<!--                <button-->
+<!--                  type="submit"-->
+<!--                  class="btn btn-success"-->
+<!--                  [disabled]="isLoading || createRoomForm.invalid">-->
+<!--                  {{ isLoading ? 'Đang Tạo...' : 'Tạo Phòng Tập' }}-->
+<!--                </button>-->
+<!--              </form>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      }-->
+<!--    </div>-->
+<!--  </section>-->
 
   <!-- Rooms List Section -->
   <section class="rooms-list-section spad">

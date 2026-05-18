@@ -75,19 +75,19 @@
                 </div>
 
                 <!-- Search by Status -->
-                <div class="col-lg-2 col-md-6">
-                  <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>
-                  <select
-                    class="form-select"
-                    id="searchStatus"
-                    [(ngModel)]="searchStatus"
-                    name="searchStatus"
-                    style="border-radius: 6px; border: 1px solid #ddd;">
-                    <option value="">-- Tất Cả --</option>
-                    <option [value]="true">Hoạt Động</option>
-                    <option [value]="false">Vô Hiệu Hóa</option>
-                  </select>
-                </div>
+<!--                <div class="col-lg-2 col-md-6">-->
+<!--                  <label for="searchStatus" class="form-label fw-500" style="color: #555; font-size: 14px;">Trạng Thái</label>-->
+<!--                  <select-->
+<!--                    class="form-select"-->
+<!--                    id="searchStatus"-->
+<!--                    [(ngModel)]="searchStatus"-->
+<!--                    name="searchStatus"-->
+<!--                    style="border-radius: 6px; border: 1px solid #ddd;">-->
+<!--                    <option value="">&#45;&#45; Tất Cả &#45;&#45;</option>-->
+<!--                    <option [value]="true">Hoạt Động</option>-->
+<!--                    <option [value]="false">Vô Hiệu Hóa</option>-->
+<!--                  </select>-->
+<!--                </div>-->
 
                 <!-- Search by Role -->
                 <div class="col-lg-2 col-md-6">
@@ -453,7 +453,7 @@
             [(ngModel)]="selectedRoleId"
             name="roleId"
             (change)="onRoleChange()"
-            style="border-radius: 6px; border: 2px solid #ddd; padding: 10px; font-size: 14px;">
+            style="border-radius: 6px; border: 2px solid #ddd; padding: 5px; font-size: 14px;">
             <option [value]="null">-- Chọn vai trò --</option>
             <option *ngFor="let role of roles; trackBy: trackByRoleId" [value]="role?.id">{{ role?.name }}</option>
           </select>
@@ -467,7 +467,7 @@
             <span class="text-danger" style="margin-left: 4px;">*</span>
           </label>
 
-          <div style="border: 1px solid #ddd; border-radius: 6px; max-height: 300px; overflow-y: auto; background: white;">
+          <div style="border: 1px solid #ddd; border-radius: 6px; max-height: 300px; overflow-y: auto; background: white; padding: 20px">
             <!-- Empty State -->
             <div *ngIf="!allSubjects || allSubjects.length === 0" class="text-center text-muted" style="padding: 30px;">
               <i class="fa fa-inbox" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
