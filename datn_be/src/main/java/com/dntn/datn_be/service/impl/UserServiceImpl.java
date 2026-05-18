@@ -42,6 +42,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.*;
@@ -67,6 +68,7 @@ public class UserServiceImpl implements UserService{
     private final SubjectRepository subjectRepository;
     private final TimeSlotsRepository timeSlotsRepository;
     private final TimeSlotsSubjectRepository timeSlotsSubjectRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -74,7 +76,7 @@ public class UserServiceImpl implements UserService{
         Users user = Users.builder()
                 .username(request.getUsername())
                 .fullName(request.getFullName())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode("123456"))
                 .email(request.getEmail())
                 .age(request.getAge())
                 .description(request.getDescription())
@@ -102,11 +104,11 @@ public class UserServiceImpl implements UserService{
         Users currentUser = authService.getCurrentUser();
         Long currentUserId = currentUser.getId();
         boolean isAdmin = request.isAdmin();
-        
+
         // Note: excludeUserId is now set by the caller (e.g., searchWithCurrentUser for friend-search)
         // This allows gets() to be flexible: exclude current user only when needed (friend-search)
         // For other cases, lấy all users
-        
+
         Page<Users> page = userRepository.filter(request);
         List<Users> usersList = page.getContent();
         List<UserResponse> userResponses = new ArrayList<>();
@@ -487,11 +489,11 @@ public class UserServiceImpl implements UserService{
                 for (Long subjectId : request.getSubjectIds()) {
                     // Check if user already has this subject
                     UserSubject existingUserSubject = userSubjectRepository.findAll().stream()
-                            .filter(us -> us.getUserId().equals(request.getUserId()) && 
+                            .filter(us -> us.getUserId().equals(request.getUserId()) &&
                                    us.getSubjectId().equals(subjectId))
                             .findFirst()
                             .orElse(null);
-                    
+
                     if (existingUserSubject == null) {
                         UserSubject userSubject = UserSubject.builder()
                                 .userId(request.getUserId())
@@ -505,7 +507,7 @@ public class UserServiceImpl implements UserService{
                         existingUserSubject.setIsCoach(true);
                         userSubjectRepository.save(existingUserSubject);
                     }
-                    
+
                     // NOTE: TimeSlotsSubject will be created manually by coach in coach-time-slots-management
                     // No auto-generation here anymore
                 }
@@ -560,7 +562,7 @@ public class UserServiceImpl implements UserService{
                     .map(coach -> {
                         // Lấy danh sách subject của coach
                         List<UserSubject> coachSubjects = userSubjectRepository.findByUserIdAndIsCoachTrue(coach.getId());
-                        
+
                         // Lấy thông tin subject từ subjectIds
                         List<CoachDetailResponse.SubjectDetailResponse> subjects = coachSubjects.stream()
                                 .map(userSubject -> {

@@ -21,9 +21,7 @@ public class RegisterRequest {
 
     private String age;
 
-    @NotNull(message = "Role Id không được để trống")
     private Long roleId;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
     private String phoneNumber;
 }

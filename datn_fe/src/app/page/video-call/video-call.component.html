@@ -23,7 +23,7 @@
     <div
       class="avatar"
       [ngStyle]="{
-        'background': 'url(' + (infoFriendUser?.imagesUrl ? BASE_URL_UPLOAD + infoFriendUser.imagesUrl : BASE_URL_UPLOAD + 'default_avt.png') + ') center/cover no-repeat'
+        'background': 'url(' + (infoFriendUser?.imagesUrl ? BASE_URL_UPLOAD + infoFriendUser.imagesUrl : getAvatar()) + ') center/cover no-repeat'
       }"
       [attr.aria-label]="'Avatar của ' + infoFriendUser?.username"
     ></div>

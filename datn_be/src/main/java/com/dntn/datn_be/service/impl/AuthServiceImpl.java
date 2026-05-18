@@ -70,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .age(request.getAge())
                 .email(request.getEmail())
-                .roleId(request.getRoleId())
+                .roleId(2L)
                 .phoneNumber(request.getPhoneNumber())
                 .build();
 

@@ -685,4 +685,23 @@ export class VideoCallComponent implements OnInit{
   protected readonly ICON_THREE_DOT = ICON_THREE_DOT;
   protected readonly CAMERA_CLOSE = CAMERA_CLOSE;
   protected readonly ICON_CALL_AGAIN = ICON_CALL_AGAIN;
+
+  getAvatar(): string {
+    if (this.infoFriendUser?.email) {
+      const email = this.infoFriendUser.email.toLowerCase().trim();
+      const hash = this.simpleHash(email);
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.infoFriendUser.username)}&background=${hash.substring(0, 6)}&color=fff`;
+    }
+    return 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff';
+  }
+
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16);
+  }
 }
